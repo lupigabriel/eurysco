@@ -53,8 +53,6 @@ net.exe stop "%servicename_last:~1,-1%"
 taskkill.exe /f /im "%phpexe:~1,-1%.exe" /t
 sc.exe delete "%servicename_last:~1,-1%"
 reg.exe delete "HKLM\SYSTEM\CurrentControlSet\services\%servicename_last:~1,-1%" /f
-rem netsh.exe firewall delete allowedprogram "%cd%\php_%osarc%%osold:~1,-1%\php_%phpexe:~1,-1%.exe" all
-rem netsh.exe advfirewall firewall delete rule name=php_%phpexe:~1,-1% dir=in
 
 sc.exe create "%servicename:~1,-1%" start= "%servicestart:~1,-1%" binPath= "%cd%\euryscosrv.exe" obj= "%serviceuser:~1,-1%" DisplayName= "%servicedisplay:~1,-1%"
 reg.exe add "HKLM\SYSTEM\CurrentControlSet\services\%servicename:~1,-1%\Parameters" /v "Application" /t REG_SZ /d "\"%cd%\php_%osarc%%osold:~1,-1%\php_%phpexe:~1,-1%.exe\" -c \"%cd%\php_%osarc%%osold:~1,-1%\php.ini\" \"%cd%\agent\conf\agent.init.php\"" /f
@@ -63,8 +61,6 @@ if not exist "%cd%\php_%osarc%%osold:~1,-1%\php.ini" if exist "%cd%\php.default_
 type "%cd%\php_%osarc%%osold:~1,-1%\php.ini" | find /i "error_log = " | find /i "logs\php_errors.log"
 if %errorlevel% neq 0 echo error_log = "%cd%\php_%osarc%%osold:~1,-1%\logs\php_errors.log">>"%cd%\php_%osarc%%osold:~1,-1%\php.ini"
 if not exist "%cd%\php_%osarc%%osold:~1,-1%\php_%phpexe:~1,-1%.exe" if exist "%cd%\php_%osarc%%osold:~1,-1%\php.exe" copy "%cd%\php_%osarc%%osold:~1,-1%\php.exe" "%cd%\php_%osarc%%osold:~1,-1%\php_%phpexe:~1,-1%.exe" /y
-rem netsh.exe advfirewall firewall add rule name="php_%phpexe:~1,-1%" dir=in action=allow program="%cd%\php_%osarc%%osold:~1,-1%\php_%phpexe:~1,-1%.exe" enable=yes
-rem if %errorlevel% neq 0 netsh.exe firewall add allowedprogram "%cd%\php_%osarc%%osold:~1,-1%\php_%phpexe:~1,-1%.exe" "php_%phpexe:~1,-1%" enable
 net.exe start "%servicename:~1,-1%"
 
 exit 0

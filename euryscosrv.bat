@@ -48,7 +48,7 @@ if %relpath:~1,-1% neq agent netsh.exe advfirewall firewall delete rule name=htt
 if %relpath:~1,-1% neq agent sc.exe create "%servicename:~1,-1%SSL" start= "%servicestart:~1,-1%" binPath= "%cd%\euryscosrv.exe" obj= "%serviceuser:~1,-1%" DisplayName= "%servicedisplay:~1,-1% SSL"
 if %relpath:~1,-1% neq agent reg.exe add "HKLM\SYSTEM\CurrentControlSet\services\%servicename:~1,-1%SSL\Parameters" /v "Application" /t REG_SZ /d "\"%cd%\apache_%osarc%\bin\httpd_%phpexe:~1,-1%.exe\" -f \"%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%.conf\"" /f
 if %relpath:~1,-1% neq agent if not exist "%cd%\apache_%osarc%\bin\httpd_%phpexe:~1,-1%.exe" if exist "%cd%\apache_%osarc%\bin\httpd.exe" copy "%cd%\apache_%osarc%\bin\httpd.exe" "%cd%\apache_%osarc%\bin\httpd_%phpexe:~1,-1%.exe" /y
-if %relpath:~1,-1% neq agent netsh.exe advfirewall firewall add rule name="httpd_%phpexe:~1,-1%" dir=in action=allow protocol=6 localport=%serviceport:~1,-1% remoteport=%phpport:~1,-1% program="%cd%\apache_%osarc%\bin\httpd_%phpexe:~1,-1%.exe" enable=yes
+if %relpath:~1,-1% neq agent netsh.exe advfirewall firewall add rule name="httpd_%phpexe:~1,-1%" dir=in action=allow protocol=6 localport=%serviceport:~1,-1% program="%cd%\apache_%osarc%\bin\httpd_%phpexe:~1,-1%.exe" enable=yes
 if %relpath:~1,-1% neq agent if %errorlevel% neq 0 netsh.exe firewall add allowedprogram "%cd%\apache_%osarc%\bin\httpd_%phpexe:~1,-1%.exe" "httpd_%phpexe:~1,-1%" enable
 if %relpath:~1,-1% neq agent net.exe start "%servicename:~1,-1%SSL"
 
@@ -82,6 +82,4 @@ if not exist "%cd%\php_%osarc%%osold:~1,-1%\php.ini" if exist "%cd%\php.default_
 type "%cd%\php_%osarc%%osold:~1,-1%\php.ini" | find /i "error_log = " | find /i "logs\php_errors.log"
 if %errorlevel% neq 0 echo error_log = "%cd%\php_%osarc%%osold:~1,-1%\logs\php_errors.log">>"%cd%\php_%osarc%%osold:~1,-1%\php.ini"
 if not exist "%cd%\php_%osarc%%osold:~1,-1%\php_%phpexe:~1,-1%.exe" if exist "%cd%\php_%osarc%%osold:~1,-1%\php.exe" copy "%cd%\php_%osarc%%osold:~1,-1%\php.exe" "%cd%\php_%osarc%%osold:~1,-1%\php_%phpexe:~1,-1%.exe" /y
-rem if %relpath:~1,-1% equ agent netsh.exe advfirewall firewall add rule name="php_%phpexe:~1,-1%" dir=in action=allow program="%cd%\php_%osarc%%osold:~1,-1%\php_%phpexe:~1,-1%.exe" enable=yes
-rem if %relpath:~1,-1% equ agent if %errorlevel% neq 0 netsh.exe firewall add allowedprogram "%cd%\php_%osarc%%osold:~1,-1%\php_%phpexe:~1,-1%.exe" "php_%phpexe:~1,-1%" enable
 net.exe start "%servicename:~1,-1%"

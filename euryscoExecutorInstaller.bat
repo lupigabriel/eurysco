@@ -65,7 +65,7 @@ netsh.exe advfirewall firewall delete rule name=httpd_%phpexe:~1,-1% dir=in
 sc.exe create "%servicename:~1,-1%SSL" start= "%servicestart:~1,-1%" binPath= "%cd%\euryscosrv.exe" obj= "%serviceuser:~1,-1%" DisplayName= "%servicedisplay:~1,-1% SSL"
 reg.exe add "HKLM\SYSTEM\CurrentControlSet\services\%servicename:~1,-1%SSL\Parameters" /v "Application" /t REG_SZ /d "\"%cd%\apache_%osarc%\bin\httpd_%phpexe:~1,-1%.exe\" -f \"%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%.conf\"" /f
 if not exist "%cd%\apache_%osarc%\bin\httpd_%phpexe:~1,-1%.exe" if exist "%cd%\apache_%osarc%\bin\httpd.exe" copy "%cd%\apache_%osarc%\bin\httpd.exe" "%cd%\apache_%osarc%\bin\httpd_%phpexe:~1,-1%.exe" /y
-netsh.exe advfirewall firewall add rule name="httpd_%phpexe:~1,-1%" dir=in action=allow protocol=6 localport=%serviceport:~1,-1% remoteport=%phpport:~1,-1% program="%cd%\apache_%osarc%\bin\httpd_%phpexe:~1,-1%.exe" enable=yes
+netsh.exe advfirewall firewall add rule name="httpd_%phpexe:~1,-1%" dir=in action=allow protocol=6 localport=%serviceport:~1,-1% program="%cd%\apache_%osarc%\bin\httpd_%phpexe:~1,-1%.exe" enable=yes
 if %errorlevel% neq 0 netsh.exe firewall add allowedprogram "%cd%\apache_%osarc%\bin\httpd_%phpexe:~1,-1%.exe" "httpd_%phpexe:~1,-1%" enable
 net.exe start "%servicename:~1,-1%SSL"
 
