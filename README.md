@@ -1,4 +1,0 @@
-eurysco
-=======
-
-Heuristic System Control
