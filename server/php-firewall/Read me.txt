@@ -1,0 +1,97 @@
+/************************************************************************/
+/* PHP Firewall - Free Security System for WebSite                      */
+/* ===============================================                      */
+/* Write by Cyril Levert                                                */
+/* Copyright (c) 2009-2010                                              */
+/* http://www.php-firewall.info                                         */
+/* dev@php-maximus.org                                                  */
+/* Others projects:                                                     */
+/* CMS PHP Maximus ( with mysql database ) www.php-maximus.org          */
+/* Blog PHP Minimus ( with mysqli database ) www.php-minimus.org        */
+/* Mini CMS PHP Nanomus ( without database ) www.-php-nanomus.org       */
+/* Stop Spam Referer ( without database ) www.stop-spam-referer.info    */
+/* Twitter clone ( PHP Kweeker CMS ) www.twitter.php-minimus.org        */
+/* Personnal blog www.cyril-levert.info                                 */
+/* Release version 1.0.3                                                */
+/* Release date : 04-12-2010                                            */
+/*                                                                      */
+/* This program is free software.                                       */
+/************************************************************************/
+
+Official website :
+
+ - www.php-firewall.info
+
+Support forum:
+
+ - www.cyril-levert.info/fluxbb_forum_php_firewall-6.html
+
+
+Copyright Notice
+----------------
+PHP Firewall is an Open Source Software.
+
+You are not allowed to modify copyrights.
+You are not allow to redistribute this script without my write autorisation.
+
+
+Installation
+-----------
+
+Upload all datas in html folder ( php-firewall folder )
+
+Open your principal file ( example index.php ) ans add these lines:
+
+define('PHP_FIREWALL_REQUEST_URI', strip_tags( $_SERVER['REQUEST_URI'] ) );
+define('PHP_FIREWALL_ACTIVATION', true );
+if ( is_file( @dirname(__FILE__).'/php-firewall/firewall.php' ) )
+	include_once( @dirname(__FILE__).'/php-firewall/firewall.php' );
+
+
+Deactive PHP Firewall
+define('PHP_FIREWALL_ACTIVATION', false);
+
+For complement, switch or other please read the documentation on the website
+
+Support by forum on my own blog www.cyril-levert.info
+
+
+Others free and open source projects
+------------------------------------
+ CMS                       : www.php-maximus.org
+ Blog simple and secure    : www.php-minimus.org
+ Mini CMS without database : www.php-nanomus.org
+
+
+Other security system
+---------------------
+ Stop Spam Referer         : www.stop-spam-referer.info
+
+
+New in version 1.0.3 of 12/04/2010
+-------------------------------------------
+ * Fix to stop blocking the bot's RSS google (Feedfetcher)
+
+New in version 1.0.2 of 04/01/2010
+-------------------------------------------
+ * Caching query getbyhost
+ * PHP globals destruction (switchable)
+ * better detection attack by chmods deny
+ * implementation of multilingual messages
+ * Configurable IPs protected
+ * optimization and code cleaning
+ * deletion of the 24 row ips spam
+
+
+New in version 1.0.1 of 24/01/2010
+-------------------------------------------
+ * Improving the process for detecting inclusions files
+ * Optimization of URL detection and processing
+ * Detecting and blocking four french dedicated servers hosters (comprising a large number of servers used to zombies or attempted hacks):
+    - Ovh
+    - Kimsufi
+    - Dedibox
+    - DigiCube
+
+
+Cyril Levert Open Source Specialist since 2002

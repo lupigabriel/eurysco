@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Mo autocomplete</title>
+<META name="description" content="autocomplete contents of input fields"/>
+<META name="keywords" content="autocomplete, input"/>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
+<SCRIPT language="JavaScript" src="moautocomplete.js"></SCRIPT>
+<SCRIPT>
+	var months = new Array( 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' )
+	var food = new Array( 'Eggs', 'Meat', 'Chop', 'Salad', 'Pizza', 'Burger' )
+</SCRIPT>
+<STYLE>
+body{
+	background-color:	#aaaaaa;
+}
+
+.topBox {
+	font-family:		Tahoma, Verdana, Arial, Geneva, sans-serif;
+	font-size:			12px;
+	color:				#ff0000;
+
+	padding:			4px;
+	border-width:		1px;
+	border-style:		solid;
+	border-color:		#eeeeee #888888 #888888 #eeeeee;
+	background-color:	#cccccc;
+}
+
+.topinTBox {
+	width:				100%;
+	padding:			15px;
+	border-color:		#a64f24;
+	background-color:	#fef7f1;
+}
+
+.topinBox {
+	font-family:		Tahoma, Verdana, Arial, Geneva, sans-serif;
+	font-size:			12px;
+	font-weight:		bold;
+	color:				#ff0000;
+
+	width:				100%;
+	padding:			15px;
+	border-width:		1px;
+	border-style:		solid;
+	border-color:		#ff0000;
+	background-color:	#fef4e2;
+}
+
+.txt {
+	font-family:		Tahoma, Verdana, Arial, Geneva, sans-serif;
+	font-size:			12px;
+	font-weight:		bold;
+	color:				#ff0000;
+}
+</STYLE>
+</head>
+<body>
+<TABLE width="90%" align="center">
+<TR>
+<TD class="topBox">
+      <DIV class="topinTBox"> 
+        <p><b>autocomplete - Autocomplete contents of an input field.</b> <b><br>
+          autocomplete - Скрипт за атоматично довършване на съдържанието на поле.</b><br>
+          <br>
+          <b><i>EN<br>
+          </i></b><br>
+          To use this script the INPUT field's tag, which will be autocompleted 
+          should have an attribute autocomplete with one of the followig values:<br>
+          <br>
+          - array:nameOfArray - where nameOfArray is the name of an JavaScript 
+          array object <br>
+          <br>
+          <i>/ an example from the source of this page /<br>
+          &lt;INPUT id=&quot;months&quot; type=&quot;text&quot; name=&quot;months&quot; 
+          autocomplete=&quot;array:food&quot;&gt;<br>
+          <br>
+          var food = new Array( 'Eggs', 'Meat', 'Chop', 'Salad', 'Pizza', 'Burger' 
+          ) <br>
+          <br>
+          </i> - list:listItem1|listItem2|listItem3 - where listItemXX is an item 
+          from the list of items for completion<i><br>
+          <br>
+          <i>/ again an example from the source of this page /<br>
+          autocomplete=&quot;list:Иван|Юлия|Петър|Георги|Димитър&quot;</i></i><br>
+          <br>
+          requires:<br>
+          moautocomplete.js<br>
+          <br>
+          browser supported:<br>
+          IE 5+, Mozilla /NS 6,7/ <br>
+        </p>
+        <p><b><i>BG<br>
+          </i></b><br>
+          За да се ползва трябва INPUT таг-а, за който трябва да се довършва съдържанието 
+          да има атрибут autocomplete със стойност:<br>
+          <br>
+          array:nameOfArray - където nameOfArray е името на JavaScript масив<br>
+          <br>
+          <i>/ пример от кода на тази страница /<br>
+          </i><i>&lt;INPUT id=&quot;months&quot; type=&quot;text&quot; name=&quot;months&quot; 
+          autocomplete=&quot;array:food&quot;&gt;<br>
+          </i><i><br>
+          var food = new Array( 'Eggs', 'Meat', 'Chop', 'Salad', 'Pizza', 'Burger' 
+          ) <br>
+          <br>
+          </i>list:listItem1|listItem2|listItem3 - където listItemXX е отделен 
+          елемент от списъка за довършване<i><br>
+          <br>
+          <i>/ пак пример от кода на тази страница /<br>
+          autocomplete=&quot;list:Иван|Юлия|Петър|Георги|Димитър&quot;</i></i><br>
+          <br>
+          изисква:<br>
+          moautocomplete.js<br>
+          <br>
+          работи под:<br>
+          IE 5+, Mozilla /NS 6,7/<br>
+          <br>
+          examples / примери: </p>
+        </DIV>
+<DIV class="topinBox">
+<table align=center width="80%">
+<tr>
+	        <td class="txt">Months / Месеци</td>
+	<td class="txt"><INPUT id="months" type="text" name="months" autocomplete="array:months"></td>
+</tr>
+<tr>
+	        <td class="txt">Food/ Храна ( 'Eggs', 'Meat' etc. )</td>
+	<td class="txt"><INPUT id="months" type="text" name="months" autocomplete="array:food"></td>
+</tr>
+
+<tr>
+	        <td class="txt">Names (the list is attached as an attribute to the 
+              input)<br>
+              Имена (списъкът е прикачен като атрибут)</td>
+	<td class="txt"><INPUT id="months" type="text" name="months" autocomplete="list:Иван|Юлия|Петър|Георги|Димитър"></td>
+</tr>
+</table>
+</DIV>
+      <DIV class="topinTBox"> Files / Файлове: </DIV>
+      <DIV class="topinBox"> <b><a href="moautocomplete.zip" mosc="#0000ff" moec="#ff0000" >moautocomplete.zip</a></b> 
+      </DIV>
+
+</TD>
+</TR>
+<TR>
+<TD align="left" class="button" onclick="window.location='http://momche.net'"><img src="/i/momcheon.gif" width="64" height="20" border="0" alt=""></TD>
+</TR>
+</TABLE>
+
+
+<script>
+var d=document
+d.write( '<IMG src="http://momche.net/s/px.php?p=autocomplete&r='+escape(d.referrer)+'" height="1" width="1">' )
+</script>
+
+</body>
+</html>

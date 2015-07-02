@@ -1,0 +1,57 @@
+<?php
+
+$refreshrate = 15;
+$cs_computername = 0;
+$core_port = 0;
+$executor_port = 0;
+$cpuload = 0;
+$cpumanu = 0;
+$cpuname = 0;
+$cpucclo = 0;
+$cpumclo = 0;
+$cpuaddr = 0;
+$cpucore = 0;
+$cpulogp = 0;
+$cpusock = 0;
+$oscname = 0;
+$osversi = 0;
+$osservp = 0;
+$ossernm = 0;
+$cs_manufacturer = 0;
+$cs_model = 0;
+$cs_domain = 0;
+$processes_total = 0;
+$oscurtm = 0;
+$oslastb = 0;
+$osuptim = 0;
+$ramuspc = 0;
+$totaram = 0;
+$ramused = 0;
+$freeram = 0;
+$dskuspc = 0;
+$freedsk = 0;
+$totadsk = 0;
+$dskused = 0;
+$dskfisy = 0;
+$services_total = 0;
+$services_running = 0;
+$services_error = 0;
+$scheduler_total = 0;
+$scheduler_error = 0;
+$events_warning = 0;
+$events_error = 0;
+$nagios_status = -1;
+$nagiostotalcount = 0;
+$nagiosnormacount = 0;
+$nagioswarnicount = 0;
+$nagioscriticount = 0;
+$nagiosunknocount = 0;
+$netstatestcount = 0;
+$netstatliscount = 0;
+$netstattimcount = 0;
+$netstatclocount = 0;
+$netstat_status = 0;
+$inventory_status = 0;
+$programs_status = 0;
+
+?>

@@ -1,0 +1,313 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"><head>
+<title>Read Me File for the Apache Haus build of Apache Software Foundation's mod_fcgid 2.3.9 x64 </title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<style type="text/css">
+			/*<![CDATA[*/
+			body {
+				background-color: #fff;
+				color: #000;
+				font-size: 0.9em;
+				font-family: sans-serif,helvetica;
+				margin: 0;
+				padding: 0;
+			}
+			:link {
+				color: #c00;
+			}
+			:visited {
+				color: #c00;
+			}
+			a:hover {
+				color: #f50;
+			}
+			h1 {
+				font-family: sans-serif,helvetica;
+				font-weight: normal;
+				font-size: 1.75em;
+				text-align: center;
+				margin: 0;
+				padding: 0.6em 2em 0.4em;
+				background-color: #22437f;
+				color: #fff;
+				border-bottom: 2px solid #000;
+			}
+			h1 strong {
+				font-weight: bold;
+			}
+			h2 {
+				font-size: 1.1em;
+				font-weight: bold;
+			}
+			hr {
+				display: none;
+			}
+			.content {
+				padding: 1em 4em;
+			}
+			.content-columns {
+				/* Setting relative positioning allows for 
+				absolute positioning for sub-classes */
+				background-color: #fff;
+				position: relative;
+				padding-top: 1em;
+			}
+				/* Non-IE/Win */
+			}
+			img {
+				padding: 2px;
+				margin: 2px;
+			}
+			.small {
+				color: #000;
+				font-size: 9px;
+				font-family: sans-serif,helvetica;
+			}
+			.border_table {
+				background-position: center  200px;
+				background-attachment: fixed;
+				background-repeat: no-repeat;
+			}
+			.large {
+				font-size: 18px;
+				font-weight: bold;
+				font-family: sans-serif,helvetica;
+			}
+			.footer {
+				padding: 4px 4px 4px 4px;
+				color: #FFFFFF;
+				background-color: #22437f;
+				font-size: 9px;
+				font-weight: bold;
+				font-family: Tahoma, Arial, Helvetica, Sans-Serif;
+			}
+			xmp {
+				padding: 20px 20px 20px 20px;
+				border: 2px groove #2E2814;
+				color: #000;
+				background-color: #CDC7BA;
+				font-size: 12px;
+				font-family: Tahoma, Arial, Helvetica, Sans-Serif;
+			}
+
+			/*]]>*/
+		</style></head><body>
+<center><h1><strong><font color="white"> <i>Apache Haus Distribution of  mod_fcgid/2.3.9 x64 </i></font></strong></h1></center>
+
+<center><table class="border_table" cellpadding="0" cellspacing="0" width="800">
+	<tbody><tr><td class="large"><blockquote>Read Me File for the Apache Haus Distribution of mod_fcgid 2.3.9 x64</blockquote></td></tr>
+	<tr><td>
+		<div class="content">
+			<div class="content-middle">
+<table width="800" cellpadding="0" cellspacing="0" border="0">
+<tr>	<td colspan=2>Date: October 04, 2013</td></tr>
+<tr valign=top>	<td>
+<table width="400" cellpadding="0" cellspacing="0" border="0">
+<tr>	<td>Application:</td>	<td>mod_fcgid 2.3.9 x64</td></tr>
+<tr>	<td>Distribution File:</td>	<td>mod_fcgid-2.3.9-2.4.x-x64.zip</td></tr>
+<tr>	<td>Original source by:</td>	<td>Apache Software Foundation</td></tr>
+<tr>	<td>Original Home:</td>	<td>http://httpd.apache.org/mod_fcgid/</td></tr>
+<tr>	<td>&nbsp;</td>	<td>&nbsp;</td></tr>
+<tr>	<td>Win32 binary by:</td>	<td>Gregg at The Apache Haus</td></tr>
+<tr>	<td>Mail:</td>	<td>info@apachehaus.com</td></tr>
+<tr>	<td>Home:</td>	<td>http://www.apachehaus.com</td></tr>
+<tr>	<td>&nbsp;</td>	<td>&nbsp;</td></tr>
+<tr>	<td colspan=2><b>** This build for Apache 2.4.x x64 only! **</b></td></tr>
+</table>
+</td>	<td>
+<table width="400" cellpadding="0" cellspacing="0" border="0" class="">
+<tr>	<td colspan=2>Supported Windows Versions:</td></tr>
+<tr>	<td>&nbsp;</td>	<td>&nbsp;</td></tr>
+<tr>	<td>Windows XP SP2 x64 </td>	<td>Windows Server 2003 x64</td></tr>
+<tr>	<td>Windows Vista x64</td>	<td>Windows Server 2008 x64</td></tr>
+<tr>	<td>Windows 7 x64</td>	<td>&nbsp;</td></tr>
+</table>
+     </td>
+</tr>
+<tr>
+	<td colspan=2><br>
+	<h2>Package Contents:</h2>
+readme_first.html [this file]<br>
+CHANGES-FCGID<br>
+FCGID-REVISION<br>
+LICENSE-FCGID<br>
+NOTICE-FCGID<br>
+README-FCGID<br>
+conf/httpd-fcgid.conf<br>
+manual/mod_fcgid.html<br>
+manual/mod_fcgid.html.en<br>
+manual/mod_fcgid.xml<br>
+manual/mod_fcgid.xml.meta<br>
+modules/mod_fcgid.so
+	</td>
+</tr>
+<tr>
+	<td colspan=2><br><br>
+
+<a href="#newinstall">First time installation</a><br>
+<a href="#upgrade">Upgrade from previous version</a><br><br>
+
+	<h2>NOTES:</h2>
+
+	<h2>Visual C++ 2008 x64:</h2>
+	The module is built with Visual C++ 2008 SP1 x64, be sure to install the 
+  new Visual C++ 2008 SP1 x64 Redistributable Package<br>it can be downloaded from;<br><br>
+
+	<b>for x64 Apache builds</b><br />
+	<a href=http://www.microsoft.com/downloads/en/details.aspx?FamilyID=BA9257CA-337F-4B40-8C14-157CFDFFEE4E>http://www.microsoft.com/downloads/en/details.aspx?FamilyID=BA9257CA-337F-4B40-8C14-157CFDFFEE4E</a><br><br>
+
+	<h2>INTRODUCTION</h2> 
+
+  mod_fcgid is an Apache 2.4 binary compatible alternative to Apache module mod_fastcgi
+  mod_fcgid has a new process management strategy, which concentrates on reducing the
+  number of fastcgi server, and kick out the corrupt fastcgi server as soon as possible.<br><br>
+
+  The Future of mod_fcgid;<br><br>
+  Is a bright one now that the Apache Software Foundation (ASF) has taken over the 
+	development and maintenance of mod_fcgid as a future inclusion into the Apache 
+	HTTPd Server.<br><br>
+
+	</td>
+</tr>
+</table><br>
+
+<a name = "newinstall"> </a> 
+
+<h2>If this is your first install of mod_fcgid:</h2>
+
+<p>To install this module on your Apache 2.4.x server you need to
+copy the necessary files to your Apache folder and add items to your Apache's
+httpd.conf file. C:\Apache24 will be used as our ServerRoot for the examples below.
+</p>
+
+1. Install the Visual C++ 2008 SP1 x64 Redistributable Package<br>&nbsp; &nbsp;
+Download, if you have not done so already, from the<br>&nbsp; &nbsp; address above.<br><br>
+2. Copy mod_fcgid.so to your Apache 2.4.x modules folder<br>&nbsp; &nbsp; 
+<i>C:/apache24/modules/mod_fcgid.so</i> for example<br><br>
+3. Copy httpd-fcgid.conf to your Apache 2.4.x conf/extra folder<br>&nbsp; &nbsp; 
+<i>C:/apache24/conf/extra/httpd-fcgid.conf</i> for example<br><br>
+4. Modify httpd-fcgid.conf to your match your systems configuration<br><br>
+5. Copy the manual files to your Apache 2.4.x manual/mod folder<br>&nbsp; &nbsp; 
+<i>C:/apache24/manual/mod/mod_fcgid.html</i> for example<br><br>
+6. Add to your httpd.conf (example: C:/Apache24/conf/httpd.conf):<br><br>&nbsp; &nbsp; <i>LoadModule fcgid_module modules/mod_fcgid.so</i><br><br>
+
+7. Add to your httpd.conf file near the bottom with the other included files:<br><br>
+&nbsp; &nbsp; <i>Include conf/extra/httpd-fcgid.conf</i> <br><br><br><br>
+
+<b>Sample httpd-fcgid.conf Configuration:</b><br><br>
+# Fast CGI module Settings (PHP)<br>
+<xmp><IfModule fcgid_module>
+FcgidInitialEnv PATH "c:\\php;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;"
+FcgidInitialEnv SystemRoot "C:\\Windows"
+FcgidInitialEnv SystemDrive "C:"
+FcgidInitialEnv TEMP "C:\\WINDOWS\\Temp"
+FcgidInitialEnv TMP "C:\\WINDOWS\\Temp"
+FcgidInitialEnv windir "C:\\WINDOWS"
+
+FcgidIOTimeout 40
+FcgidConnectTimeout 10
+FcgidMaxProcesses 8
+FcgidOutputBufferSize 64
+ProcessLifeTime 240
+FcgidMaxRequestsPerProcess 500
+FcgidMinProcessesPerClass 0
+
+
+# Global Config
+# Comment out next 4 lines to use per directory or per VirtualHost configuration
+<Files ~ "\.php$>"
+	 AddHandler fcgid-script .php
+	 FcgidInitialEnv PHPRC "C:\\php"   
+   FcgidWrapper "C:\\php\\php-cgi.exe" .php
+</Files>
+
+# Do not comment out below line
+</IfModule>
+# Comment out Global Config above to use the examples below
+# You can use multiple Directory and VirtualHost Configs at the same time
+
+# Per Directory Config
+#<Directory /Apache24/htdocs/fcgi>
+#	FcgidInitialEnv PHPRC "C:\\php"   
+#	AddHandler fcgid-script .php
+#	Options Indexes FollowSymLinks ExecCGI
+#	FcgidWrapper "C:\\php\\php-cgi.exe" .php
+#
+#	AllowOverride all
+#	Order allow,deny
+#	Allow from all
+#	Satisfy any
+#</Directory>
+
+
+# Per VirtualHost Config
+#<VirtualHost *:80>
+#	DocumentRoot  /Apache24/htdocs/fcgi
+#	ServerName fcgi.local
+#	ErrorLog logs/fcgi.error.log
+#	CustomLog logs/fcgi.access.log common
+#	<Directory "/Apache24/htdocs/fcgi">
+#		FcgidInitialEnv PHPRC "c:\\php"
+#		AddHandler fcgid-script .php
+#		Options Indexes FollowSymLinks ExecCGI
+#		FcgidWrapper "C:\\php\\php-cgi.exe" .php
+#
+#		AllowOverride all
+#		Order allow,deny
+#		Allow from all
+#		Satisfy any
+#	</Directory>
+#</VirtualHost></xmp>
+
+
+
+<a name = "upgrade"> </a> 
+
+	<h2>If you are upgrading from mod_fcgid 2.2(a/b/c) or 2.3.0-2.3.6(a/b/c/d):</h2>
+	<p>Although it is believed that this version of mod_fcgid is backward compatible with your current configuration, this will not be the case in the future, Once The Apache Software Foundation took over development and maintenance of this module, to better align the run time directives with the way other Apache modules, runtime directives for mod_fcgid have changed.</tt>.</p>
+
+<table width="400" cellpadding="0" cellspacing="0" border="0" class="">
+<tr>
+	<td><b>mod_fcgid 2.2 Directive</b></td><td width=16>&nbsp;</td><td><b>mod_fcgid 2.3 Directive</b></td>
+</tr>
+<tr>
+	<td></td><td>&nbsp;</td><td></td>
+</tr>
+<tr><td>BusyScanInterval</td><td>&nbsp;</td><td>FcgidBusyScanInterval</td></tr>
+<tr><td>BusyTimeout</td><td>&nbsp;</td><td>FcgidBusyTimeout</td></tr>
+<tr><td>DefaultInitEnv</td><td>&nbsp;</td><td>FcgidInitialEnv</td></tr>
+<tr><td>DefaultMaxClassProcessCount</td><td>&nbsp;</td><td>FcgidMaxProcessesPerClass</td></tr>
+<tr><td>DefaultMinClassProcessCount</td><td>&nbsp;</td><td>FcgidMinProcessesPerClass</td></tr>
+<tr><td>ErrorScanInterval</td><td>&nbsp;</td><td>FcgidErrorScanInterval</td></tr>
+<tr><td>FastCgiAccessChecker</td><td>&nbsp;</td><td>FcgidAccessChecker</td></tr>
+<tr><td>FastCgiAccessCheckerAuthoritative</td><td>&nbsp;</td><td>FcgidAccessCheckerAuthoritative</td></tr>
+<tr><td>FastCgiAuthenticator</td><td>&nbsp;</td><td>FcgidAuthenticator</td></tr>
+<tr><td>FastCgiAuthenticatorAuthoritative</td><td>&nbsp;</td><td>FcgidAuthenticatorAuthoritative</td></tr>
+<tr><td>FastCgiAuthorizer</td><td>&nbsp;</td><td>FcgidAuthorizer</td></tr>
+<tr><td>FastCgiAuthorizerAuthoritative</td><td>&nbsp;</td><td>FcgidAuthorizerAuthoritative</td></tr>
+<tr><td>FCGIWrapper</td><td>&nbsp;</td><td>FcgidWrapper</td></tr>
+<tr><td>IdleScanInterval</td><td>&nbsp;</td><td>FcgidIdleScanInterval</td></tr>
+<tr><td>IdleTimeout</td><td>&nbsp;</td><td>FcgidIdleTimeout</td></tr>
+<tr><td>IPCCommTimeout</td><td>&nbsp;</td><td>FcgidIOTimeout</td></tr>
+<tr><td>IPCConnectTimeout</td><td>&nbsp;</td><td>FcgidConnectTimeout</td></tr>
+<tr><td>MaxProcessCount</td><td>&nbsp;</td><td>FcgidMaxProcesses</td></tr>
+<tr><td>MaxRequestInMem</td><td>&nbsp;</td><td>FcgidMaxRequestInMem</td></tr>
+<tr><td>MaxRequestLen</td><td>&nbsp;</td><td>FcgidMaxRequestLen</td></tr>
+<tr><td>MaxRequestsPerProcess</td><td>&nbsp;</td><td>FcgidMaxRequestsPerProcess</td></tr>
+<tr><td>OutputBufferSize</td><td>&nbsp;</td><td>FcgidOutputBufferSize</td></tr>
+<tr><td>PassHeader</td><td>&nbsp;</td><td>FcgidPassHeader</td></tr>
+<tr><td>PHP_Fix_Pathinfo_Enable</td><td>&nbsp;</td><td>FcgidFixPathinfo</td></tr>
+<tr><td>ProcessLifeTime</td><td>&nbsp;</td><td>FcgidProcessLifeTime</td></tr>
+<tr><td>SharememPath</td><td>&nbsp;</td><td>FcgidProcessTableFile</td></tr>
+<tr><td>SocketPath</td><td>&nbsp;</td><td>FcgidIPCDir</td></tr>
+<tr><td>SpawnScore</td><td>&nbsp;</td><td>FcgidSpawnScore</td></tr>
+<tr><td>SpawnScoreUpLimit</td><td>&nbsp;</td><td>FcgidSpawnScoreUpLimit</td></tr>
+<tr><td>TerminationScore</td><td>&nbsp;</td><td>FcgidTerminationScore</td></tr>
+<tr><td>TimeScore</td><td>&nbsp;</td><td>FcgidTimeScore</td></tr>
+<tr><td>ZombieScanInterval</td><td>&nbsp;</td><td>FcgidZombieScanInterval</td></tr>
+</table>
+			</div>
+	</td></tr>
+	<tr><td><div class="footer" align="center">mod_fcgid/2.3.9 x64  </div></td></tr>
+	</tbody></table><br><br>
+</body></html

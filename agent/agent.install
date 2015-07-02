@@ -1,0 +1,8 @@
+$iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
+$iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);
+$mcrykey = pack('H*', hash('sha256', hash('sha512', 'vNqgi_R1QX%C;z-724p4lFHm*?7c!e2%vG9tp+-*@#%=?!_;./' . hash('tiger128,4', $serverconnectionport_xml) . '-*@#%=?!_;./-f;bTh2XXqW%Zs%88+/-7pVb;X')));
+$xml = '<config>' . "\n" . '	<settings>' . "\n" . '		<agentservicedisplayname>' . $agentservicedisplayname_xml . '</agentservicedisplayname>' . "\n" . '		<agentservicename>' . $agentservicename_xml . '</agentservicename>' . "\n" . '		<agentservicestartuptype>' . $agentservicestartuptype_xml . '</agentservicestartuptype>' . "\n" . '		<agentservicelogonas>' . $agentservicelogonas_xml . '</agentservicelogonas>' . "\n" . '		<serverconnectionaddress>' . $serverconnectionaddress_xml . '</serverconnectionaddress>' . "\n" . '		<serverconnectionport>' . $serverconnectionport_xml . '</serverconnectionport>' . "\n" . '		<sslverifyhost>true</sslverifyhost>' . "\n" . '		<sslverifypeer>true</sslverifypeer>' . "\n" . '		<serverconnectionpassword>' . base64_encode($iv . mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $mcrykey, $serverconnectionpassword . 'OLb324MJ0E7n/uAg+-*@#%=?!_;./' . hash('haval128,5', $serverconnectionport_xml) . '?!_;./Hdgl3LpPwUlzC*J8%D-ZadL', MCRYPT_MODE_CBC, $iv)) . '</serverconnectionpassword>' . "\n" . '	</settings>' . "\n" . '</config>';
+$sxe = new SimpleXMLElement($xml);
+$writexml = fopen($agentpath . '\\conf\\config_agent.xml', 'w');
+fwrite($writexml, base64_encode(base64_encode(base64_encode($xml))));
+fclose($writexml);

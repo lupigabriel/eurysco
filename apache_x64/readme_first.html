@@ -1,0 +1,306 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"><head>
+<title>Read Me File for the Apache Haus build of Apache 2.4.10 x64</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<style type="text/css">
+			/*<![CDATA[*/
+			body {
+				background-color: #fff;
+				color: #000;
+				font-size: 0.9em;
+				font-family: sans-serif,helvetica;
+				margin: 0;
+				padding: 0;
+				background-position: center center;
+				background-attachment: fixed;
+				background-repeat: repeat;
+			}
+			:link {
+				color: #c00;
+			}
+			:visited {
+				color: #c00;
+			}
+			a:hover {
+				color: #f50;
+			}
+			h1 {
+				font-family: sans-serif,helvetica;
+				font-weight: normal;
+				font-size: 1.75em;
+				text-align: center;
+				margin: 0;
+				padding: 0.6em 2em 0.4em;
+				background-color: #22437f;
+				color: #fff;
+				border-bottom: 2px solid #000;
+			}
+			h1 strong {
+				font-weight: bold;
+			}
+			h2 {
+				font-size: 1.1em;
+				font-weight: bold;
+			}
+			.content {
+				padding: 1em 4em;
+			}
+			.content-columns {
+				/* Setting relative positioning allows for 
+				absolute positioning for sub-classes */
+				background-color: #fff;
+				position: relative;
+				padding-top: 1em;
+			}
+				/* Non-IE/Win */
+			}
+			img {
+				padding: 2px;
+				margin: 2px;
+			}
+			.small {
+				color: #000;
+				font-size: 9px;
+				font-family: sans-serif,helvetica;
+			}
+			.large {
+				font-size: 18px;
+				font-weight: bold;
+				font-family: sans-serif,helvetica;
+			}
+			.footer {
+				padding: 4px 4px 4px 4px;
+				color: #FFFFFF;
+				background-color: #22437f;
+				font-size: 9px;
+				font-weight: bold;
+				font-family: Tahoma, Arial, Helvetica, Sans-Serif;
+			}
+			.green { color: #009D00; }
+			.bkgreen { color: #FFFFFF; background-color: #009D00; padding: 2px 5px 2px 5px; }
+			.blue { color: #016CC5; }
+			.bkblue { color: #FFFFFF; background-color: #016CC5; padding: 2px 5px 2px 5px; }
+			.red { color: #FF0000; }
+			.bkred { color: #FFFFFF; background-color: #FF0000; padding: 2px 5px 2px 5px; }
+			xmp {
+				padding: 20px 20px 20px 20px;
+				border: 2px groove #2E2814;
+				color: #000;
+				background-color: #CDC7BA;
+				font-size: 12px;
+				font-family: Tahoma, Arial, Helvetica, Sans-Serif;
+			}
+
+			/*]]>*/
+		</style></head><body>
+<center><h1><strong><font color="white"> <i>Apache Haus Distribution of the Apache HTTP Server</i></font></strong></h1></center>
+
+<center><table class="border_table" cellpadding="0" cellspacing="0" width="800">
+	<tbody><tr><td class="large"><blockquote>Read Me File for the Apache Haus Distribution of Apache 2.4.10 x64</blockquote></td></tr>
+	<tr><td>
+		<div class="content">
+			<div class="content-middle">
+<table width="800" cellpadding="0" cellspacing="0" border="0">
+<tr>	<td>Date: Jul 16, 2014</td></tr>
+<tr><td>
+<table width="800" cellpadding="0" cellspacing="0" border="0">
+<tr valign=top><td width="300">
+<table cellpadding="0" cellspacing="0" border="0">
+<tr>	<td><b>Application Details</b>:</td>	<td width="10">&nbsp;</td> <td>&nbsp;</td></tr>
+<tr>	<td>&nbsp;</td>	<td>&nbsp;</td> <td>&nbsp;</td></tr>
+<tr>	<td>Application Name:</td>	<td>&nbsp;</td> <td>Apache 2.4.10 x64</td></tr>
+<tr>	<td>Distribution File:</td>	<td>&nbsp;</td> <td>httpd-2.4.10-x64-vc11.zip</td></tr>
+<tr>	<td>Original source by:</td> <td>&nbsp;</td> <td>Apache Software Foundation</td></tr>
+<tr>	<td>Original Home:</td>	<td>&nbsp;</td> <td><a href=http://httpd.apache.org>http://httpd.apache.org</a></td></tr>
+<tr>	<td>&nbsp;</td>	<td>&nbsp;</td> <td>&nbsp;</td></tr>
+<tr>	<td>Win64 binary by:</td>	<td>&nbsp;</td> <td>The Apache Haus</td></tr>
+<tr>	<td>Mail:</td> <td>&nbsp;</td> <td>info@apachehaus.com</td></tr>
+<tr>	<td>Home:</td> <td>&nbsp;</td> <td>http://www.apachehaus.com</td></tr>
+</table>
+
+</td><td width="330">
+
+<table cellpadding="0" cellspacing="0" border="0" class="">
+<tr>	<td colspan=3><b>Version Details</b>:</td></tr>
+<tr>	<td>&nbsp;</td> <td width="10">&nbsp;</td> <td>&nbsp;</td></tr>
+<tr>	<td>APR Version</td>	<td>&nbsp;</td> <td>1.5.1</td></tr>
+<tr>	<td>APR Utilities Version</td>	<td>&nbsp;</td> <td>1.5.3</td></tr>
+<tr>	<td>APR Iconv Version</td>	<td>&nbsp;</td> <td>1.2.1</td></tr>
+<tr>	<td>&nbsp;</td>	<td>&nbsp;</td> <td>&nbsp;</td></tr>
+<tr>	<td>OpenSSL Version</td>	<td>&nbsp;</td> <td>1.0.1h+asm</td></tr>
+<tr>	<td>ZLib Version</td>	<td>&nbsp;</td> <td>1.2.8+asm</td></tr>
+<tr>	<td>PCRE Version</td>	<td>&nbsp;</td> <td>8.35</td></tr>
+</table>
+	</td>
+</tr>
+
+<tr valign="top">
+	<td>
+	<h2>Supported Windows Versions:</h2>
+	<ul>
+<li>Windows Vista x64</li>
+<li>Windows Server 2008 x64 / Server 2008 R2</li>
+<li>Windows 7 x64</li>
+<li>Windows Home Server 2011 x64</li>
+<li>Windows Server 2012 x64</li>
+<li>Windows 8 x64</li>
+	</ul>
+	</td>
+	<td width="330">
+	<h2>Included Extras:</h2>
+		<!-- <ul>
+			<li></li>
+			<li></li>
+		</ul> -->
+	</td>
+</tr>
+</table>
+	</td>
+</tr>
+<tr>
+	<td>
+	<h2>Notes:</h2>
+	<!-- <p><b>Beta Version</b><br>
+  <font class=red><i><b>Not recommended for production use</b></i></font>.</p> -->
+
+	<p>IPv6 Support (For all Windows versions listed above)</p>
+
+  <p>This package supports TSL Server Name Recognition <br>
+  (Mass SSL Virtual Hosting)</p>
+
+	<p>Built with Visual Studio 2012 Update 3 x64, be sure to install the 
+  Visual C++ 2012 Update 3 x64 Redistributable Package<br>it can be downloaded from;</p>
+	<p><a href=http://www.microsoft.com/en-us/download/details.aspx?id=30679>http://www.microsoft.com/en-us/download/details.aspx?id=30679</a></p>
+
+<br><hr><br>
+
+	<h2>INTRODUCTION</h2> 
+  <p>The Apache HTTP Server is a powerful and flexible HTTP/1.1 compliant
+  web server.  Originally designed as a replacement for the NCSA HTTP
+  Server, it has grown to be the most popular web server on the
+  Internet.  As a project of the Apache Software Foundation, the
+  developers aim to collaboratively develop and maintain a robust,
+  commercial-grade, standards-based server with freely available
+  source code.</p>
+
+  <p>Enjoy,</p>
+  <p>Apache Haus Crew</p>
+
+<br><hr><br>
+<a name = "newinstall"> </a> 
+
+<h2>INSTALLATION:</h2>
+
+  <p>You must first install the Visual C++ 2012 Redistributable Package.
+  Download and Install, if you have not done so already (see URL above)</p>
+
+  <p>Unzip the Apache24 folder in the package zip file to the root directory
+  on any drive. This is the "ServerRoot" in the config.<br>
+  Example:  <i>c:\Apache24</i></p>
+
+  <p><b>To test your installation</b>;</p>
+  
+  <p>Open a command prompt and cd to the \Apace24\bin folder on the drive you
+  unzipped the zip file to.</p>
+  
+  <p>To Start Apache in the console type:</p>
+  
+  <p>&nbsp;&nbsp;&nbsp;&nbsp;<i>httpd.exe</i></p> 
+  
+  <p>Press Enter. If there are any errors it will tell you. Warning will not stop
+  Apache from working, they do need to be addressed none the less. If there are
+  no errors (there shouldn't be, but it happens) the cursor will sit and blink
+  on the next line. So far so good.</p> 
+  
+  <p>This distribution comes pre-configured for localhost. You can now test your 
+  installation by opening up your Web Browser and typing in the address:</p>
+  
+       <p>&nbsp;&nbsp;&nbsp;&nbsp;<i>http://localhost</i></p>
+  
+  <p>If everything is working properly you should see the Apache Haus's test
+  page.</p>
+  
+  <p>You can shut down Apache by pressing Ctrl+C (It may take a few seconds)</p><br>
+  
+  <p><b>To Install Apache as a service</b>:</p>
+  <p>In most cases you will want to run Apache as a Windows Service. To do so you
+  install Apache as a service by typing at the console prompt;</p>
+ 	
+       <p>&nbsp;&nbsp;&nbsp;&nbsp;<i>httpd -k install</i></p>
+  
+  <p>You can then start Apache by typing</p>
+ 	
+       <p>&nbsp;&nbsp;&nbsp;&nbsp;<i>httpd -k start</i></p>
+  
+  <p>Apache will then start and eventually release the console window.</p>
+  
+  <p><b>Other Command line options</b>:</p>
+  <table cellpadding="0" cellspacing="0" border="0">
+  <tr>
+  	<td>Stop Apache</td>
+  	<td rowspan=4 width=20>&nbsp;</td>
+  	<td><i>httpd -k stop</i></td>
+  </tr>
+  <tr>
+  	<td>Restart Apache</td>
+  	<td><i>httpd -k restart</i></td>
+  </tr>
+  <tr>
+  	<td>Uninstall Apache Service</td>
+  	<td><i>httpd -k uninstall</i></td>
+  </tr>
+  <tr>
+  	<td>Command Line Options List</td>
+  	<td><i>httpd -h</i></td>
+  </tr>
+  </table>
+
+
+  <br><p><h2>ApacheMonitor</h2></p>
+  <p>The Apache Monitor is a desktop tray application that allows you to monitor
+  the existence of a running Apache service and easily start, stop and restart
+  Apache. To use it just double click on the ApacheMonitor.exe in the \Apache24\bin
+  folder. If you want it to start automatically for you when you log into the 
+  computer, just drag a copy into the Startup folder in Window's Start Menu.</p>
+
+	<br><p><h2>Included 3rd party modules</h2></p>
+	<p>None</p>
+
+<br><hr><br>
+
+  <h2>Notices</h2><hr>
+
+	<p>The Apache Haus is not affiliated with the Apache Software Foundation, we just use it, experiment with it and make an alternative Windows distro available to you.</p> 
+  
+  <p>Please do not contact the Apache Software Foundation for support of this 
+  distribution., use our <a href="http://www.apachehaus.com/index.php?option=com_wrapper&view=wrapper&Itemid=84">forums</a> instead.</p> 
+
+	<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS, CONTRIBUTORS AND THE APACHE HAUS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS OR THE APACHE HAUS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p> 
+	<hr size=1>
+  <p>This distribution includes cryptographic software.  The country in which you 
+  are currently may have restrictions on the import, possession, and use, 
+  and/or re-export to another country, of encryption software.  BEFORE using 
+  any encryption software, please check the country's laws, regulations and 
+  policies concerning the import, possession, or use, and re-export of encryption
+  software, to see if this is permitted.</p>
+
+  <p>The U.S. Government Department of Commerce, Bureau of Industry and Security (BIS), 
+  has classified this software as Export Commodity Control Number (ECCN) 5D002.C.1, 
+  which includes information security software using or performing cryptographic 
+  functions with asymmetric algorithms.  The form and manner of this distribution 
+  makes it eligible for export under the License Exception ENC Technology Software 
+  Unrestricted (TSU) exception (see the BIS Export Administration Regulations, 
+  Section 740.13) for both object code and source code.</p> 
+
+  <p>The authors of the represented software packages and and the Apache Haus, are 
+  not liable for any violations you make. Be careful, it is solely your responsibility.</p> 
+	</td>
+</tr>
+</table>
+			</div>
+	</td></tr>
+	<tr><td><div class="footer" align="center"> Apache/2.4.10 x64 </div></td></tr>
+	</tbody></table><br><br>
+</body></html
+
+
