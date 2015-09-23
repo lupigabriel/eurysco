@@ -31,6 +31,14 @@
                     	<div class="input-control textarea">
 							<?php
 							
+							if (!isset($_SESSION['mapsharesetting'])) {
+								if ($mapsharesetting != '') {
+									$_SESSION['mapsharesetting'] = exec('net.exe use ' . preg_replace('/[\n\r]/', ' & net.exe use ', $mapsharesetting), $errorarray, $errorlevel);
+								} else {
+									$_SESSION['mapsharesetting'] = 'null';
+								}
+							}
+
 							if (isset($_POST['resetviewconf']) || isset($_GET['resetviewconf'])) {
 								unset($_SESSION['cldrive']);
 								unset($_SESSION['cldrive_old']);

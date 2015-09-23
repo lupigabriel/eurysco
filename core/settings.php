@@ -212,6 +212,22 @@
 							$uploadsetting = '';
 						}
 						
+						if(isset($_POST['mapsharesetting'])) {
+							$mapsharesetting = $_POST['mapsharesetting'];
+						} else {
+							$mapsharesetting = '';
+						}
+						
+						if(isset($_POST['mapsharesettingclear'])) {
+							if ($_POST['mapsharesettingclear'] == 'on') {
+								$mapsharesettingclear = 'Enable';
+							} else {
+								$mapsharesettingclear = 'Disable';
+							}
+						} else {
+							$mapsharesettingclear = 'Disable';
+						}
+						
 						if(isset($_POST['wmiexplorerhidevalues'])) {
 							if ($_POST['wmiexplorerhidevalues'] == 'on') {
 								$wmiexplorerhidevalues = 'Enable';
@@ -242,7 +258,7 @@
 							$changepwdlocalsetting = 'Disable';
 						}
 						
-						$xml = '<config>' . "\n" . '	<settings>' . "\n" . '		<timezonesetting>' . $timezonesetting . '</timezonesetting>' . "\n" . '		<systeminforrsetting>' . $systeminforrsetting . '</systeminforrsetting>' . "\n" . '		<programsrrsetting>' . $programsrrsetting . '</programsrrsetting>' . "\n" . '		<processesrrsetting>' . $processesrrsetting . '</processesrrsetting>' . "\n" . '		<servicesrrsetting>' . $servicesrrsetting . '</servicesrrsetting>' . "\n" . '		<schedulerrrsetting>' . $schedulerrrsetting . '</schedulerrrsetting>' . "\n" . '		<eventsrrsetting>' . $eventsrrsetting . '</eventsrrsetting>' . "\n" . '		<nagiosrrsetting>' . $nagiosrrsetting . '</nagiosrrsetting>' . "\n" . '		<netstatrrsetting>' . $netstatrrsetting . '</netstatrrsetting>' . "\n" . '		<registryrrsetting>' . $registryrrsetting . '</registryrrsetting>' . "\n" . '		<explorerrrsetting>' . $explorerrrsetting . '</explorerrrsetting>' . "\n" . '		<wmiexprrsetting>' . $wmiexprrsetting . '</wmiexprrsetting>' . "\n" . '		<tailrrsetting>' . $tailrrsetting . '</tailrrsetting>' . "\n" . '		<nodesstatusrrsetting>' . $nodesstatusrrsetting . '</nodesstatusrrsetting>' . "\n" . '		<nodesrrsetting>' . $nodesrrsetting . '</nodesrrsetting>' . "\n" . '		<statuscsetting>' . $statuscsetting . '</statuscsetting>' . "\n" . '		<processescsetting>' . $processescsetting . '</processescsetting>' . "\n" . '		<servicescsetting>' . $servicescsetting . '</servicescsetting>' . "\n" . '		<taskscsetting>' . $taskscsetting . '</taskscsetting>' . "\n" . '		<eventscsetting>' . $eventscsetting . '</eventscsetting>' . "\n" . '		<nagioscsetting>' . $nagioscsetting . '</nagioscsetting>' . "\n" . '		<netstatcsetting>' . $netstatcsetting . '</netstatcsetting>' . "\n" . '		<programscsetting>' . $programscsetting . '</programscsetting>' . "\n" . '		<inventorycsetting>' . $inventorycsetting . '</inventorycsetting>' . "\n" . '		<nodesclearsetting>' . $nodesclearsetting . '</nodesclearsetting>' . "\n" . '		<nodescommandblacklist>' . $nodescommandblacklist . '</nodescommandblacklist>' . "\n" . '		<tailextsetting>' . $tailextsetting . '</tailextsetting>' . "\n" . '		<zipextsetting>' . $zipextsetting . '</zipextsetting>' . "\n" . '		<uploadextsetting>' . $uploadextsetting . '</uploadextsetting>' . "\n" . '		<uploadsetting>' . $uploadsetting . '</uploadsetting>' . "\n" . '		<wmiexplorerhidevalues>' . $wmiexplorerhidevalues . '</wmiexplorerhidevalues>' . "\n" . '		<roottaskssetting>' . $roottaskssetting . '</roottaskssetting>' . "\n" . '		<changepwdlocalsetting>' . $changepwdlocalsetting . '</changepwdlocalsetting>' . "\n" . '	</settings>' . "\n" . '</config>';
+						$xml = '<config>' . "\n" . '	<settings>' . "\n" . '		<timezonesetting>' . $timezonesetting . '</timezonesetting>' . "\n" . '		<systeminforrsetting>' . $systeminforrsetting . '</systeminforrsetting>' . "\n" . '		<programsrrsetting>' . $programsrrsetting . '</programsrrsetting>' . "\n" . '		<processesrrsetting>' . $processesrrsetting . '</processesrrsetting>' . "\n" . '		<servicesrrsetting>' . $servicesrrsetting . '</servicesrrsetting>' . "\n" . '		<schedulerrrsetting>' . $schedulerrrsetting . '</schedulerrrsetting>' . "\n" . '		<eventsrrsetting>' . $eventsrrsetting . '</eventsrrsetting>' . "\n" . '		<nagiosrrsetting>' . $nagiosrrsetting . '</nagiosrrsetting>' . "\n" . '		<netstatrrsetting>' . $netstatrrsetting . '</netstatrrsetting>' . "\n" . '		<registryrrsetting>' . $registryrrsetting . '</registryrrsetting>' . "\n" . '		<explorerrrsetting>' . $explorerrrsetting . '</explorerrrsetting>' . "\n" . '		<wmiexprrsetting>' . $wmiexprrsetting . '</wmiexprrsetting>' . "\n" . '		<tailrrsetting>' . $tailrrsetting . '</tailrrsetting>' . "\n" . '		<nodesstatusrrsetting>' . $nodesstatusrrsetting . '</nodesstatusrrsetting>' . "\n" . '		<nodesrrsetting>' . $nodesrrsetting . '</nodesrrsetting>' . "\n" . '		<statuscsetting>' . $statuscsetting . '</statuscsetting>' . "\n" . '		<processescsetting>' . $processescsetting . '</processescsetting>' . "\n" . '		<servicescsetting>' . $servicescsetting . '</servicescsetting>' . "\n" . '		<taskscsetting>' . $taskscsetting . '</taskscsetting>' . "\n" . '		<eventscsetting>' . $eventscsetting . '</eventscsetting>' . "\n" . '		<nagioscsetting>' . $nagioscsetting . '</nagioscsetting>' . "\n" . '		<netstatcsetting>' . $netstatcsetting . '</netstatcsetting>' . "\n" . '		<programscsetting>' . $programscsetting . '</programscsetting>' . "\n" . '		<inventorycsetting>' . $inventorycsetting . '</inventorycsetting>' . "\n" . '		<nodesclearsetting>' . $nodesclearsetting . '</nodesclearsetting>' . "\n" . '		<nodescommandblacklist>' . $nodescommandblacklist . '</nodescommandblacklist>' . "\n" . '		<tailextsetting>' . $tailextsetting . '</tailextsetting>' . "\n" . '		<zipextsetting>' . $zipextsetting . '</zipextsetting>' . "\n" . '		<uploadextsetting>' . $uploadextsetting . '</uploadextsetting>' . "\n" . '		<uploadsetting>' . $uploadsetting . '</uploadsetting>' . "\n" . '		<mapsharesetting>' . $mapsharesetting . '</mapsharesetting>' . "\n" . '		<wmiexplorerhidevalues>' . $wmiexplorerhidevalues . '</wmiexplorerhidevalues>' . "\n" . '		<roottaskssetting>' . $roottaskssetting . '</roottaskssetting>' . "\n" . '		<changepwdlocalsetting>' . $changepwdlocalsetting . '</changepwdlocalsetting>' . "\n" . '	</settings>' . "\n" . '</config>';
 						$sxe = new SimpleXMLElement($xml);
 						if (!isset($_POST['deploysettings'])) {
 							$writexml = fopen($config_settings, 'w');
@@ -251,6 +267,13 @@
 							copy($config_settings, str_replace('\\core', '\\agent', $_SERVER['DOCUMENT_ROOT']) . '\\' . $config_settings);
 							copy($config_settings, str_replace('\\core', '\\server', $_SERVER['DOCUMENT_ROOT']) . '\\' . $config_settings);
 							$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     change settings     settings changed successfully';
+							if ($mapsharesettingclear == 'Enable') {
+								$clear_mapsharesetting = exec('net.exe use * /delete /y', $errorarray, $errorlevel);
+								$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     change settings     settings changed and mapped shares refreshed successfully';							
+							}
+							if ($mapsharesetting != '') {
+								$set_mapsharesetting = exec('net.exe use ' . preg_replace('/[\n\r]/', ' & net.exe use ', $mapsharesetting), $errorarray, $errorlevel);
+							}
 							header('location: ' . $_SERVER['PHP_SELF']);
 						} else {
 							$writexml = fopen(str_replace('\\core', '\\server\\settings\\' . md5($_SESSION['username']) . '.xml', $_SERVER['DOCUMENT_ROOT']), 'w');
@@ -739,6 +762,19 @@
                                 </select>
                             </td>
 						</tr>
+					</table>
+                    <br />
+					<h3><div class="icon-share-3" style="font-size:17px; color:#999999" title="Refresh Rate"></div>&nbsp;&nbsp;Map Network Shares:</h3>
+					<table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped">
+						<tr>
+							<td width="22%" style="font-size:13px;"><input type="checkbox" id="mapsharesettingclear" name="mapsharesettingclear" /><span class="helper" style="font-size:13px;">&nbsp;Refresh</span></td>
+							<td width="78%">
+								<textarea id="mapsharesetting" name="mapsharesetting" placeholder="*: &quot;\\computername\sharename&quot;
+*: &quot;\\computername\sharename&quot; /user:domain\user password
+*: &quot;\\computername\sharename&quot; /user:domain\user password" wrap="off" style="font-family:'Segoe UI Light','Open Sans',Verdana,Arial,Helvetica,sans-serif; font-size:12px; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:100%; height:55px; padding-left:5px; padding-right:5px;"><?php echo $mapsharesetting; ?></textarea>
+							</td>
+						</tr>
+						<tr><td colspan="2" style="font-size:11px;"><?php if ($mapsharesetting != '') { $status_mapsharesetting = shell_exec('net.exe use | find /i ":"'); echo preg_replace('/[\n\r]/', '<br />', $status_mapsharesetting); } ?></td></tr>
 					</table>
                     <br />
 					<h3><div class="icon-grid-view" style="font-size:17px; color:#999999" title="WMI Explorer"></div>&nbsp;&nbsp;WMI Explorer:</h3>

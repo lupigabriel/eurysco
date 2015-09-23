@@ -64,6 +64,7 @@ unset($_SESSION['sessionfindres']);
 unset($_SESSION['sessionfindresnodes']);
 unset($_SESSION['resultsarr']);
 unset($_SESSION['permpath']);
+unset($_SESSION['mapsharesetting']);
 unset($_POST['shutdowntype']);
 unset($_POST['shutdowndate']);
 unset($_POST['shutdowntime']);

@@ -13,6 +13,14 @@
 
 <?php
 
+if (!isset($_SESSION['mapsharesetting'])) {
+	if ($mapsharesetting != '') {
+		$_SESSION['mapsharesetting'] = exec('net.exe use ' . preg_replace('/[\n\r]/', ' & net.exe use ', $mapsharesetting), $errorarray, $errorlevel);
+	} else {
+		$_SESSION['mapsharesetting'] = 'null';
+	}
+}
+
 if (isset($_POST['openclidrive']) && isset($_POST['openclipath'])) {
 	$_SESSION['cldrive'] = strtolower($_POST['openclidrive']);
 	$_SESSION['cldrive_old'] = strtolower($_POST['openclidrive']);
