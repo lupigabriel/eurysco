@@ -45,10 +45,10 @@ if (isset($_SESSION['permpath'])) {
 }
 
 $filebrowserblcount = 0;
+$filebrowserbllist = '';
 if ($_SESSION['usersett']['filebrowserf'] != '') {
 	$filebrowserblarray = array();
 	$filebrowserblarray = (explode(',', preg_replace('/\r\n|\r|\n/', ',', $_SESSION['usersett']['filebrowserf'])));
-	$filebrowserbllist = '';
 	foreach ($filebrowserblarray as $filebrowserbl) {
 		$filebrowserbl = rtrim($filebrowserbl, '\\') . '\\';
 		if (is_dir($filebrowserbl) && !is_file($filebrowserbl)) {
@@ -327,12 +327,12 @@ if ($_SESSION['usersett']['filebrowserf'] != '') {
 
 					?>
 
-                    <h2>Browse:</h2>
+					<h2>Browse:</h2>
+					<form id="opencli" name="opencli" method="post">
+						<input type="hidden" id="openclipath" name="openclipath" value="<?php echo str_replace('\\\\', '\\', $path); ?>" />
+						<input type="hidden" id="openclidrive" name="openclidrive" value="<?php echo substr($path, 0, 2); ?>" />
+					</form>
                     <table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped">
-                        <form id="opencli" name="opencli" method="post">
-							<input type="hidden" id="openclipath" name="openclipath" value="<?php echo str_replace('\\\\', '\\', $path); ?>" />
-							<input type="hidden" id="openclidrive" name="openclidrive" value="<?php echo substr($path, 0, 2); ?>" />
-						</form>
 						<?php if ($_SESSION['usersett']['filebrowserf'] != '') { ?>
 						<tr><td width="20%"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">Permitted Folders:</div></td><td width="80%">
 						<form id="permpaths" name="permpaths" method="post">

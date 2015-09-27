@@ -233,7 +233,7 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filebrow
 $checkretpath = 0;
 if (strlen($path) > 3) {
 	if (isset($_SESSION['permpath'])) {
-		if ($path != $_SESSION['permpath']) {
+		if (strtolower($path) != strtolower($_SESSION['permpath'])) {
 			$checkretpath = 1;
 		}
 	} else {

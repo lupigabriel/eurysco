@@ -21,7 +21,7 @@ set relpath=%9
 cd "%cd%"
 if not exist "euryscosrv.exe" cd..
 
-if %relpath:~1,-1% neq agent if not exist "%cd%\cert\%phpexe:~1,-1%.crt" cd "%cd%\apache_%osarc%\bin" & openssl.exe req -x509 -nodes -days 1825 -newkey rsa:2048 -sha512 -keyout "..\..\cert\%phpexe:~1,-1%.key" -out "..\..\cert\%phpexe:~1,-1%.crt" -config "..\conf\openssl.cnf" -subj "/C=EU/ST=eurysco Any State/L=eurysco Any Locality/O=eurysco Any Organization/OU=eurysco/CN=%computername%" & cd ..\..\
+if %relpath:~1,-1% neq agent if not exist "%cd%\cert\%phpexe:~1,-1%.crt" cd "%cd%\apache_%osarc%\bin" & openssl.exe req -x509 -nodes -days 1825 -newkey rsa:2048 -sha512 -keyout "..\..\cert\%phpexe:~1,-1%.key" -out "..\..\cert\%phpexe:~1,-1%.crt" -config "..\conf\openssl.cnf" -subj "/C=EU/ST=eurysco Any State/L=eurysco Any Locality/O=eurysco Any Organization/OU=eurysco/CN=%computername%" & openssl.exe req -new -key "..\..\cert\%phpexe:~1,-1%.key" -out "..\..\cert\%phpexe:~1,-1%.csr" -config "..\conf\openssl.cnf" -subj "/C=EU/ST=eurysco Any State/L=eurysco Any Locality/O=eurysco Any Organization/OU=eurysco/CN=%computername%" & cd ..\..\
 if %relpath:~1,-1% neq agent echo Define SRVROOT "%cd%\apache_%osarc%">"%cd%\apache_%osarc%\conf\httpd_srvroot.conf"
 if %relpath:~1,-1% neq agent echo Listen %serviceport:~1,-1%>"%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%_port.conf"
 if %relpath:~1,-1% neq agent echo ^<VirtualHost *:%serviceport:~1,-1%^>>"%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%_virtual.conf"

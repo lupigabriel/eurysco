@@ -76,7 +76,7 @@ echo 		^<%relname:~1,-1%phpport^>%phpport:~1,-1%^</%relname:~1,-1%phpport^>>>.\%
 echo 	^</settings^>>>.\%relpath:~1,-1%\conf\config_%relname:~1,-1%.xml
 echo ^</config^>>>.\%relpath:~1,-1%\conf\config_%relname:~1,-1%.xml
 
-if not exist "%cd%\cert\%phpexe:~1,-1%.crt" cd "%cd%\apache_%osarc%\bin" & openssl.exe req -x509 -nodes -days 1825 -newkey rsa:2048 -sha512 -keyout "..\..\cert\%phpexe:~1,-1%.key" -out "..\..\cert\%phpexe:~1,-1%.crt" -config "..\conf\openssl.cnf" -subj "/C=EU/ST=eurysco Any State/L=eurysco Any Locality/O=eurysco Any Organization/OU=eurysco/CN=%computername%" & cd ..\..\
+if not exist "%cd%\cert\%phpexe:~1,-1%.crt" cd "%cd%\apache_%osarc%\bin" & openssl.exe req -x509 -nodes -days 1825 -newkey rsa:2048 -sha512 -keyout "..\..\cert\%phpexe:~1,-1%.key" -out "..\..\cert\%phpexe:~1,-1%.crt" -config "..\conf\openssl.cnf" -subj "/C=EU/ST=eurysco Any State/L=eurysco Any Locality/O=eurysco Any Organization/OU=eurysco/CN=%computername%" & openssl.exe req -new -key "..\..\cert\%phpexe:~1,-1%.key" -out "..\..\cert\%phpexe:~1,-1%.csr" -config "..\conf\openssl.cnf" -subj "/C=EU/ST=eurysco Any State/L=eurysco Any Locality/O=eurysco Any Organization/OU=eurysco/CN=%computername%" & cd ..\..\
 rem certutil.exe -addstore "Root" "%cd%\cert\%phpexe:~1,-1%.crt"
 
 echo Define SRVROOT "%cd%\apache_%osarc%">"%cd%\apache_%osarc%\conf\httpd_srvroot.conf"

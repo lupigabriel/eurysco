@@ -11,6 +11,8 @@
 
 <?php if ($passwordexpired == 0) { ?>
 
+<?php require('/include/class.WindowsRegistry.php'); ?>
+
 <script type="text/javascript">
 	function reginfo(valueName,keyType,keyValue,titleName,keyPath,keyDef,isKey){
 		SelectedNONE = '';
@@ -172,6 +174,29 @@
 					
 					$random = md5($keypath . session_id());
 					
+					if (isset($_POST['permkey'])) {
+						$_SESSION['permkey'] = $_POST['permkey'];
+					}
+
+					if (isset($_SESSION['permkey'])) {
+						if (!strpos('|' . $keypath, $_SESSION['permkey'])) {
+							$keypath = $_SESSION['permkey'];
+						}
+					}
+
+					$regeditblcount = 0;
+					$regeditbllist = '';
+					if ($_SESSION['usersett']['regeditf'] != '') {
+						$regeditblarray = array();
+						$regeditblarray = (explode(',', preg_replace('/\r\n|\r|\n/', ',', $_SESSION['usersett']['regeditf'])));
+						foreach ($regeditblarray as $regeditbl) {
+							if (!isset($_SESSION['permkey']) && $regeditblcount == 0) { $_SESSION['permkey'] = $regeditbl; $keypath = $_SESSION['permkey']; }
+							if (strpos('|' . $keypath, $regeditbl) > 0) { $regeditblsel = 'selected'; } else { $regeditblsel = ''; }
+							$regeditbllist = $regeditbllist . '<option value="' . $regeditbl . '" ' . $regeditblsel . '>' . rtrim($regeditbl, '\\') . '&nbsp;&nbsp;&nbsp;</option>';
+							$regeditblcount = $regeditblcount + 1;
+						}
+					}
+
 					$message = '';
 					
 					if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['systemregistry'] > 1) {
@@ -302,8 +327,20 @@
                     	<input type="hidden" id="regexportconf" name="regexportconf" value="" />
 					</form>
                     <table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped">
+						<?php if ($_SESSION['usersett']['regeditf'] != '') { ?>
+						<tr><td width="20%"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">Permitted Keys:</div></td><td width="80%">
+						<form id="permkey" name="permkey" method="post">
+							<select id="permkey" name="permkey" onChange="this.form.submit()" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; margin-top:2px; margin-bottom:2px; font-size:12px;">
+								<?php if ($regeditbllist != '') { echo $regeditbllist; } else { echo '<option>No Results...</option>'; } ?>
+							</select>
+						</form>
+						</td></tr>
+						<?php } ?>
                     	<tr><td width="20%"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;"><?php if (strlen(str_replace($hkey, '', $keypath)) > 1) { echo '<a href="#" onclick="document.regexport.submit();" style="font-size:12px;" title="Export REG"><div class="icon-download-2"></div></a>&nbsp;'; } ?>Current Path:</div></td><td width="80%" style="font-size:12px;">
-                        <form id="pathform" name="pathform" method="get">
+                        <?php if ($_SESSION['usersett']['regeditf'] != '') { ?>
+						<?php echo $keypath; if (strlen(str_replace($hkey, '', $keypath)) > 1) { if (strtolower($keypath) != strtolower($_SESSION['permkey'])) { echo '&nbsp;&nbsp;&nbsp;&nbsp;<a href="?orderby=' . $orderby . '&hkey=' . $hkey . '" title="Return to Root Permitted Key"><div class="icon-reply-2" style="margin-top:2px;"></div></a>'; } } ?>
+						<?php } else { ?>
+						<form id="pathform" name="pathform" method="get">
 							<select id="hkey" name="hkey" onChange="this.form.submit()" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; margin-top:2px; margin-bottom:2px;">
 								<option value="HKEY_CLASSES_ROOT" <?php if (strpos('|' . $keypath, 'HKEY_CLASSES_ROOT') == 1) { echo 'selected'; } ?>>HKEY_CLASSES_ROOT</option>
 								<option value="HKEY_CURRENT_USER" <?php if (strpos('|' . $keypath, 'HKEY_CURRENT_USER') == 1) { echo 'selected'; } ?>>HKEY_CURRENT_USER</option>
@@ -312,6 +349,7 @@
 								<option value="HKEY_CURRENT_CONFIG" <?php if (strpos('|' . $keypath, 'HKEY_CURRENT_CONFIG') == 1) { echo 'selected'; } ?>>HKEY_CURRENT_CONFIG</option>
 							</select>&nbsp;&nbsp;<?php echo str_replace(' ', '&nbsp;', str_replace($hkey, '', $keypath)); if (strlen(str_replace($hkey, '', $keypath)) > 1) { echo '&nbsp;&nbsp;&nbsp;&nbsp;<a href="?orderby=' . $orderby . '&hkey=' . $hkey . '" title="Return to Root Key"><div class="icon-reply-2" style="margin-top:2px;"></div></a>'; } ?>
 						</form>
+						<?php } ?>
                         </td></tr>
                     	<tr><td width="20%"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">Total Elements:</div></td><td width="80%"><div id="totalelement" style="font-size:12px;"></div></td></tr>
                     	<tr><td width="20%"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">Page Loading Time:</div></td><td width="80%"><div id="totaltime" style="font-size:12px;"></div></td></tr>

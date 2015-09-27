@@ -19,7 +19,7 @@
 </div>
 
 <br />
-<?php $random = md5(session_id()); ?>
+<?php $random = rand() . md5(session_id()); ?>
 <div class="page" id="page-index">
 	<div class="page-region">
 		<div class="page-region-content">
@@ -38,7 +38,7 @@
 									$_SESSION['mapsharesetting'] = 'null';
 								}
 							}
-
+							
 							if (isset($_POST['resetviewconf']) || isset($_GET['resetviewconf'])) {
 								unset($_SESSION['cldrive']);
 								unset($_SESSION['cldrive_old']);
@@ -48,10 +48,76 @@
 								unset($_POST['resetviewconf']);
 							}
 							
+							if (isset($_POST['permpath'])) {
+								$_SESSION['permpathcli'] = $_POST['permpath'];
+							}
+
+							if (!isset($_SESSION['clpath']) && $_SESSION['usersett']['filebrowserf'] != '') {
+								$_SESSION['clpath'] = '';
+							}
+
+							if (isset($_SESSION['permpathcli'])) {
+								if (!strpos('|' . trim(strtolower($_SESSION['clpath'])) . '\\', strtolower($_SESSION['permpathcli']))) {
+									$_SESSION['cldrive'] = strtoupper(substr($_SESSION['permpathcli'], 0, 2));
+									$_SESSION['cldrive_old'] = strtoupper(substr($_SESSION['permpathcli'], 0, 2));
+									$_SESSION['clpath'] = str_replace(substr($_SESSION['permpathcli'], 0, 2), strtoupper(substr($_SESSION['permpathcli'], 0, 2)), $_SESSION['permpathcli']);
+								}
+							}
+
+							$filebrowserblcount = 0;
+							$filebrowserbllist = '';
+							if ($_SESSION['usersett']['filebrowserf'] != '') {
+								$filebrowserblarray = array();
+								$filebrowserblarray = (explode(',', preg_replace('/\r\n|\r|\n/', ',', $_SESSION['usersett']['filebrowserf'])));
+								foreach ($filebrowserblarray as $filebrowserbl) {
+									$filebrowserbl = rtrim($filebrowserbl, '\\') . '\\';
+									if (is_dir($filebrowserbl) && !is_file($filebrowserbl)) {
+										if (!isset($_SESSION['permpathcli']) && $filebrowserblcount == 0) { $_SESSION['permpathcli'] = str_replace(substr($filebrowserbl, 0, 2), strtoupper(substr($filebrowserbl, 0, 2)), $filebrowserbl); $_SESSION['clpath'] = $_SESSION['permpathcli']; }
+										if (strpos('|' . trim(strtolower($_SESSION['clpath']), '\\'), trim(strtolower($filebrowserbl), '\\')) > 0) { $filebrowserblsel = 'selected'; } else { $filebrowserblsel = ''; }
+										$filebrowserbllist = $filebrowserbllist . '<option value="' . str_replace(substr($filebrowserbl, 0, 2), strtoupper(substr($filebrowserbl, 0, 2)), $filebrowserbl) . '" ' . $filebrowserblsel . '>' . rtrim($filebrowserbl, '\\') . '&nbsp;&nbsp;&nbsp;</option>';
+										$filebrowserblcount = $filebrowserblcount + 1;
+									}
+								}
+							}
+							
+							if ($_SESSION['usersett']['filebrowserf'] != '') {
+								if (!isset($_SESSION['clpaths'])) {
+									$_SESSION['clpaths'] = 1;
+								}
+								if ($_SESSION['clpaths'] == 1) {
+									$localcommandblacklist = trim('.*\\\,.:,.* .:,.*\.\.,' . $localcommandblacklist, ',');
+								} else {
+									$localcommandblacklist = trim('.*\\\,.:,.* .:,' . $localcommandblacklist, ',');
+								}
+								if ($filebrowserbllist == '') {
+									$_SESSION['cldrive'] = 'C:';
+									$_SESSION['cldrive_old'] = 'C:';
+									$_SESSION['clpath'] = '\\';
+								}
+							}
+							
+							$commandblcheck = 0;
 							if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['commandline'] > 0) {
 								if (isset($_POST['cmd']) && (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'])) > 0) {
 									if ($_POST['cmd'] != '') {
-										$commandblcheck = 0;
+										if ($localcommandblacklist != '') {
+											$commandblarray = array();
+											$commandblarray = (explode(',', $localcommandblacklist));
+											$commandcmdrray = array();
+											$commandcmdrray = (explode('&', $_POST['cmd']));
+											foreach ($commandcmdrray as $commandcm) {
+												if ($commandblcheck == 0) {
+													foreach ($commandblarray as $commandbl) {
+														if ($commandblcheck == 0) {
+															$commandblcheck = 1;
+															if (!preg_match('/^' . $commandbl . '/', trim(preg_replace('/\s+/', ' ', str_replace('.com', '', str_replace('.exe', '', $commandcm))), ' '))) {
+																$commandblcheck = 0;
+															}
+														}
+													}
+												}
+											}
+										}
 										if ($_SESSION['usertype'] != 'Administrators' && $_SESSION['usersett']['commandlinef'] != '') {
 											$commandblarray = array();
 											$commandblarray = (explode(',', $_SESSION['usersett']['commandlinef']));
@@ -59,7 +125,7 @@
 											$commandcmdrray = (explode('&', $_POST['cmd']));
 											foreach ($commandcmdrray as $commandcm) {
 												if ($commandblcheck == 0) {
-													$commandblcheck = 1;
+													$commandblcheck = 2;
 													foreach ($commandblarray as $commandbl) {
 														if (preg_match('/^' . $commandbl . '/', trim(preg_replace('/\s+/', ' ', str_replace('.com', '', str_replace('.exe', '', $commandcm))), ' '))) {
 															$commandblcheck = 0;
@@ -73,6 +139,10 @@
 											$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     command line     ' . $cmd;
 										}
 										if ($commandblcheck == 1) {
+											$cmd = '';
+											echo '<blockquote style="font-size:12px; background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">command <strong>' . trim($_POST['cmd'], ' ') . '</strong> is not permitted</blockquote><br />';
+										}
+										if ($commandblcheck == 2) {
 											$cmd = '';
 											echo '<blockquote style="font-size:12px; background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">your account is not allowed to run <strong>' . trim($_POST['cmd'], ' ') . '</strong></blockquote><br />';
 										}
@@ -104,7 +174,7 @@
 								if (isset($_SESSION['cldrive'])) {
 									$cldrive = $_SESSION['cldrive'];
 								} else {
-									$cldrive = 'c:';
+									$cldrive = 'C:';
 								}
 							}
 							$_SESSION['cldrive'] = $cldrive;
@@ -112,7 +182,7 @@
 							if (isset($_SESSION['cldrive_old'])) {
 								$cldrive_old = $_SESSION['cldrive_old'];
 							} else {
-								$cldrive_old = 'c:';
+								$cldrive_old = 'C:';
 							}
 
 							if (isset($_SESSION['outputh'])) {
@@ -127,7 +197,7 @@
 								$clpath = '\\';
 							}
 							
-							if (strtolower($cmd) == 'c:' || $cldrive != $cldrive_old) {
+							if (strtolower($cmd) == 'c:' || strtolower($cldrive) != strtolower($cldrive_old)) {
 								$frrt = ' & cd \\';
 							} else {
 								$frrt = '';
@@ -148,11 +218,18 @@
 								$cldrive = strtolower($cmd);
 								$clpath = '\\';
 							}
-
+							
 							session_write_close();
 							$clioutput = shell_exec($cldrive . ' & cd "' . $clpath . '" & "' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.cmd">>"' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.out"' . $frrt . ' & dir /b /o:n /a:d>"' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.dir" & dir /b /o:n /a:-d>"' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.files" & cd>"' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.path" & echo. & cd');
 							session_start();
 							
+							if (isset($_SESSION['permpathcli'])) {
+								if (!strpos('|' . trim(strtolower($clioutput)) . '\\', strtolower($_SESSION['permpathcli']))) {
+									$clioutput = str_replace(substr($_SESSION['permpathcli'], 0, 2), strtoupper(substr($_SESSION['permpathcli'], 0, 2)), $_SESSION['permpathcli']);
+								}
+							}
+							$clioutput = str_replace(substr($clioutput, 0, 2), strtoupper(substr($clioutput, 0, 2)), $clioutput);
+
 							if (!file_exists($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.cmd') || !file_exists($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.out') || !file_exists($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.dir') || !file_exists($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.files') || !file_exists($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.path')) {
 								header('location: ' . $_SERVER['PHP_SELF'] . '?resetviewconf');
 							}
@@ -160,6 +237,7 @@
 							$fp = fopen($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.path', 'r');
 							$clpath = preg_replace('/\r\n|\r|\n/','',fgets($fp));
 							fclose($fp);
+							$clpath = str_replace(substr($clpath, 0, 2), strtoupper(substr($clpath, 0, 2)), $clpath);
 							
 							$data = array_slice(file($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.out'), -900);
 							foreach ($data as $line) {
@@ -178,7 +256,20 @@
 							$_SESSION['cldrive_old'] = $cldrive;
 							$_SESSION['clpath'] = $clpath;
 							$_SESSION['outputh'] = $outputh;
-							
+
+							if ($_SESSION['usersett']['filebrowserf'] != '') {
+								if (trim(strtolower($_SESSION['clpath']), '\\') == trim(strtolower($_SESSION['permpathcli']), '\\')) {
+									$_SESSION['clpaths'] = 1;
+								} else {
+									$_SESSION['clpaths'] = 0;
+								}
+							}
+
+							if (isset($_SESSION['permpathcli'])) {
+								if (!strpos('|' . trim(strtolower($_SESSION['clpath'])) . '\\', strtolower($_SESSION['permpathcli']))) {
+									$_SESSION['clpath'] = str_replace(substr($_SESSION['permpathcli'], 0, 2), strtoupper(substr($_SESSION['permpathcli'], 0, 2)), $_SESSION['permpathcli']);
+								}
+							}
 							?>
 						
 							<form id="resetview" name="resetview" method="post">
@@ -186,6 +277,15 @@
 							</form>
                         	<h3>Path:</h3>
 							<table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped">
+								<?php if ($_SESSION['usersett']['filebrowserf'] != '') { ?>
+								<tr><td width="20%"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">Permitted Folders:</div></td><td width="80%">
+								<form id="permpaths" name="permpaths" method="post">
+									<select id="permpath" name="permpath" onChange="this.form.submit()" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; margin-top:2px; margin-bottom:2px; font-size:12px;">
+										<?php if ($filebrowserbllist != '') { echo $filebrowserbllist; } else { echo '<option>No Results...</option>'; } ?>
+									</select>
+								</form>
+								</td></tr>
+								<?php } ?>
 								<tr><td width="20%"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;"><?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filebrowser'] > 0) { ?><a href="/explorer.php?path=<?php echo urlencode(str_replace('\\\\', '\\', $_SESSION['clpath'])); if (strlen(str_replace('\\\\', '\\', $_SESSION['clpath'])) > 3) { echo '%5C'; } ?>" title="Browse Folder"><div class="icon-folder"></div></a>&nbsp;<?php } ?>Current Path:</div></td><td width="80%" style="font-size:12px;"><?php echo str_replace(substr($_SESSION['clpath'], 0, 2), strtoupper(substr($_SESSION['clpath'], 0, 2)), $_SESSION['clpath']); ?>&nbsp;&nbsp;<a href="#" onclick="document.resetview.submit();" title="Reset CLI"><div class="icon-undo"></div></a></td></tr>
 								<tr><td width="20%"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">Date Modified:</div></td><td width="80%" style="font-size:12px;"><?php echo date('d/m/Y H:i:s', filemtime($_SESSION['clpath'])); ?></td></tr>
 							</table>
@@ -198,7 +298,7 @@
 								<div class="row">
 		                           	<h3>Command:</h3>
 									<div class="input-control select span1.5">
-										<select id="cldrive" name="cldrive" onchange="this.form.submit()" style="color:#cbc2cc; background-color:#000000; font-size:16px; font-family:CLIfont; font-weight:normal; line-height:75%;">
+										<select id="cldrive" name="cldrive" onchange="this.form.submit()" style="color:#cbc2cc; background-color:#000000; font-size:16px; font-family:CLIfont; font-weight:normal; line-height:75%;"<?php if ($_SESSION['usersett']['filebrowserf'] != '') { echo ' disabled'; } ?>>
 											<?php
 											$wmisclass = $wmi->ExecQuery("SELECT * FROM Win32_LogicalDisk");
 												foreach($wmisclass as $obj) {
@@ -210,6 +310,9 @@
 											}
 											?>
 										</select>
+											<?php if ($_SESSION['usersett']['filebrowserf'] != '') { ?>
+												<input type="hidden" id="cldrive" name="cldrive" value="<?php echo $cldrive; ?>" />
+											<?php } ?>
 											<?php
 											$_SESSION['cmdlistfld'] = array();
 											$_SESSION['cmdlistfls'] = array();
@@ -241,7 +344,7 @@
 													array_push($_SESSION['cmdlistfls'], 'dir ' . $quotecmd . ' /a');
 												}
 											}
-																						$wmiservices = $wmi->ExecQuery("SELECT Name FROM Win32_Service");
+											$wmiservices = $wmi->ExecQuery("SELECT Name FROM Win32_Service");
 											foreach($wmiservices as $service) {
 												$quotecmd = '';
 												if (substr_count(trim($service->Name), ' ') > 0) {

@@ -242,7 +242,17 @@ foreach ($registryarray as $registryrow) {
 
 $registrypages = array_chunk($registrypagearray, 100);
 
-if (strlen(str_replace($hkey, '', $keypath)) > 1) { $registrytable = $registrytable . '<tr class="rowselect"><td>&nbsp;</td><td style="font-size:12px;" title="Return to Last Key"><a href="?orderby=' . $orderby . '&lastpath=' . urlencode(implode("\\", explode('\\', substr(str_replace('\\\\', '\\', $keypath), 0, -1), -1))) . '&hkey=' . urlencode($hkey) . '&filter=' . $lastfilter . '&keypath="><div class="icon-reply"></div></a>&nbsp;..</td><td>&nbsp;</td><td>&nbsp;</td></tr>'; }
+$checkretkey = 0;
+if (strlen(str_replace($hkey, '', $keypath)) > 1) {
+	if (isset($_SESSION['permkey'])) {
+		if (strtolower($keypath) != strtolower($_SESSION['permkey'])) {
+			$checkretkey = 1;
+		}
+	} else {
+		$checkretkey = 1;
+	}
+}
+if ($checkretkey == 1) { $registrytable = $registrytable . '<tr class="rowselect"><td>&nbsp;</td><td style="font-size:12px;" title="Return to Last Key"><a href="?orderby=' . $orderby . '&lastpath=' . urlencode(implode("\\", explode('\\', substr(str_replace('\\\\', '\\', $keypath), 0, -1), -1))) . '&hkey=' . urlencode($hkey) . '&filter=' . $lastfilter . '&keypath="><div class="icon-reply"></div></a>&nbsp;..</td><td>&nbsp;</td><td>&nbsp;</td></tr>'; }
 
 if ($pgkey > count($registrypages) - 1) { $pgkey = count($registrypages) - 1; }
 

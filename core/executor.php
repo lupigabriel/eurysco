@@ -158,6 +158,8 @@
 									@unlink($_SERVER['DOCUMENT_ROOT'] . '\\' . $config_executorsrv);
 									@unlink(str_replace('\\core', '\\cert\\eurysco_executor.crt', $_SERVER['DOCUMENT_ROOT']));
 									@unlink(str_replace('\\core', '\\cert\\eurysco_executor.key', $_SERVER['DOCUMENT_ROOT']));
+									@unlink(str_replace('\\core', '\\cert\\eurysco_executor.csr', $_SERVER['DOCUMENT_ROOT']));
+									@unlink(str_replace('\\core', '\\cert\\eurysco_executor.req', $_SERVER['DOCUMENT_ROOT']));
 								}
 								session_start();
 								if ($errorlevel == 0 && $errorlevelssl == 0) {
@@ -167,6 +169,14 @@
 								}
 							}
 							if (isset($_POST['editcreateservice']) && !isset($_POST['deleteconfiguration'])) {
+								if (isset($_POST['executortrustedcertificate'])) {
+									if (!preg_match_all('/eurysco .* SSL Trusted Certificate/', $_POST['executortrustedcertificate'])) {
+										$fp = @fopen(str_replace('\\core', '\\cert\\eurysco_executor.crt', $_SERVER['DOCUMENT_ROOT']), 'w');
+										@fwrite($fp, $_POST['executortrustedcertificate']);
+										@fclose($fp);
+										@unlink(str_replace('\\core', '\\cert\\eurysco_executor.csr', $_SERVER['DOCUMENT_ROOT']));
+									}
+								}
 								if (is_null($executorservicename_last) || $executorservicename_last == '') { $executorservicename_last = 'eurysco_NULL_'; }
 								$xml = '<config>' . "\n" . '	<settings>' . "\n" . '		<executorservicedisplayname>' . $executorservicedisplayname_xml . '</executorservicedisplayname>' . "\n" . '		<executorservicename>' . $executorservicename_xml . '</executorservicename>' . "\n" . '		<executorservicestartuptype>' . $executorservicestartuptype_xml . '</executorservicestartuptype>' . "\n" . '		<executorservicelogonas>' . $executorservicelogonas_xml . '</executorservicelogonas>' . "\n" . '		<executorlisteningport>' . $executorlisteningport_xml . '</executorlisteningport>' . "\n" . '		<executorphpport>' . $executorphpport_xml . '</executorphpport>' . "\n" . '	</settings>' . "\n" . '</config>';
 								$sxe = new SimpleXMLElement($xml);
@@ -225,8 +235,12 @@
 							<button class="btn-clear"></button>
 							<textarea wrap="off" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:12px; height:100px; font-weight:normal;" disabled="disabled"><?php
 							
-							echo 'eurysco Executor SSL Certificate Information' . "\n\n";
-								
+							if (file_exists(str_replace('\\core', '\\cert\\eurysco_executor.csr', $_SERVER['DOCUMENT_ROOT']))) {
+								echo 'eurysco Executor SSL Self-Signed Certificate Information' . "\n\n";
+							} else {
+								echo 'eurysco Executor SSL Trusted Certificate Information' . "\n\n";
+							}
+							
 							if (file_exists(str_replace('\\core', '\\cert\\eurysco_executor.crt', $_SERVER['DOCUMENT_ROOT']))) {
 								
 								$data = openssl_x509_parse(file_get_contents(str_replace('\\core', '\\cert\\eurysco_executor.crt', $_SERVER['DOCUMENT_ROOT'])));
@@ -253,6 +267,49 @@
 							
 							?></textarea>
 						</div>
+						<?php $name = str_replace('\\core', '\\cert\\eurysco_executor.csr', $_SERVER['DOCUMENT_ROOT']); if (file_exists($name) && is_readable($name)) { ?>
+						<div class="input-control text">
+                        	<h3>Executor SSL Certificate Request:</h3>
+							<textarea wrap="off" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:10px; height:100px; font-weight:normal;" disabled="disabled"><?php
+								$filearr = file($name);
+								$lastlines = array_slice($filearr, -10000);
+								$csroutput = '';
+								foreach ($lastlines as $lastline) {
+									$csroutput = $csroutput . $lastline;
+								}
+								echo $csroutput;
+							?></textarea>
+						<div class="input-control text">
+						</div>
+                        	<h3>Executor SSL Import Certificate:</h3>
+							<textarea id="executortrustedcertificate" name="executortrustedcertificate" wrap="off" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:10px; height:100px; font-weight:normal;">-----BEGIN CERTIFICATE-----
+
+							
+							
+eurysco Executor SSL Trusted Certificate ( Base 64 Encoded )
+
+
+
+-----END CERTIFICATE-----</textarea>
+						</div>
+						<?php } else { ?>
+						<div class="input-control text">
+                        	<h3>Executor SSL Trusted Certificate:</h3>
+							<textarea wrap="off" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:10px; height:100px; font-weight:normal;" disabled="disabled"><?php
+								$name = str_replace('\\core', '\\cert\\eurysco_executor.crt', $_SERVER['DOCUMENT_ROOT']);
+								$csroutput = 'Trusted Certificate Not Found...';
+								if (file_exists($name) && is_readable($name)) {
+									$filearr = file($name);
+									$lastlines = array_slice($filearr, -10000);
+									$csroutput = '';
+									foreach ($lastlines as $lastline) {
+										$csroutput = $csroutput . $lastline;
+									}
+								}
+								echo $csroutput;
+							?></textarea>
+						</div>
+						<?php } ?>
 						<?php if ($executorstatus != 'cfg') { ?>
 						<br />
 							<input type="checkbox" id="deleteconfiguration" name="deleteconfiguration" />

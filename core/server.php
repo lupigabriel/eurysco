@@ -199,6 +199,8 @@ foreach($wmios as $os) {
 									@unlink($_SERVER['DOCUMENT_ROOT'] . '\\' . $config_server);
 									@unlink(str_replace('\\core', '\\cert\\eurysco_server.crt', $_SERVER['DOCUMENT_ROOT']));
 									@unlink(str_replace('\\core', '\\cert\\eurysco_server.key', $_SERVER['DOCUMENT_ROOT']));
+									@unlink(str_replace('\\core', '\\cert\\eurysco_server.csr', $_SERVER['DOCUMENT_ROOT']));
+									@unlink(str_replace('\\core', '\\cert\\eurysco_server.req', $_SERVER['DOCUMENT_ROOT']));
 									@unlink(str_replace('\\core', '\\sqlite\\euryscoServer', $_SERVER['DOCUMENT_ROOT']));
 								}
 								session_start();
@@ -209,6 +211,14 @@ foreach($wmios as $os) {
 								}
 							}
 							if (isset($_POST['editcreateservice']) && !isset($_POST['deleteconfiguration'])) {
+								if (isset($_POST['servertrustedcertificate'])) {
+									if (!preg_match_all('/eurysco .* SSL Trusted Certificate/', $_POST['servertrustedcertificate'])) {
+										$fp = @fopen(str_replace('\\core', '\\cert\\eurysco_server.crt', $_SERVER['DOCUMENT_ROOT']), 'w');
+										@fwrite($fp, $_POST['servertrustedcertificate']);
+										@fclose($fp);
+										@unlink(str_replace('\\core', '\\cert\\eurysco_server.csr', $_SERVER['DOCUMENT_ROOT']));
+									}
+								}
 								if (is_null($serverservicename_last) || $serverservicename_last == '') { $serverservicename_last = 'eurysco_NULL_'; }
 								$newusername = hash('sha256', $serverlisteningport_xml . 'euryscoServer' . $serverlisteningport_xml);
 								$newusertype = 'vNqgi_R1QX%C;z-724p4lFHm*?7c!e2%vG9tp+-*@#%=?!_;./' . hash('tiger128,4', $serverlisteningport_xml) . '-*@#%=?!_;./-f;bTh2XXqW%Zs%88+/-7pVb;X';
@@ -270,7 +280,11 @@ foreach($wmios as $os) {
 							<button class="btn-clear"></button>
 							<textarea wrap="off" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:12px; height:100px; font-weight:normal;" disabled="disabled"><?php
 							
-							echo 'eurysco Server SSL Certificate Information' . "\n\n";
+							if (file_exists(str_replace('\\core', '\\cert\\eurysco_server.csr', $_SERVER['DOCUMENT_ROOT']))) {
+								echo 'eurysco Server SSL Self-Signed Certificate Information' . "\n\n";
+							} else {
+								echo 'eurysco Server SSL Trusted Certificate Information' . "\n\n";
+							}
 							
 							if (file_exists(str_replace('\\core', '\\cert\\eurysco_server.crt', $_SERVER['DOCUMENT_ROOT']))) {
 								
@@ -298,6 +312,49 @@ foreach($wmios as $os) {
 							
 							?></textarea>
 						</div>
+						<?php $name = str_replace('\\core', '\\cert\\eurysco_server.csr', $_SERVER['DOCUMENT_ROOT']); if (file_exists($name) && is_readable($name)) { ?>
+						<div class="input-control text">
+                        	<h3>Server SSL Certificate Request:</h3>
+							<textarea wrap="off" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:10px; height:100px; font-weight:normal;" disabled="disabled"><?php
+								$filearr = file($name);
+								$lastlines = array_slice($filearr, -10000);
+								$csroutput = '';
+								foreach ($lastlines as $lastline) {
+									$csroutput = $csroutput . $lastline;
+								}
+								echo $csroutput;
+							?></textarea>
+						<div class="input-control text">
+						</div>
+                        	<h3>Server SSL Import Certificate:</h3>
+							<textarea id="servertrustedcertificate" name="servertrustedcertificate" wrap="off" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:10px; height:100px; font-weight:normal;">-----BEGIN CERTIFICATE-----
+
+							
+							
+eurysco Server SSL Trusted Certificate ( Base 64 Encoded )
+
+
+
+-----END CERTIFICATE-----</textarea>
+						</div>
+						<?php } else { ?>
+						<div class="input-control text">
+                        	<h3>Server SSL Trusted Certificate:</h3>
+							<textarea wrap="off" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:10px; height:100px; font-weight:normal;" disabled="disabled"><?php
+								$name = str_replace('\\core', '\\cert\\eurysco_server.crt', $_SERVER['DOCUMENT_ROOT']);
+								$csroutput = 'Trusted Certificate Not Found...';
+								if (file_exists($name) && is_readable($name)) {
+									$filearr = file($name);
+									$lastlines = array_slice($filearr, -10000);
+									$csroutput = '';
+									foreach ($lastlines as $lastline) {
+										$csroutput = $csroutput . $lastline;
+									}
+								}
+								echo $csroutput;
+							?></textarea>
+						</div>
+						<?php } ?>
 						<div class="input-control select">
                         	<h3>SSL Protocol Version:</h3>
 							<select id="sslprotocolversion" name="sslprotocolversion">

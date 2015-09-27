@@ -309,6 +309,7 @@ if (isset($_POST['newgroupscheduledtasksf']) && !isset($_POST['editgroupcancel']
 if (isset($_POST['newgroupeventviewerf']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['eventviewerf'] = $_POST['newgroupeventviewerf']; } else { $newgroup['eventviewerf'] = ''; }
 if (isset($_POST['newgroupcommandlinef']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['commandlinef'] = $_POST['newgroupcommandlinef']; } else { $newgroup['commandlinef'] = ''; }
 if (isset($_POST['newgroupfilebrowserf']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['filebrowserf'] = $_POST['newgroupfilebrowserf']; } else { $newgroup['filebrowserf'] = ''; }
+if (isset($_POST['newgroupregeditf']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['regeditf'] = $_POST['newgroupregeditf']; } else { $newgroup['regeditf'] = ''; }
 if (isset($_POST['newgroupauth']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['auth'] = $_POST['newgroupauth']; } else { $newgroup['auth'] = 'Local'; }
 if (isset($_POST['newgrouppwdexp']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['pwdexp'] = $_POST['newgrouppwdexp']; } else { $newgroup['pwdexp'] = 1; }
 if (isset($_POST['newgroupdisable']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['disable'] = $_POST['newgroupdisable']; } else { $newgroup['disable'] = 7; }
@@ -434,6 +435,7 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 						$newgroup['eventviewerf'] = '';
 						$newgroup['commandlinef'] = '';
 						$newgroup['filebrowserf'] = '';
+						$newgroup['regeditf'] = '';
 						$newgroup['auth'] = 'Local';
 						$newgroup['pwdexp'] = 1;
 						$newgroup['disable'] = 7;
@@ -1041,11 +1043,19 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 											</td>
 										</tr>
 										<tr>
-											<td style="font-size:13px;">File Browser:</td>
+											<td style="font-size:13px;">Permitted Folders:</td>
 											<td>
 												<textarea id="newgroupfilebrowserf" name="newgroupfilebrowserf" placeholder="Absolute Path...
 Absolute Path...
 Absolute Path..." wrap="off" style="font-family:'Segoe UI Light','Open Sans',Verdana,Arial,Helvetica,sans-serif; font-size:12px; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:100%; height:55px; padding-left:5px; padding-right:5px;"><?php echo $newgroup['filebrowserf']; ?></textarea>
+											</td>
+										</tr>
+										<tr>
+											<td style="font-size:13px;">Permitted Registry Keys:</td>
+											<td>
+												<textarea id="newgroupregeditf" name="newgroupregeditf" placeholder="hkey_current_user\system...
+hkey_local_machine\software...
+hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','Open Sans',Verdana,Arial,Helvetica,sans-serif; font-size:12px; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:100%; height:55px; padding-left:5px; padding-right:5px;"><?php echo $newgroup['regeditf']; ?></textarea>
 											</td>
 										</tr>
 									</table>

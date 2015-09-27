@@ -158,6 +158,8 @@
 									@unlink($_SERVER['DOCUMENT_ROOT'] . '\\' . $config_coresrv);
 									@unlink(str_replace('\\core', '\\cert\\eurysco_core.crt', $_SERVER['DOCUMENT_ROOT']));
 									@unlink(str_replace('\\core', '\\cert\\eurysco_core.key', $_SERVER['DOCUMENT_ROOT']));
+									@unlink(str_replace('\\core', '\\cert\\eurysco_core.csr', $_SERVER['DOCUMENT_ROOT']));
+									@unlink(str_replace('\\core', '\\cert\\eurysco_core.req', $_SERVER['DOCUMENT_ROOT']));
 								}
 								session_start();
 								if ($errorlevel == 0 && $errorlevelssl == 0) {
@@ -167,6 +169,14 @@
 								}
 							}
 							if (isset($_POST['editcreateservice']) && !isset($_POST['deleteconfiguration'])) {
+								if (isset($_POST['coretrustedcertificate'])) {
+									if (!preg_match_all('/eurysco .* SSL Trusted Certificate/', $_POST['coretrustedcertificate'])) {
+										$fp = @fopen(str_replace('\\core', '\\cert\\eurysco_core.crt', $_SERVER['DOCUMENT_ROOT']), 'w');
+										@fwrite($fp, $_POST['coretrustedcertificate']);
+										@fclose($fp);
+										@unlink(str_replace('\\core', '\\cert\\eurysco_core.csr', $_SERVER['DOCUMENT_ROOT']));
+									}
+								}
 								if (is_null($coreservicename_last) || $coreservicename_last == '') { $coreservicename_last = 'eurysco_NULL_'; }
 								$xml = '<config>' . "\n" . '	<settings>' . "\n" . '		<coreservicedisplayname>' . $coreservicedisplayname_xml . '</coreservicedisplayname>' . "\n" . '		<coreservicename>' . $coreservicename_xml . '</coreservicename>' . "\n" . '		<coreservicestartuptype>' . $coreservicestartuptype_xml . '</coreservicestartuptype>' . "\n" . '		<coreservicelogonas>' . $coreservicelogonas_xml . '</coreservicelogonas>' . "\n" . '		<corelisteningport>' . $corelisteningport_xml . '</corelisteningport>' . "\n" . '		<corephpport>' . $corephpport_xml . '</corephpport>' . "\n" . '	</settings>' . "\n" . '</config>';
 								$sxe = new SimpleXMLElement($xml);
@@ -228,7 +238,11 @@
 							<button class="btn-clear"></button>
 							<textarea wrap="off" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:12px; height:100px; font-weight:normal;" disabled="disabled"><?php
 							
-							echo 'eurysco Core SSL Certificate Information' . "\n\n";
+							if (file_exists(str_replace('\\core', '\\cert\\eurysco_core.csr', $_SERVER['DOCUMENT_ROOT']))) {
+								echo 'eurysco Core SSL Self-Signed Certificate Information' . "\n\n";
+							} else {
+								echo 'eurysco Core SSL Trusted Certificate Information' . "\n\n";
+							}
 							
 							if (file_exists(str_replace('\\core', '\\cert\\eurysco_core.crt', $_SERVER['DOCUMENT_ROOT']))) {
 								
@@ -256,6 +270,49 @@
 
 							?></textarea>
 						</div>
+						<?php $name = str_replace('\\core', '\\cert\\eurysco_core.csr', $_SERVER['DOCUMENT_ROOT']); if (file_exists($name) && is_readable($name)) { ?>
+						<div class="input-control text">
+                        	<h3>Core SSL Certificate Request:</h3>
+							<textarea wrap="off" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:10px; height:100px; font-weight:normal;" disabled="disabled"><?php
+								$filearr = file($name);
+								$lastlines = array_slice($filearr, -10000);
+								$csroutput = '';
+								foreach ($lastlines as $lastline) {
+									$csroutput = $csroutput . $lastline;
+								}
+								echo $csroutput;
+							?></textarea>
+						<div class="input-control text">
+						</div>
+                        	<h3>Core SSL Import Certificate:</h3>
+							<textarea id="coretrustedcertificate" name="coretrustedcertificate" wrap="off" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:10px; height:100px; font-weight:normal;">-----BEGIN CERTIFICATE-----
+
+							
+							
+eurysco Core SSL Trusted Certificate ( Base 64 Encoded )
+
+
+
+-----END CERTIFICATE-----</textarea>
+						</div>
+						<?php } else { ?>
+						<div class="input-control text">
+                        	<h3>Core SSL Trusted Certificate:</h3>
+							<textarea wrap="off" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:10px; height:100px; font-weight:normal;" disabled="disabled"><?php
+								$name = str_replace('\\core', '\\cert\\eurysco_core.crt', $_SERVER['DOCUMENT_ROOT']);
+								$csroutput = 'Trusted Certificate Not Found...';
+								if (file_exists($name) && is_readable($name)) {
+									$filearr = file($name);
+									$lastlines = array_slice($filearr, -10000);
+									$csroutput = '';
+									foreach ($lastlines as $lastline) {
+										$csroutput = $csroutput . $lastline;
+									}
+								}
+								echo $csroutput;
+							?></textarea>
+						</div>
+						<?php } ?>
 						<?php if ($corestatus != 'cfg') { ?>
 						<br />
 							<input type="checkbox" id="deleteconfiguration" name="deleteconfiguration" />
