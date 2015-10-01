@@ -288,6 +288,7 @@ if (isset($_POST['newgroupeventviewer']) && !isset($_POST['editgroupcancel']) &&
 if (isset($_POST['newgroupsystemregistry']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['systemregistry'] = $_POST['newgroupsystemregistry']; } else { $newgroup['systemregistry'] = 0; }
 if (isset($_POST['newgroupcommandline']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['commandline'] = $_POST['newgroupcommandline']; } else { $newgroup['commandline'] = 0; }
 if (isset($_POST['newgroupfilebrowser']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['filebrowser'] = $_POST['newgroupfilebrowser']; } else { $newgroup['filebrowser'] = 0; }
+if (isset($_POST['newgroupfiletransfer']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['filetransfer'] = $_POST['newgroupfiletransfer']; } else { $newgroup['filetransfer'] = 0; }
 if (isset($_POST['newgroupchangesettings']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['changesettings'] = $_POST['newgroupchangesettings']; } else { $newgroup['changesettings'] = 0; }
 if (isset($_POST['newgroupusermanagement']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['usermanagement'] = $_POST['newgroupusermanagement']; } else { $newgroup['usermanagement'] = 0; }
 if (isset($_POST['newgroupauditlog']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['auditlog'] = $_POST['newgroupauditlog']; } else { $newgroup['auditlog'] = 0; }
@@ -885,6 +886,17 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 													<option value="0" title="Operators, Users, Auditors" <?php if ($newgroup['filebrowser'] == 0) { echo 'selected'; } ?>>Denied</option>
 													<option value="1" title="" <?php if ($newgroup['filebrowser'] == 1) { echo 'selected'; } ?>>Read Only</option>
 													<option value="2" title="Administrators" <?php if ($newgroup['filebrowser'] == 2) { echo 'selected'; } ?>>Full Control</option>
+												</select>
+											</td>
+										</tr>
+										<tr>
+											<td style="font-size:13px;">File Transfer:</td>
+											<td>
+												<select id="newgroupfiletransfer" name="newgroupfiletransfer" style="font-family:'Segoe UI Light','Open Sans',Verdana,Arial,Helvetica,sans-serif; font-size:12px; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:100%;">
+													<option value="0" title="Operators, Users, Auditors" <?php if ($newgroup['filetransfer'] == 0) { echo 'selected'; } ?>>Denied</option>
+													<option value="1" title="" <?php if ($newgroup['filetransfer'] == 1) { echo 'selected'; } ?>>Upload</option>
+													<option value="2" title="" <?php if ($newgroup['filetransfer'] == 2) { echo 'selected'; } ?>>Download</option>
+													<option value="3" title="Administrators" <?php if ($newgroup['filetransfer'] == 3) { echo 'selected'; } ?>>Both</option>
 												</select>
 											</td>
 										</tr>

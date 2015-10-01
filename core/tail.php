@@ -102,7 +102,7 @@ if (isset($_GET["close"])) {
 					<h2>Tail:</h2>
 					<?php if ($filetoread != '') { ?>
 						<blockquote style="font-size:12px;">
-							<?php echo strtolower($filetoread); ?><?php if ($download != '' && $path != '' ) { ?><?php if (file_exists($filetoread) && is_readable($filetoread)) { ?>&nbsp;&nbsp;<a href="download.php?download=<?php echo urlencode($download); ?>&path=<?php echo urlencode($path); ?>" style="font-size:12px;" title="Download"><div class="icon-download-2"></div></a><?php } ?><?php } ?>
+							<?php echo strtolower($filetoread); ?><?php if ($download != '' && $path != '' ) { ?><?php if (file_exists($filetoread) && is_readable($filetoread)) { ?><?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filetransfer'] > 1) { ?>&nbsp;&nbsp;<a href="download.php?download=<?php echo urlencode($download); ?>&path=<?php echo urlencode($path); ?>" style="font-size:12px;" title="Download"><div class="icon-download-2"></div></a><?php } ?><?php } ?><?php } ?>
 						</blockquote>
 					<?php } ?>
 					<br />

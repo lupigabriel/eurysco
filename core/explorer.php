@@ -389,7 +389,7 @@ if ($_SESSION['usersett']['filebrowserf'] != '') {
 					</div>
 					<br />
                     
-					<?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filebrowser'] > 1) { ?>
+					<?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filetransfer'] == 1 || $_SESSION['usersett']['filetransfer'] == 3) { ?>
                     <blockquote style="font-size:12px;" id="container">
                     	<div style="font-size:12px;">
                     	<?php if (is_writable($cpath)) { ?>
