@@ -49,6 +49,7 @@ if (isset($_POST['configstatus']) && isset($_POST['agentversion']) && isset($_PO
 	
 	echo '<groups>' . "\n";
 	$grouplist = scandir($corepath . '\\groups\\');
+	$grouplistcheck = 'Administrators;Auditors;Operators;Users;';
 	foreach($grouplist as $group) {
 		if(pathinfo($group)['extension'] == 'xml') {
 			if (filesize($corepath . '\\groups\\' . $group) == 0) {
@@ -56,14 +57,41 @@ if (isset($_POST['configstatus']) && isset($_POST['agentversion']) && isset($_PO
 			} else {
 				$groupxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($corepath . '\\groups\\' . $group, true)))));
 				if (hash('sha512', $groupxml->settings->groupname . 'Distributed') == $groupxml->settings->groupauth) {
-					echo '<' . str_replace('.xml', '', str_replace(' ', '', $group)) . '>';
-					echo '<file>' . $group . '</file>';
-					echo '<hash>' . hash_file('md2', $corepath . '\\groups\\' . $group) . '</hash>';
-					echo '</' . str_replace('.xml', '', str_replace(' ', '', $group)) . '>' . "\n";
+					$mcrykey = pack('H*', hash('sha256', hash('sha512', str_replace('.xml', '', $group))));
+					$groupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($corepath . '\\groups\\' . $group, true)))));
+					$usersett = unserialize(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($groupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($groupsxml->settings->groupsettings), 0, $iv_size)));
+					$checkprefilter = 0;
+					if ($usersett['nodesstatusf'] != '') {
+						$wl_xmlstatus = strtolower('<computername>' . $_POST['computername'] . '</computername><osname>' . $_POST['osname'] . '</osname><osversion>' . $_POST['osversion'] . '</osversion><osservicepack>' . $_POST['osservicepack'] . '</osservicepack><osserialnumber>' . $_POST['osserialnumber'] . '</osserialnumber><manufacturer>' . $_POST['manufacturer'] . '</manufacturer><model>' . $_POST['model'] . '</model><domain>' . $_POST['domain'] . '</domain>');
+						$prefilter = $usersett['nodesstatusf'];
+						$checkprefilter = 1;
+						if (substr($prefilter, 0, 1) != '-') {
+							if (preg_match_all('/' . str_replace('\\', '.', str_replace('/', '.', strtolower($prefilter))) . '/', $wl_xmlstatus) || strpos($wl_xmlstatus, strtolower($prefilter)) > -1) {
+								$checkprefilter = 0;
+							} else {
+								$checkprefilter = 1;
+							}
+						} else {
+							$notprefilter = substr($prefilter, 1);
+							if (!preg_match_all('/' . str_replace('\\', '.', str_replace('/', '.', strtolower($notprefilter))) . '/', $wl_xmlstatus) && !strpos($wl_xmlstatus, strtolower($notprefilter))) {
+								$checkprefilter = 0;
+							} else {
+								$checkprefilter = 1;
+							}
+						}
+					}
+					if ($checkprefilter == 0) {
+						echo '<' . str_replace('.xml', '', str_replace(' ', '', $group)) . '>';
+						echo '<file>' . $group . '</file>';
+						echo '<hash>' . hash_file('md2', $corepath . '\\groups\\' . $group) . '</hash>';
+						echo '</' . str_replace('.xml', '', str_replace(' ', '', $group)) . '>' . "\n";
+						$grouplistcheck = $grouplistcheck . str_replace('.xml', '', $group) . ';';
+					}
 				}
 			}
 		}
 	}
+	$grouplistcheck = trim($grouplistcheck, ';');
 	echo '</groups>' . "\n";
 
 	echo '<users>' . "\n";
@@ -75,10 +103,15 @@ if (isset($_POST['configstatus']) && isset($_POST['agentversion']) && isset($_PO
 			} else {
 				$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($corepath . '\\users\\' . $user, true)))));
 				if (hash('sha512', $userxml->settings->username . 'Distributed') == $userxml->settings->userauth) {
-					echo '<' . str_replace('.xml', '', $user) . '>';
-					echo '<file>' . $user . '</file>';
-					echo '<hash>' . hash_file('md2', $corepath . '\\users\\' . $user) . '</hash>';
-					echo '</' . str_replace('.xml', '', $user) . '>' . "\n";
+					$grouplist = explode(';', $grouplistcheck);
+					foreach ($grouplist as $group) {
+						if (hash('sha512', $userxml->settings->username . $group) == $userxml->settings->usertype) {
+							echo '<' . str_replace('.xml', '', $user) . '>';
+							echo '<file>' . $user . '</file>';
+							echo '<hash>' . hash_file('md2', $corepath . '\\users\\' . $user) . '</hash>';
+							echo '</' . str_replace('.xml', '', $user) . '>' . "\n";
+						}
+					}
 				}
 			}
 		}
