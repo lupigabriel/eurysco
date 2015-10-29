@@ -91,19 +91,27 @@ foreach($wmisclass as $obj) {
 	$nUXDate1 = strtotime(substr($oslastb, 0, 4) . '-' . substr($oslastb, 4, 2) . '-' . substr($oslastb, 6, 2) . ' ' . substr($oslastb, 8, 2) . ':' . substr($oslastb, 10, 2) . ':' . substr($oslastb, 12, 2));
 	$nUXDate2 = strtotime(substr($oscurtm, 0, 4) . '-' . substr($oscurtm, 4, 2) . '-' . substr($oscurtm, 6, 2) . ' ' . substr($oscurtm, 8, 2) . ':' . substr($oscurtm, 10, 2) . ':' . substr($oscurtm, 12, 2));
 	$osuptim = (gmdate('d', round(($nUXDate2 - $nUXDate1), 0)) - 1) . ' days ' . (gmdate('G', round(($nUXDate2 - $nUXDate1), 0))) . gmdate(':i:s', round(($nUXDate2 - $nUXDate1), 0));
-	$firstsi = $firstsi . '<h2><img src="img/oswin.png" width="32" height="32" />&nbsp;' . str_replace('.WORKGROUP', '', strtoupper($compnam) . '.' . strtoupper($_GET['domain'])) . ':</h2>';
+	$oscodom = '';
+	if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Operators' || $_SESSION['usertype'] == 'Users' || $_SESSION['usersett']['systeminfo'] > 0) {
+	$oscodom = '.' . strtoupper($_GET['domain']);
+	}
+	$firstsi = $firstsi . '<h2><img src="img/oswin.png" width="32" height="32" />&nbsp;' . str_replace('.WORKGROUP', '', strtoupper($compnam) . $oscodom) . ':</h2>';
 	$firstsi = $firstsi . '<table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped">';
 	$firstsi = $firstsi . '<tr class="rowselect"><td width="30%" style="font-size:12px;"><strong>OS Name:</strong></td><td width="70%" style="font-size:12px;"><strong>' . $oscname . '</strong></td></tr>';
 	$firstsi = $firstsi . '<tr class="rowselect"><td width="30%" style="font-size:12px;">OS Version:</td><td width="70%" style="font-size:12px;">' . $osversi . '</td></tr>';
 	$firstsi = $firstsi . '<tr class="rowselect"><td width="30%" style="font-size:12px;">OS Service Pack:</td><td width="70%" style="font-size:12px;">' . $osservp . '</td></tr>';
+	if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Operators' || $_SESSION['usertype'] == 'Users' || $_SESSION['usersett']['systeminfo'] > 0) {
 	$firstsi = $firstsi . '<tr class="rowselect"><td width="30%" style="font-size:12px;">OS Serial Number:</td><td width="70%" style="font-size:12px;">' . $ossernm . '</td></tr>';
 	$firstsi = $firstsi . '<tr class="rowselect"><td width="30%" style="font-size:12px;">Manufacturer:</td><td width="70%" style="font-size:12px;">' . $_GET['manufacturer'] . '</td></tr>';
 	$firstsi = $firstsi . '<tr class="rowselect"><td width="30%" style="font-size:12px;">Model:</td><td width="70%" style="font-size:12px;">' . $_GET['model'] . '</td></tr>';
 	$firstsi = $firstsi . '<tr class="rowselect"><td width="30%" style="font-size:12px;">Domain:</td><td width="70%" style="font-size:12px;">' . $_GET['domain'] . '</td></tr>';
 	$firstsi = $firstsi . '<tr class="rowselect"><td width="30%" style="font-size:12px;">Total Processes:</td><td width="70%" style="font-size:12px;">' . $ostotpr . '</td></tr>';
+	}
 	$firstsi = $firstsi . '<tr class="rowselect"><td width="30%" style="font-size:12px;">Local Date Time:</td><td width="70%" style="font-size:12px;">' . $oscurtm = substr($oscurtm, 6, 2) . '/' . substr($oscurtm, 4, 2) . '/' . substr($oscurtm, 0, 4) . ' ' . substr($oscurtm, 8, 2) . ':' . substr($oscurtm, 10, 2) . ':' . substr($oscurtm, 12, 2) . '</td></tr>';
+	if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Operators' || $_SESSION['usertype'] == 'Users' || $_SESSION['usersett']['systeminfo'] > 0) {
 	$firstsi = $firstsi . '<tr class="rowselect"><td width="30%" style="font-size:12px;">Last BootUp Time:</td><td width="70%" style="font-size:12px;">' . $oslastb = substr($oslastb, 6, 2) . '/' . substr($oslastb, 4, 2) . '/' . substr($oslastb, 0, 4) . ' ' . substr($oslastb, 8, 2) . ':' . substr($oslastb, 10, 2) . ':' . substr($oslastb, 12, 2) . '</td></tr>';
 	$firstsi = $firstsi . '<tr class="rowselect"><td width="30%" style="font-size:12px;">Uptime:</td><td width="70%" style="font-size:12px;">' . $osuptim . '</td></tr>';
+	}
 	$firstsi = $firstsi . '</table>';
 
 	$freeram = 0;
@@ -159,7 +167,6 @@ foreach($wmisclass as $obj) {
 	$systemi = $systemi . '</table>';
 }
 
-}
 
 
 $systemi = $systemi . '<br /><h2><img src="img/uss.png" width="32" height="32" />&nbsp;User Sessions:</h2>';
@@ -201,6 +208,8 @@ foreach ($usersessarray as $usersessrow) {
 }
 $systemi = $systemi . '</table>';
 
+
+}
 
 $time = microtime();
 $time = explode(" ", $time);

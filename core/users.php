@@ -1213,6 +1213,12 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 							$group = str_replace('.xml', '', $group);
 							$groupnamearray = 'users' . strtolower($group) . 'array';
 							$$groupnamearray = array();
+							$groupnamesetti_disable = 'users' . strtolower($group) . 'setti_disable';
+							$groupnamesetti = array();
+							$mcrykey = pack('H*', hash('sha256', hash('sha512', $group)));
+							$groupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group . '.xml', true)))));
+							$groupnamesetti = unserialize(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($groupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($groupsxml->settings->groupsettings), 0, $iv_size)));
+							$$groupnamesetti_disable = $groupnamesetti['disable'];
 						}
 					}
 					
@@ -1228,10 +1234,6 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 							$userauthicon = '<div style="font-size:12px; color:#888;" class="icon-user" style="margin-top:0px;" title="Local"></div>&nbsp;&nbsp;';
 							$userstatus = '';
 							$userrow = '';
-							
-							if ((strtotime(base64_decode(base64_decode(base64_decode(base64_decode(base64_decode($userxml->settings->expiration))))) . ' + ' . $_SESSION['usersett']['disable'] . ' days') - strtotime(date('Y-m-d H:i:s'))) < 0 && $userxml->settings->expiration != base64_encode(base64_encode(base64_encode(base64_encode(base64_encode('2000-01-01 00:00:00'))))) && $userxml->settings->usertype != hash('sha512', $userxml->settings->username . 'Administrators') && $userxml->settings->usertype != hash('sha512', $userxml->settings->username . 'Auditors') && $userxml->settings->usertype != hash('sha512', $userxml->settings->username . 'Operators') && $userxml->settings->usertype != hash('sha512', $userxml->settings->username . 'Users')) {
-								$userstatus = '&nbsp;&nbsp;<div class="icon-switch" style="font-size:12px; color:#993300;" title="User Status: Account Disabled"></div>';
-							}
 							
 							if ($userxml->settings->passwlck == md5($userxml->settings->password . 3)) {
 								$userstatus = '&nbsp;&nbsp;<div class="icon-warning" style="font-size:12px; color:#993300;" title="User Status: Locked Out' . "\n\n" . 'Locked Out Time: ' . $userxml->settings->lckouttm . "\n" . 'Locked Out Node: ' . $userxml->settings->lckoutcm . "\n" . 'Locked Out From: ' . $userxml->settings->lckoutip . '"></div>';
@@ -1285,6 +1287,10 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 								if (pathinfo($group)['extension'] == 'xml' && filesize($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group) > 0) {
 									$group = str_replace('.xml', '', $group);
 									if (hash('sha512', $userxml->settings->username . $group) == $userxml->settings->usertype) {
+										$groupnamesetti_disable = 'users' . strtolower($group) . 'setti_disable';
+										if ((strtotime(date('Y-m-d H:i:s', strtotime(base64_decode(base64_decode(base64_decode(base64_decode(base64_decode($userxml->settings->expiration))))) . ' + ' . $$groupnamesetti_disable . ' days'))) - strtotime(date('Y-m-d H:i:s'))) < 0 && $userxml->settings->expiration != base64_encode(base64_encode(base64_encode(base64_encode(base64_encode('2000-01-01 00:00:00'))))) && $userstatus == '') {
+											$userstatus = '&nbsp;&nbsp;<div class="icon-switch" style="font-size:12px; color:#993300;" title="User Status: Account Disabled"></div>';
+										}
 										$usertype = $group;
 										$usertypeintegrity = 1;
 										if ($userxml->settings->username == $_SESSION['username'] || (hash('sha512', $userxml->settings->username . 'Distributed') == $userxml->settings->userauth && $serverstatus == 'cfg' && $agentstatus != 'cfg')) { $userrow = '<div name="' . $userxml->settings->username . '"></div>' . $userauthicon . $userxml->settings->username . $userstatus . '</blockquote><br />'; } else { $userrow = '<div name="' . $userxml->settings->username . '"></div>' . $userauthicon . $userxml->settings->username . $userstatus . '<a class="place-right" href="javascript:changeuser(\'' . $user . '\',\'' . $userxml->settings->username . '\',\'' . $group . '\',\'' . $userauth . '\');" title="Change: ' . $userxml->settings->username . '"><div class="icon-key"></div></a></blockquote><br />'; }

@@ -66,13 +66,14 @@
 
 							$filebrowserblcount = 0;
 							$filebrowserbllist = '';
+							$filebrowserblfd = 'C:';
 							if ($_SESSION['usersett']['filebrowserf'] != '') {
 								$filebrowserblarray = array();
 								$filebrowserblarray = (explode(',', preg_replace('/\r\n|\r|\n/', ',', $_SESSION['usersett']['filebrowserf'])));
 								foreach ($filebrowserblarray as $filebrowserbl) {
 									$filebrowserbl = rtrim($filebrowserbl, '\\') . '\\';
 									if (is_dir($filebrowserbl) && !is_file($filebrowserbl)) {
-										if (!isset($_SESSION['permpathcli']) && $filebrowserblcount == 0) { $_SESSION['permpathcli'] = str_replace(substr($filebrowserbl, 0, 2), strtoupper(substr($filebrowserbl, 0, 2)), $filebrowserbl); $_SESSION['clpath'] = $_SESSION['permpathcli']; }
+										if (!isset($_SESSION['permpathcli']) && $filebrowserblcount == 0) { $filebrowserblfd = strtoupper(substr($filebrowserbl, 0, 2)); $_SESSION['permpathcli'] = str_replace(substr($filebrowserbl, 0, 2), strtoupper(substr($filebrowserbl, 0, 2)), $filebrowserbl); $_SESSION['clpath'] = $_SESSION['permpathcli']; }
 										if (strpos('|' . trim(strtolower($_SESSION['clpath']), '\\'), trim(strtolower($filebrowserbl), '\\')) > 0) { $filebrowserblsel = 'selected'; } else { $filebrowserblsel = ''; }
 										$filebrowserbllist = $filebrowserbllist . '<option value="' . str_replace(substr($filebrowserbl, 0, 2), strtoupper(substr($filebrowserbl, 0, 2)), $filebrowserbl) . '" ' . $filebrowserblsel . '>' . rtrim($filebrowserbl, '\\') . '&nbsp;&nbsp;&nbsp;</option>';
 										$filebrowserblcount = $filebrowserblcount + 1;
@@ -90,8 +91,8 @@
 									$localcommandblacklist = trim('.*\\\,.:,.* .:,' . $localcommandblacklist, ',');
 								}
 								if ($filebrowserbllist == '') {
-									$_SESSION['cldrive'] = 'C:';
-									$_SESSION['cldrive_old'] = 'C:';
+									$_SESSION['cldrive'] = $filebrowserblfd;
+									$_SESSION['cldrive_old'] = $filebrowserblfd;
 									$_SESSION['clpath'] = '\\';
 								}
 							}
@@ -174,7 +175,7 @@
 								if (isset($_SESSION['cldrive'])) {
 									$cldrive = $_SESSION['cldrive'];
 								} else {
-									$cldrive = 'C:';
+									$cldrive = $filebrowserblfd;
 								}
 							}
 							$_SESSION['cldrive'] = $cldrive;
@@ -182,7 +183,8 @@
 							if (isset($_SESSION['cldrive_old'])) {
 								$cldrive_old = $_SESSION['cldrive_old'];
 							} else {
-								$cldrive_old = 'C:';
+								$cldrive_old = $filebrowserblfd;
+								$_SESSION['cldrive_old'] = $cldrive_old;
 							}
 
 							if (isset($_SESSION['outputh'])) {
@@ -197,13 +199,13 @@
 								$clpath = '\\';
 							}
 							
-							if (strtolower($cmd) == 'c:' || strtolower($cldrive) != strtolower($cldrive_old)) {
+							if (strtolower($cmd) == strtolower($filebrowserblfd) || strtolower($cldrive) != strtolower($cldrive_old)) {
 								$frrt = ' & cd \\';
 							} else {
 								$frrt = '';
 							}
 
-							if ($cldrive != $cldrive_old) {
+							if (strtolower($cldrive) != strtolower($cldrive_old)) {
 								$cmdmem = "<option value='" . $cldrive . "'>" . str_replace(" ", "&nbsp;", $cldrive) . "</option>" . $cmdmem . "\n";
 							} else {
 								if ($cmd != '') { $cmdmem = "<option value='" . $cmd . "'>" . str_replace(" ", "&nbsp;", $cmd) . "</option>" . $cmdmem . "\n"; }
@@ -220,8 +222,13 @@
 							}
 							
 							session_write_close();
-							$clioutput = shell_exec($cldrive . ' & cd "' . $clpath . '" & "' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.cmd">>"' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.out"' . $frrt . ' & dir /b /o:n /a:d>"' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.dir" & dir /b /o:n /a:-d>"' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.files" & cd>"' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.path" & echo. & cd');
+							$clioutput = shell_exec('cd\\ & ' . $cldrive . ' & cd\\ & cd "' . $clpath . '" & "' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.cmd">>"' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.out"' . $frrt . ' & dir /b /o:n /a:d>"' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.dir" & dir /b /o:n /a:-d>"' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.files" & cd>"' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.path" & echo. & cd');
 							session_start();
+							
+							if (substr(trim($clioutput), 1, 1) == ':') {
+								$cldrive = substr(trim($clioutput), 0, 2);
+								$_SESSION['cldrive'] = $cldrive;
+							}
 							
 							if (isset($_SESSION['permpathcli'])) {
 								if (!strpos('|' . trim(strtolower($clioutput)) . '\\', strtolower($_SESSION['permpathcli']))) {
@@ -304,7 +311,7 @@
 												foreach($wmisclass as $obj) {
 												if (is_null($obj->Size) == false) {
 													$selected = '';
-													if ($cldrive == strtolower($obj->Caption) && strlen(strtolower($cmd)) != 2 && substr(strtolower($cmd), -1) != ':' || strtolower($cmd) == strtolower($obj->Caption)) { $selected = 'selected'; }
+													if (strtolower($cldrive) == strtolower($obj->Caption) || strtolower($cmd) == strtolower($obj->Caption)) { $selected = 'selected'; }
 													echo '<option value="' . strtolower($obj->Caption) . '" ' . $selected . '>' . strtoupper($obj->Caption) . '\></option>';
 												}
 											}
@@ -362,6 +369,7 @@
 												}
 												$processchk = $processchk . '|' . trim($processes->Name) . '|';
 											}
+										
 											?>
 									</div>
 									<div class="input-control input span7">

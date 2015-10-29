@@ -86,6 +86,8 @@
 						}
 					}
 					
+					if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['systeminfo'] > 2) {
+					
 					$systemi = '';
 					$adminarray = array();
 					$admincounter = 0;
@@ -116,6 +118,8 @@
 					$systemi = $systemi . '</table>';
 
 					echo $systemi;
+					
+					}
 
 					?>
 
