@@ -118,7 +118,7 @@ foreach ($allfiles as $name) {
 			$fileexte = '';
 		}
 		if (is_file($name) && strpos($name, '.') && !is_dir($name)) {
-			$fileexte = strtolower(pathinfo($name)['extension']);
+			$fileexte = strtolower(@pathinfo($name)['extension']);
 		}
 		$fileatim = date('d/m/Y H:i:s', fileatime($name));
 		$filemtim = date('d/m/Y H:i:s', filemtime($name));
