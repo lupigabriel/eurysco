@@ -341,10 +341,14 @@ if (!isset($_SESSION['session_timeout'])) {
 				$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     user management     self password changed';
 				if (isset($_POST['changepassword'])) { header('location: ' . $_SERVER['REQUEST_URI']); }
 			} else {
-				if (preg_match_all('/Locked Out/', $authresponse)) {
+				if (preg_match_all('/locked out/', strtolower($authresponse))) {
 					$exppwdmessage = '<tr><td align="center" colspan="2" style="background-color:#B91D47; color:#FFFFFF; font-size:12px;">account locked out</td></tr>';
 				} else {
-					$exppwdmessage = '<tr><td align="center" colspan="2" style="background-color:#B91D47; color:#FFFFFF; font-size:12px;">authentication error</td></tr>';
+					if (preg_match_all('/user disabled/', strtolower($authresponse))) {
+						$exppwdmessage = '<tr><td align="center" colspan="2" style="background-color:#B91D47; color:#FFFFFF; font-size:12px;">account disabled</td></tr>';
+					} else {
+						$exppwdmessage = '<tr><td align="center" colspan="2" style="background-color:#B91D47; color:#FFFFFF; font-size:12px;">authentication error</td></tr>';
+					}
 				}
 			}
 		}
