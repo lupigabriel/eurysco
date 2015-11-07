@@ -5,6 +5,21 @@ include('/include/init.php');
 if (!isset($_POST['usr'])) { exit; }
 if (!isset($_POST['pwd'])) { exit; }
 
+$action = '';
+if (isset($_POST['act'])) {
+	$action = $_POST['act'];
+}
+
+$reconcileuser = '';
+if (isset($_POST['rus'])) {
+	$reconcileuser = $_POST['rus'];
+}
+
+$reconcilepass = '';
+if (isset($_POST['rpw'])) {
+	$reconcilepass = $_POST['rpw'];
+}
+
 set_time_limit(10);
 
 if (isset($_POST['lgn'])) {
@@ -48,20 +63,30 @@ if (isset($_POST['lgn'])) {
 
 if (!isset($_POST['xml'])) { exit; }
 
+if (base64_decode($action) == 'prereconcilepass' || base64_decode($action) == 'reconcilepass') {
+	$connusr = base64_decode($reconcileuser);
+	$connpwd = base64_decode($reconcilepass);
+} else {
+	$connusr = base64_decode($_POST['usr']);
+	$connpwd = base64_decode($_POST['pwd']);
+}
+
 $authresponse = '';
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 10000);
 curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-curl_setopt($ch, CURLOPT_USERPWD, base64_decode($_POST['usr']) . ':' . base64_decode($_POST['pwd']));
+curl_setopt($ch, CURLOPT_USERPWD, $connusr . ':' . $connpwd);
 curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
 curl_setopt($ch, CURLOPT_URL, 'https://127.0.0.1:' . $eurysco_coreport . '/userscp.php');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST, true);
 $data = array(
 	'ath' => base64_encode('Distributed'),
-	'xml' => $_POST['xml']
+	'xml' => $_POST['xml'],
+	'act' => $action,
+	'usr' => $_POST['usr']
 );
 curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 $authresponse = curl_exec($ch);

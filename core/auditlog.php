@@ -6,7 +6,7 @@ if ($_SESSION['session'] != hash('sha512', $_SERVER['HTTP_X_FORWARDED_FOR'] . se
 if ($audit != '') {
 	$auditresponse = 'local';
 	if (isset($agentstatus) && isset($eurysco_serverconaddress) && isset($eurysco_serverconport) && isset($eurysco_serverconpassword)) {
-		if ($agentstatus == 'con' && $eurysco_serverconaddress != 'https://' . strtoupper($envcomputername)) {
+		if ($agentstatus == 'con' && strtolower($eurysco_serverconaddress) != strtolower('https://' . $envcomputername)) {
 			$iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
 			$iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);
 			$mcrykey = pack('H*', hash('sha256', hash('sha512', 'vNqgi_R1QX%C;z-724p4lFHm*?7c!e2%vG9tp+-*@#%=?!_;./' . hash('tiger128,4', $eurysco_serverconport) . '-*@#%=?!_;./-f;bTh2XXqW%Zs%88+/-7pVb;X')));

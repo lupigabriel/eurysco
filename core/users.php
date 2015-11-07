@@ -368,8 +368,8 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 			if ($newgroup['name'] == '') {
 				$message = '<blockquote style="background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">all fields must be completed</blockquote><br />';
 			} else {
-				if (strtolower($newgroup['name']) == 'administrators' || strtolower($newgroup['name']) == 'operators' || strtolower($newgroup['name']) == 'users' || strtolower($newgroup['name']) == 'auditors' || (isset($_POST['addgroup']) && file_exists($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $newgroup['name'] . '.xml')) || (isset($_POST['editgroup']) && $_SESSION['changegroup'] != $newgroup['name'] && file_exists($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $newgroup['name'] . '.xml'))) {
-					$message = '<blockquote style="background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">groupname already exists</blockquote><br />';
+				if (strtolower($newgroup['name']) == 'administrators' || strtolower($newgroup['name']) == 'operators' || strtolower($newgroup['name']) == 'users' || strtolower($newgroup['name']) == 'auditors' || strtolower($newgroup['name']) == 'currupted' || (isset($_POST['addgroup']) && file_exists($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $newgroup['name'] . '.xml')) || (isset($_POST['editgroup']) && $_SESSION['changegroup'] != $newgroup['name'] && file_exists($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $newgroup['name'] . '.xml'))) {
+					$message = '<blockquote style="background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">groupname already used</blockquote><br />';
 				} else {
 					if (preg_match('/[^a-zA-Z0-9 ]/', $newgroup['name'])) {
 						$message = '<blockquote style="background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">special characters are not allowed except spaces</blockquote><br />';
@@ -465,9 +465,9 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 
 <script type="text/javascript">
 	function changeuser(UserFile,UserName,UserType,UserAuth){
-		SelectedAdmin = '';
-		SelectedAudit = '';
-		SelectedOpera = '';
+		SelectedAdministrators = '';
+		SelectedAuditors = '';
+		SelectedOperators = '';
 		SelectedUsers = '';
 		SelectedLocal = '';
 		SelectedDistr = '';
@@ -480,9 +480,9 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 		AdminLockIcon = '';
 		CheckServConn = '<?php if ($agentstatus == 'con' && strtolower($eurysco_serverconaddress) != strtolower('https://' . $envcomputername)) { echo 'Connected'; } ?>';
 		UserStatusMsg = '';
-		if (UserType == 'Administrators') { SelectedAdmin = ' selected="selected"'; }
-		if (UserType == 'Auditors') { SelectedAudit = ' selected="selected"'; }
-		if (UserType == 'Operators') { SelectedOpera = ' selected="selected"'; }
+		if (UserType == 'Administrators') { SelectedAdministrators = ' selected="selected"'; }
+		if (UserType == 'Auditors') { SelectedAuditors = ' selected="selected"'; }
+		if (UserType == 'Operators') { SelectedOperators = ' selected="selected"'; }
 		if (UserType == 'Users') { SelectedUsers = ' selected="selected"'; }
 		<?php foreach ($grouplist as $group) { if (pathinfo($group)['extension'] == 'xml' && filesize($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group) > 0) { $group = str_replace('.xml', '', $group); ?>
 		if (UserType == '<?php echo $group; ?>') { Selected<?php echo str_replace(' ', '_', $group); ?> = ' selected="selected"'; } else { Selected<?php echo str_replace(' ', '_', $group); ?> = ''; }
@@ -494,7 +494,7 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 		if (UserAuth == 'Distributed' && CheckServConn == 'Connected') { StarInforDist = '* '; UserStatusMsg = '<br /><i>* change allowed from server only</i>'; FieldReadOnly = ' disabled="disabled"'; FieldHdFields = '<input type="hidden" id="editusertype" name="editusertype" value="' + UserType + '" /><input type="hidden" id="edituserauth" name="edituserauth" value="' + UserAuth + '" />'; }
 		$.Dialog({
 			'title'       : '<span style="font-size:16px;">&nbsp;<div class="icon-user" style="position:inherit;"></div>&nbsp; <strong>Change</strong> User Information</span>',
-			'content'     : '<form id="changeuserform" name="changeuserform" method="post" action="users.php"><table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped"><tr><td style="font-size:12px;" align="center" colspan="2"><strong>' + UserName + '</strong>' + AdminLockIcon + UserStatusMsg + '</td></tr><tr><td style="font-size:12px;">' + StarInforLock + 'Password:</td><td style="font-size:12px;"><input type="password" id="edituserpsw" name="edituserpsw" placeholder="&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px; padding-left:4px; padding-right:4px; font-size:12px;" value=""></td></tr><tr><td style="font-size:12px;">' + StarInforLock + 'Confirmation:</td><td style="font-size:12px;"><input type="password" id="edituserpswc" name="edituserpswc" placeholder="&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px; padding-left:4px; padding-right:4px; font-size:12px;" value=""></td></tr><tr><td style="font-size:12px;">' + StarInforDist + 'Type:</td><td style="font-size:12px;"><select id="editusertype" name="editusertype" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa;"><option value="Administrators"' + SelectedAdmin + FieldReadOnly + '>&nbsp;Administrators&nbsp;&nbsp;</option><option value="Auditors"' + SelectedAudit + FieldReadOnly + '>&nbsp;Auditors&nbsp;&nbsp;</option><option value="Operators"' + SelectedOpera + FieldReadOnly + '>&nbsp;Operators&nbsp;&nbsp;</option><option value="Users"' + SelectedUsers + FieldReadOnly + '>&nbsp;Users&nbsp;&nbsp;</option><?php foreach ($grouplist as $group) { if (pathinfo($group)['extension'] == 'xml' && filesize($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group) > 0) { $group = str_replace('.xml', '', $group); ?><option value="<?php echo $group; ?>"' + Selected<?php echo str_replace(' ', '_', $group); ?> + FieldReadOnly + '>&nbsp;<?php echo str_replace(' ', '&nbsp;', $group); ?>&nbsp;&nbsp;</option><?php } } ?></select></td></tr><tr><td style="font-size:12px;">' + StarInforLoca + StarInforDist + 'Authentication:</td><td style="font-size:12px;"><select id="edituserauth" name="edituserauth" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa;"><option value="Local"' + SelectedLocal + FieldReadOnly + '>&nbsp;Local&nbsp;&nbsp;</option><option value="Distributed"' + SelectedDistr + FieldROnlLoca + FieldReadOnly + '>&nbsp;Distributed&nbsp;&nbsp;</option></select></td></tr></table><input type="checkbox" id="deleteuserconf" name="deleteuserconf" ' + FieldReadOnly + ' /><span class="helper" style="font-size:12px;">&nbsp;&nbsp;' + StarInforDist + 'Delete This User</span><input type="hidden" id="edituserfile" name="edituserfile" value="' + UserFile + '" /><input type="hidden" id="editusername" name="editusername" value="' + UserName + '" />' + FieldHdFields + '</form>',
+			'content'     : '<form id="changeuserform" name="changeuserform" method="post" action="users.php"><table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped"><tr><td style="font-size:12px;" align="center" colspan="2"><strong>' + UserName + '</strong>' + AdminLockIcon + UserStatusMsg + '</td></tr><tr><td style="font-size:12px;">' + StarInforLock + 'Password:</td><td style="font-size:12px;"><input type="password" id="edituserpsw" name="edituserpsw" placeholder="&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px; padding-left:4px; padding-right:4px; font-size:12px;" value=""></td></tr><tr><td style="font-size:12px;">' + StarInforLock + 'Confirmation:</td><td style="font-size:12px;"><input type="password" id="edituserpswc" name="edituserpswc" placeholder="&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px; padding-left:4px; padding-right:4px; font-size:12px;" value=""></td></tr><tr><td style="font-size:12px;">' + StarInforDist + 'Type:</td><td style="font-size:12px;"><select id="editusertype" name="editusertype" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa;"><option value="Administrators"' + SelectedAdministrators + FieldReadOnly + '>&nbsp;Administrators&nbsp;&nbsp;</option><option value="Auditors"' + SelectedAuditors + FieldReadOnly + '>&nbsp;Auditors&nbsp;&nbsp;</option><option value="Operators"' + SelectedOperators + FieldReadOnly + '>&nbsp;Operators&nbsp;&nbsp;</option><option value="Users"' + SelectedUsers + FieldReadOnly + '>&nbsp;Users&nbsp;&nbsp;</option><?php foreach ($grouplist as $group) { if (pathinfo($group)['extension'] == 'xml' && filesize($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group) > 0) { $group = str_replace('.xml', '', $group); ?><option value="<?php echo $group; ?>"' + Selected<?php echo str_replace(' ', '_', $group); ?> + FieldReadOnly + '>&nbsp;<?php echo str_replace(' ', '&nbsp;', $group); ?>&nbsp;&nbsp;</option><?php } } ?></select></td></tr><tr><td style="font-size:12px;">' + StarInforLoca + StarInforDist + 'Authentication:</td><td style="font-size:12px;"><select id="edituserauth" name="edituserauth" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa;"><option value="Local"' + SelectedLocal + FieldReadOnly + '>&nbsp;Local&nbsp;&nbsp;</option><option value="Distributed"' + SelectedDistr + FieldROnlLoca + FieldReadOnly + '>&nbsp;Distributed&nbsp;&nbsp;</option></select></td></tr></table><input type="checkbox" id="deleteuserconf" name="deleteuserconf" ' + FieldReadOnly + ' /><span class="helper" style="font-size:12px;">&nbsp;&nbsp;' + StarInforDist + 'Delete This User</span><input type="hidden" id="edituserfile" name="edituserfile" value="' + UserFile + '" /><input type="hidden" id="editusername" name="editusername" value="' + UserName + '" />' + FieldHdFields + '</form>',
 			'draggable'   : true,
 			'overlay'     : true,
 			'closeButton' : false,
@@ -1203,11 +1203,11 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 					<br />
 					<?php
 
-					$usersadminarray = array();
-					$usersauditarray = array();
-					$usersoperaarray = array();
+					$usersadministratorsarray = array();
+					$usersauditorsarray = array();
+					$usersoperatorsarray = array();
 					$usersusersarray = array();
-					$userscurruarray = array();
+					$userscurruptedarray = array();
 					foreach ($grouplist as $group) {
 						if (pathinfo($group)['extension'] == 'xml' && filesize($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group) > 0) {
 							$group = str_replace('.xml', '', $group);
@@ -1306,9 +1306,9 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 
 							if ($usertypeintegrity == 0 || $userauthintegrity == 0) { $userintegritymsg = '<div class="icon-link-2" style="color:#933000;" title="User File Corrupted"></div>&nbsp;&nbsp;'; } else { $userintegritymsg = ''; }
 
-							if ($usertype == 'Administrators') { array_push($usersadminarray, '<blockquote>' . $userintegritymsg . $userrow); }
-							if ($usertype == 'Auditors') { array_push($usersauditarray, '<blockquote>' . $userintegritymsg . $userrow); }
-							if ($usertype == 'Operators') { array_push($usersoperaarray, '<blockquote>' . $userintegritymsg . $userrow); }
+							if ($usertype == 'Administrators') { array_push($usersadministratorsarray, '<blockquote>' . $userintegritymsg . $userrow); }
+							if ($usertype == 'Auditors') { array_push($usersauditorsarray, '<blockquote>' . $userintegritymsg . $userrow); }
+							if ($usertype == 'Operators') { array_push($usersoperatorsarray, '<blockquote>' . $userintegritymsg . $userrow); }
 							if ($usertype == 'Users') { array_push($usersusersarray, '<blockquote>' . $userintegritymsg . $userrow); }
 							foreach ($grouplist as $group) {
 								if (pathinfo($group)['extension'] == 'xml' && filesize($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group) > 0) {
@@ -1317,17 +1317,17 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 									if ($usertype == $group) { array_push($$groupnamearray, '<blockquote>' . $userintegritymsg . $userrow); }
 								}
 							}
-							if ($usertype == 'Currupted') { array_push($userscurruarray, '<blockquote>' . $userintegritymsg . $userrow); }
+							if ($usertype == 'Currupted') { array_push($userscurruptedarray, '<blockquote>' . $userintegritymsg . $userrow); }
 
 						}
 						if (filesize($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $user) == 0) { @unlink($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $user); }
 					}
 					
-					sort($usersadminarray);
-					sort($usersauditarray);
-					sort($usersoperaarray);
+					sort($usersadministratorsarray);
+					sort($usersauditorsarray);
+					sort($usersoperatorsarray);
 					sort($usersusersarray);
-					sort($userscurruarray);
+					sort($userscurruptedarray);
 					foreach ($grouplist as $group) {
 						if (pathinfo($group)['extension'] == 'xml' && filesize($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group) > 0) {
 							$group = str_replace('.xml', '', $group);
@@ -1338,30 +1338,30 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 					
 					?>
                     
-					<?php if (count($usersadminarray) > 0) { ?>
+					<?php if (count($usersadministratorsarray) > 0) { ?>
              	       <h3><img src="/img/adml.png" width="26" height="26" />&nbsp;Administrators:</h3>
 						<?php
-						foreach($usersadminarray as $usersadmin) {
+						foreach($usersadministratorsarray as $usersadmin) {
 							echo $usersadmin;
 						}						
 						?>
 						<br />
                     <?php } ?>
                     
-					<?php if (count($usersauditarray) > 0) { ?>
+					<?php if (count($usersauditorsarray) > 0) { ?>
 						<h3><img src="/img/adml.png" width="26" height="26" />&nbsp;Auditors:</h3>
 						<?php
-						foreach($usersauditarray as $usersaudit) {
+						foreach($usersauditorsarray as $usersaudit) {
 							echo $usersaudit;
 						}						
 						?>
 						<br />
                     <?php } ?>
                     
-					<?php if (count($usersoperaarray) > 0) { ?>
+					<?php if (count($usersoperatorsarray) > 0) { ?>
 						<h3><img src="/img/adml.png" width="26" height="26" />&nbsp;Operators:</h3>
 						<?php
-						foreach($usersoperaarray as $usersopera) {
+						foreach($usersoperatorsarray as $usersopera) {
 							echo $usersopera;
 						}						
 						?>
@@ -1388,10 +1388,10 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 						<br />
                     <?php } } ?>
                     
-					<?php if (count($userscurruarray) > 0) { ?>
+					<?php if (count($userscurruptedarray) > 0) { ?>
 						<h3 style="color:#933000;">Currupted:</h3>
 						<?php
-						foreach($userscurruarray as $userscurru) {
+						foreach($userscurruptedarray as $userscurru) {
 							echo $userscurru;
 						}						
 						?>
