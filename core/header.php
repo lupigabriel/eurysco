@@ -425,7 +425,35 @@ if (!isset($_SESSION['session_timeout'])) {
 			});
 		};
 	</script>
-    
+	<script type="text/javascript">
+		function loginmessage(){
+			$.Dialog({
+				'title'       : '<span style="font-size:16px;">&nbsp;<div class="icon-info-2" style="position:inherit;"></div>&nbsp; Login Message</span>',
+				'content'     : '<textarea style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:0px; border-color:#e5e5e5; background-color:#fafafa; width:250px; height:100px; padding-left:4px; padding-right:4px; font-size:10px;"><?php echo $loginmessagesetting; ?></textarea>',
+				'draggable'   : true,
+				'overlay'     : true,
+				'closeButton' : false,
+				'buttonsAlign': 'center',
+				'keepOpened'  : true,
+				'position'    : {
+					'offsetY' : '55px',
+					'offsetX' : ((document.documentElement.offsetWidth / 2) - 138) + 'px'
+				},
+				'buttons'     : {
+					'OK'     : {
+					'action': function(){
+						}
+					},
+					'Logout'     : {
+					'action': function(){
+							window.location = "?logout";
+						}
+					},
+				}
+			});
+		};
+	</script>
+
 	<style>
 	@font-face {
 		font-family:CLIfont;
@@ -441,4 +469,5 @@ if (!isset($_SESSION['session_timeout'])) {
 
     <title>&nbsp;<?php echo $envcomputername; ?>&nbsp;|&nbsp;eurysco <?php include("version.phtml"); ?></title>
 </head>
-<body class="metrouicss" <?php if (isset($_POST['changepassword']) || $passwordexpired == 1) { echo 'onLoad="javascript:exppwduser();"'; } ?>>
+
+<body class="metrouicss" <?php if (isset($_POST['changepassword']) || $passwordexpired == 1) { echo 'onLoad="javascript:exppwduser();"'; } else { if (!isset($_SESSION['loginmessage']) && !isset($loginmessage) && $loginmessagesetting != '') { $_SESSION['loginmessage'] = ''; echo 'onLoad="javascript:loginmessage();"'; } } ?>>

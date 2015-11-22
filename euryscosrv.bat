@@ -33,7 +33,7 @@ if %relpath:~1,-1% neq agent echo 	ProxyRequests Off>>"%cd%\apache_%osarc%\conf\
 if %relpath:~1,-1% neq agent echo 	SSLCertificateFile      ../cert/%phpexe:~1,-1%.crt>>"%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%_virtual.conf"
 if %relpath:~1,-1% neq agent echo 	SSLCertificateKeyFile   ../cert/%phpexe:~1,-1%.key>>"%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%_virtual.conf"
 if %relpath:~1,-1% neq agent echo 	^<Location /^>>>"%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%_virtual.conf"
-if %relpath:~1,-1% neq agent echo 		ProxyPass http://127.0.0.1:%phpport:~1,-1%/ Timeout=300 KeepAlive=On>>"%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%_virtual.conf"
+if %relpath:~1,-1% neq agent echo 		ProxyPass http://127.0.0.1:%phpport:~1,-1%/ Timeout=2000 KeepAlive=On>>"%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%_virtual.conf"
 if %relpath:~1,-1% neq agent echo 		ProxyPassReverse http://127.0.0.1:%phpport:~1,-1%/>>"%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%_virtual.conf"
 if %relpath:~1,-1% neq agent echo 		ProxyPreserveHost On>>"%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%_virtual.conf"
 if %relpath:~1,-1% neq agent echo 		SSLRequireSSL>>"%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%_virtual.conf"

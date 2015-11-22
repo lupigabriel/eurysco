@@ -18,6 +18,7 @@ unset($_SESSION['explorermoconame']);
 unset($_SESSION['cldrive']);
 unset($_SESSION['cldrive_old']);
 unset($_SESSION['clpath']);
+unset($_SESSION['cltimeout']);
 unset($_SESSION['outputh']);
 unset($_SESSION['cmdmem']);
 unset($_SESSION['nodes']);

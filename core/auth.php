@@ -128,6 +128,7 @@ if ($sessionstatus == 'logout' || $logoutstatus == 'logout' || $logoutstatus == 
 	} else {
 		echo '<h2>Session Timeout</h2>';
 	}
+	$_SESSION['loginmessage'] = '';
 	echo '<table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped" style="width:280px;">';
 	echo '<tr><td width="20%"><div style="font-size:10px; white-space:nowrap; table-layout:fixed; overflow:hidden;">Session Status:</div></td><td width="80%"><div id="totaltime" style="font-size:10px;">Closed</div></td></tr>';
 	echo '<tr><td width="20%"><div style="font-size:10px; white-space:nowrap; table-layout:fixed; overflow:hidden;">Session ID:</div></td><td width="80%"><div id="totaltime" style="font-size:10px;">' . substr(hash('sha512', $_SERVER['HTTP_X_FORWARDED_FOR'] . session_id()), 0, 32) . '</div></td></tr>';
@@ -408,7 +409,7 @@ if (!isset($_SESSION['session']) || $_SESSION['session'] != hash('sha512', $_SER
 		if ($userxml->settings->passwlck == md5($userxml->settings->password)) { $passwlck = md5($userxml->settings->password . 1); }
 		if ($userxml->settings->passwlck == md5($userxml->settings->password . 1)) { $passwlck = md5($userxml->settings->password . 2); }
 		if ($userxml->settings->passwlck == md5($userxml->settings->password . 2)) { $passwlck = md5($userxml->settings->password . 3); }
-		if ($data['username'] != 'Administrator') {
+		if ($data['username'] != 'Administrator' && $_SESSION['usertype'] != 'eurysco Services') {
 			$xml = '<config>' . "\n" . '	<settings>' . "\n" . '		<username>' . $userxml->settings->username . '</username>' . "\n" . '		<usertype>' . $userxml->settings->usertype . '</usertype>' . "\n" . '		<userauth>' . $userxml->settings->userauth . '</userauth>' . "\n" . '		<password>' . $userxml->settings->password . '</password>' . "\n" . '		<passwchk>' . $userxml->settings->passwchk . '</passwchk>' . "\n" . '		<passwlck>' . $passwlck . '</passwlck>' . "\n" . '		<lckouttm>' . $lockedouttime . '</lckouttm>' . "\n" . '		<lckoutcm>' . $lockedoutcnam . '</lckoutcm>' . "\n" . '		<lckoutip>' . $lockedoutsrip . '</lckoutip>' . "\n" . '		<expiration>' . $userxml->settings->expiration . '</expiration>' . "\n" . '	</settings>' . "\n" . '</config>';
 			$writexml = fopen($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $data['username'] . '.xml', 'w');
 			fwrite($writexml, base64_encode(base64_encode(base64_encode($xml))));
@@ -428,7 +429,7 @@ if (!isset($_SESSION['session']) || $_SESSION['session'] != hash('sha512', $_SER
 			$sessionstatus = 'Locked';
 			$loginattempts = '<tr><td colspan="2" style="font-size:12px;" align="center">Login Limit Exceeded</td></tr>';
 		}
-		if ($data['username'] != 'Administrator' && (substr_count($_SESSION['USRLCK'], $data['username']) == 3 || $passwlck == md5($userxml->settings->password . 3))) {
+		if ($data['username'] != 'Administrator' && $_SESSION['usertype'] != 'eurysco Services' && (substr_count($_SESSION['USRLCK'], $data['username']) == 3 || $passwlck == md5($userxml->settings->password . 3))) {
 			$userlockoutst = $userlockoutst . '<tr><td width="20%"><div style="font-size:10px; white-space:nowrap; table-layout:fixed; overflow:hidden;">User Status:</div></td><td width="80%"><div id="totaltime" style="font-size:10px;">Locked Out</div></td></tr>';
 			$userlockoutst = $userlockoutst . '<tr><td width="20%"><div style="font-size:10px; white-space:nowrap; table-layout:fixed; overflow:hidden;">Locked Out Time:</div></td><td width="80%"><div id="totaltime" style="font-size:10px;">' . $lockedouttime . '</div></td></tr>';
 			$userlockoutst = $userlockoutst . '<tr><td width="20%"><div style="font-size:10px; white-space:nowrap; table-layout:fixed; overflow:hidden;">Locked Out Node:</div></td><td width="80%"><div id="totaltime" style="font-size:10px;">' . $envcomputername . '</div></td></tr>';
@@ -527,6 +528,7 @@ if (!isset($_SESSION['session']) || $_SESSION['session'] != hash('sha512', $_SER
 		fclose($writexml);
 	}
 	include('/include/unset.php');
+	$loginmessage = '';
 	header('location: ' . $_SERVER["SCRIPT_NAME"]);
 }
 

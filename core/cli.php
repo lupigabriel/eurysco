@@ -48,6 +48,14 @@
 								unset($_POST['resetviewconf']);
 							}
 							
+							if (isset($_POST['cltimeout'])) {
+								$_SESSION['cltimeout'] = $_POST['cltimeout'];
+							} else {
+								if (!isset($_SESSION['cltimeout'])) {
+									$_SESSION['cltimeout'] = '30000';
+								}
+							}
+
 							if (isset($_POST['permpath'])) {
 								$_SESSION['permpathcli'] = $_POST['permpath'];
 							}
@@ -222,7 +230,9 @@
 							}
 							
 							session_write_close();
+							pclose(popen('start "eurysco core exec timeout" /b "eurysco.executor.exec.timeout.exe" ' . $_SESSION['cltimeout'] . ' >nul 2>nul', 'r'));
 							$clioutput = shell_exec('cd\\ & ' . $cldrive . ' & cd\\ & cd "' . $clpath . '" & "' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.cmd">>"' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.out"' . $frrt . ' & dir /b /o:n /a:d>"' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.dir" & dir /b /o:n /a:-d>"' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.files" & cd>"' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.path" & echo. & cd');
+							$corecmdto = exec('taskkill.exe /f /im "eurysco.executor.exec.timeout.exe" /t >nul 2>nul', $errorarrayto, $errorlevelto);
 							session_start();
 							
 							if (substr(trim($clioutput), 1, 1) == ':') {
@@ -241,9 +251,21 @@
 								header('location: ' . $_SERVER['PHP_SELF'] . '?resetviewconf');
 							}
 							
-							$fp = fopen($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.path', 'r');
-							$clpath = preg_replace('/\r\n|\r|\n/','',fgets($fp));
-							fclose($fp);
+							if (file_exists($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.path')) {
+								$fp = fopen($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.path', 'r');
+								$clpath = preg_replace('/\r\n|\r|\n/','',fgets($fp));
+								fclose($fp);
+							} else {
+								unset($_SESSION['cldrive']);
+								unset($_SESSION['cldrive_old']);
+								unset($_SESSION['clpath']);
+								unset($_SESSION['cltimeout']);
+								unset($_SESSION['outputh']);
+								unset($_SESSION['cmdmem']);
+								unset($_SESSION['clpaths']);
+								header('location: ' . $_SERVER["SCRIPT_NAME"]);
+								exit;
+							}
 							$clpath = str_replace(substr($clpath, 0, 2), strtoupper(substr($clpath, 0, 2)), $clpath);
 							
 							$data = array_slice(file($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.out'), -900);
@@ -325,31 +347,55 @@
 											$_SESSION['cmdlistfls'] = array();
 											$_SESSION['cmdlistsrv'] = array();
 											$_SESSION['cmdlistprc'] = array();
-											$data = array_slice(file($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.dir'), -10000);
-											foreach ($data as $line) {
-												if (!preg_match('/\'/', $line)) {
-													$quotecmd = '';
-													if (substr_count($line, ' ') > 0) {
-														$quotecmd = '"' . preg_replace('/\r\n|\r|\n/', '', $line) . '"';
-													} else {
-														$quotecmd = preg_replace('/\r\n|\r|\n/', '', $line);
+											if (file_exists($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.dir')) {
+												$data = array_slice(file($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.dir'), -10000);
+												foreach ($data as $line) {
+													if (!preg_match('/\'/', $line)) {
+														$quotecmd = '';
+														if (substr_count($line, ' ') > 0) {
+															$quotecmd = '"' . preg_replace('/\r\n|\r|\n/', '', $line) . '"';
+														} else {
+															$quotecmd = preg_replace('/\r\n|\r|\n/', '', $line);
+														}
+														array_push($_SESSION['cmdlistfld'], 'cd ' . $quotecmd);
+														array_push($_SESSION['cmdlistfld'], 'dir ' . $quotecmd . ' /a');
 													}
-													array_push($_SESSION['cmdlistfld'], 'cd ' . $quotecmd);
-													array_push($_SESSION['cmdlistfld'], 'dir ' . $quotecmd . ' /a');
 												}
+											} else {
+												unset($_SESSION['cldrive']);
+												unset($_SESSION['cldrive_old']);
+												unset($_SESSION['clpath']);
+												unset($_SESSION['cltimeout']);
+												unset($_SESSION['outputh']);
+												unset($_SESSION['cmdmem']);
+												unset($_SESSION['clpaths']);
+												header('location: ' . $_SERVER["SCRIPT_NAME"]);
+												exit;
 											}
-											$data = array_slice(file($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.files'), -10000);
-											foreach ($data as $line) {
-												if (!preg_match('/\'/', $line)) {
-													$quotecmd = '';
-													if (substr_count($line, ' ') > 0) {
-														$quotecmd = '"' . preg_replace('/\r\n|\r|\n/', '', $line) . '"';
-													} else {
-														$quotecmd = preg_replace('/\r\n|\r|\n/', '', $line);
+											if (file_exists($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.files')) {
+												$data = array_slice(file($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.files'), -10000);
+												foreach ($data as $line) {
+													if (!preg_match('/\'/', $line)) {
+														$quotecmd = '';
+														if (substr_count($line, ' ') > 0) {
+															$quotecmd = '"' . preg_replace('/\r\n|\r|\n/', '', $line) . '"';
+														} else {
+															$quotecmd = preg_replace('/\r\n|\r|\n/', '', $line);
+														}
+														array_push($_SESSION['cmdlistfls'], 'type ' . $quotecmd);
+														array_push($_SESSION['cmdlistfls'], 'dir ' . $quotecmd . ' /a');
 													}
-													array_push($_SESSION['cmdlistfls'], 'type ' . $quotecmd);
-													array_push($_SESSION['cmdlistfls'], 'dir ' . $quotecmd . ' /a');
 												}
+											} else {
+												unset($_SESSION['cldrive']);
+												unset($_SESSION['cldrive_old']);
+												unset($_SESSION['clpath']);
+												unset($_SESSION['cltimeout']);
+												unset($_SESSION['outputh']);
+												unset($_SESSION['cmdmem']);
+												unset($_SESSION['clpaths']);
+												header('location: ' . $_SERVER["SCRIPT_NAME"]);
+												exit;
 											}
 											$wmiservices = $wmi->ExecQuery("SELECT Name FROM Win32_Service");
 											foreach($wmiservices as $service) {
@@ -372,8 +418,18 @@
 										
 											?>
 									</div>
-									<div class="input-control input span7">
+									<div class="input-control input span5">
 		                            	<input type="text" id="cmd" name="cmd" value="" autofocus="on" autocomplete="off" style="color:#cbc2cc; background-color:#000000; font-size:16px; font-family:CLIfont; font-weight:normal; line-height:75%;">
+									</div>
+									<div class="input-control select span1.5">
+										<select id="cltimeout" name="cltimeout" style="color:#cbc2cc; background-color:#000000; font-size:16px; font-family:CLIfont; font-weight:normal; line-height:75%;">
+											<option value="30000" <?php if ($_SESSION['cltimeout'] == '30000') { echo 'selected'; } ?>>Timeout 30 Sec</option>
+											<option value="60000" <?php if ($_SESSION['cltimeout'] == '60000') { echo 'selected'; } ?>>Timeout 60 Sec</option>
+											<option value="300000" <?php if ($_SESSION['cltimeout'] == '300000') { echo 'selected'; } ?>>Timeout 05 Min</option>
+											<option value="600000" <?php if ($_SESSION['cltimeout'] == '600000') { echo 'selected'; } ?>>Timeout 10 Min</option>
+											<option value="900000" <?php if ($_SESSION['cltimeout'] == '900000') { echo 'selected'; } ?>>Timeout 15 Min</option>
+											<option value="1800000" <?php if ($_SESSION['cltimeout'] == '1800000') { echo 'selected'; } ?>>Timeout 30 Min</option>
+										</select>
 									</div>
 									<input type="submit" style="background-color:#0072C6;" value="Run">
 								</div>
