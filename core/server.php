@@ -315,7 +315,7 @@ foreach($wmios as $os) {
 						<?php $name = str_replace('\\core', '\\cert\\eurysco_server.csr', $_SERVER['DOCUMENT_ROOT']); if (file_exists($name) && is_readable($name)) { ?>
 						<div class="input-control text">
                         	<h3>Server SSL Certificate Request:</h3>
-							<textarea wrap="off" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:10px; height:100px; font-weight:normal;" disabled="disabled"><?php
+							<textarea wrap="off" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:10px; height:100px; font-weight:normal;" readonly="readonly"><?php
 								$filearr = file($name);
 								$lastlines = array_slice($filearr, -10000);
 								$csroutput = '';
