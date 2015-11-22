@@ -90,7 +90,7 @@ echo 	ProxyRequests Off>>"%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%_virtual.
 echo 	SSLCertificateFile      ../cert/%phpexe:~1,-1%.crt>>"%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%_virtual.conf"
 echo 	SSLCertificateKeyFile   ../cert/%phpexe:~1,-1%.key>>"%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%_virtual.conf"
 echo 	^<Location /^>>>"%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%_virtual.conf"
-echo 		ProxyPass http://127.0.0.1:%phpport:~1,-1%/ Timeout=2000 KeepAlive=On>>"%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%_virtual.conf"
+echo 		ProxyPass http://127.0.0.1:%phpport:~1,-1%/ Timeout=180 KeepAlive=On>>"%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%_virtual.conf"
 echo 		ProxyPassReverse http://127.0.0.1:%phpport:~1,-1%/>>"%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%_virtual.conf"
 echo 		ProxyPreserveHost On>>"%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%_virtual.conf"
 echo 		SSLRequireSSL>>"%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%_virtual.conf"
