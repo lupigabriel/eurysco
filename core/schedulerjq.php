@@ -16,7 +16,6 @@ $start = $time;
 
 include('/include/init.php');
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Operators' || $_SESSION['usertype'] == 'Users' || $_SESSION['usersett']['scheduledtasks'] > 0) {  } else { exit; }
-session_write_close();
 
 if (isset($_GET['orderby'])) {
 	$orderby = $_GET['orderby'];
@@ -292,9 +291,7 @@ foreach ($schedulerarray as $schedulerow) {
 
 if ($_SESSION['csv_scheduler'] == '') { $csvexport = '<div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;"><a href="/scheduler.php?csv_scheduler&orderby=' . $orderby . '&filter=' . urlencode($filter) . '" style="font-size:12px; color:#777;" title="Create CSV"><div class="icon-download-2"></div></a>&nbsp;Total Elements:</div>'; }
 if ($_SESSION['csv_scheduler'] == 'csv_scheduler') {
-	session_start();
 	$_SESSION['csv_scheduler'] = $tmpcsvexport;
-	session_write_close();
 }
 if ($_SESSION['csv_scheduler'] != '') { $csvexport = '<div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;"><a href="/csv.php?export=csv_scheduler&source=' . $envcomputername . '" style="font-size:12px;" title="Export CSV"><div class="icon-download-2"></div></a>&nbsp;Total Elements:</div>'; }
 

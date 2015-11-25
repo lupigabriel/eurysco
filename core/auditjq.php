@@ -5,7 +5,6 @@ if (!strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/audit.php')) { e
 
 include('/include/init.php');
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Auditors' || $_SESSION['usersett']['auditlog'] > 0) {  } else { exit; }
-session_write_close();
 
 if (isset($_GET['orderby'])) {
 	$orderby = $_GET['orderby'];

@@ -5,7 +5,6 @@ if (!strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/shutdown.php')) 
 
 include('/include/init.php');
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['systemshutdown'] > 0) {  } else { exit; }
-session_write_close();
 
 $shutdown_xml = 'temp\\shutdown.xml';
 

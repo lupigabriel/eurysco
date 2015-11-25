@@ -5,7 +5,6 @@ if (!strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/agent.php')) { e
 
 include('/include/init.php');
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Operators' || $_SESSION['usersett']['agentconfig'] > 0) {  } else { exit; }
-session_write_close();
 
 $eurysco_agentsrv = 'euryscoAgent';
 if (file_exists($config_agentsrv)) {

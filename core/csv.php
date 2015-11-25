@@ -12,6 +12,16 @@ if (!isset($_GET['source'])) {
 
 include('/include/init.php');
 
+if (!isset($_SESSION[$_GET['export']])) {
+	header('location: ' . $_SERVER['HTTP_REFERER']);
+	exit;
+}
+
+if ($_SESSION[$_GET['export']] == '') {
+	header('location: ' . $_SERVER['HTTP_REFERER']);
+	exit;
+}
+
 set_time_limit(60);
 
 $table = 'eurysco_' . $_GET['source'] . '_' . $_GET['export'] . '_' . time();

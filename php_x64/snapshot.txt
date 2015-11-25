@@ -1,7 +1,7 @@
 This snapshot was automatically generated on
-Thu, 21 Aug 2014 21:57:20 +0000
+Wed, 30 Sep 2015 21:15:33 +0000
 
-Version: 5.5.16
+Version: 5.5.30
 Branch: HEAD
 Build: C:\php-sdk\php55\vc11\x64\obj\Release
 
@@ -64,6 +64,7 @@ Module: php_com_dotnet.dll
 
 Module: php_curl.dll
 ===========================
+	libssh2.dll
 	libeay32.dll
 	ssleay32.dll
 	normaliz.dll

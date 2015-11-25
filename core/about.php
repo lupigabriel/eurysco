@@ -44,12 +44,12 @@
                     <br />
                     <br />
 
-                    <a href="http://php.net"><h2>PHP: Hypertext Preprocessor 5.5.16 (x64)</h2></a>
+                    <a href="http://php.net"><h2>PHP: Hypertext Preprocessor 5.5.30 (x64)</h2></a>
 					This product includes PHP software, freely available from <a href="http://www.php.net/software">http://www.php.net/software</a>
                     <h3>MIT License</h3>
                     <div class="input-control textarea">
                     <textarea id="licenseoutput" name="licenseoutput" readonly="readonly" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:12px; height:125px; font-weight:normal; overflow-x:hidden;"><?php
-						$name = $_SERVER['DOCUMENT_ROOT'] . '\\licenses\\php_5.5.16.license';
+						$name = $_SERVER['DOCUMENT_ROOT'] . '\\licenses\\php_5.5.30.license';
 						$licenseoutput = 'License File Not Found...';
 						if (file_exists($name) && is_readable($name)) {
 							$filearr = file($name);
@@ -65,12 +65,12 @@
                     <br />
                     <br />
 
-                    <a href="http://php.net"><h2>PHP: Hypertext Preprocessor 5.5.16 (x86)</h2></a>
+                    <a href="http://php.net"><h2>PHP: Hypertext Preprocessor 5.5.30 (x86)</h2></a>
 					This product includes PHP software, freely available from <a href="http://www.php.net/software">http://www.php.net/software</a>
                     <h3>MIT License</h3>
                     <div class="input-control textarea">
                     <textarea id="licenseoutput" name="licenseoutput" readonly="readonly" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:12px; height:125px; font-weight:normal; overflow-x:hidden;"><?php
-						$name = $_SERVER['DOCUMENT_ROOT'] . '\\licenses\\php_5.5.16.license';
+						$name = $_SERVER['DOCUMENT_ROOT'] . '\\licenses\\php_5.5.30.license';
 						$licenseoutput = 'License File Not Found...';
 						if (file_exists($name) && is_readable($name)) {
 							$filearr = file($name);

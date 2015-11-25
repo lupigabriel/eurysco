@@ -16,7 +16,6 @@ $start = $time;
 
 include('/include/init.php');
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filebrowser'] > 0) {  } else { exit; }
-session_write_close();
 
 if (isset($_GET['path'])) {
 	$path = $_GET['path'];

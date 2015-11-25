@@ -16,7 +16,6 @@ $start = $time;
 
 include('/include/init.php');
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Operators' || $_SESSION['usertype'] == 'Users' || $_SESSION['usersett']['processcontrol'] > 0) {  } else { exit; }
-session_write_close();
 
 if (isset($_GET['orderby'])) {
 	$orderby = $_GET['orderby'];
@@ -221,7 +220,7 @@ if ($_SESSION['csv_processes'] == 'csv_processes') {
 	array_push($tmpcsvexport, '"Name";' . '"PID";' . '"CPU Usage";' . '"Memory Usage";' . '"Parent PID";' . '"Command Line";' . '"File Name";' . '"Executable Path";' . '"Username";' . "\n\n");
 }
 foreach ($processarray as $processrow) {
-	if ($processrow[2] == 'euryscosrv' || $processrow[2] == 'euryscosrv#1' || $processrow[2] == 'euryscosrv#2' || $processrow[2] == 'euryscosrv#3' || $processrow[2] == 'euryscosrv#4' || $processrow[2] == 'euryscosrv#5' || $processrow[2] == 'euryscosrv#6' || $processrow[2] == 'php_eurysco_agent' || $processrow[2] == 'php_eurysco_core' || $processrow[2] == 'php_eurysco_executor' || $processrow[2] == 'php_eurysco_server' || $processrow[2] == 'httpd_eurysco_core' || $processrow[2] == 'httpd_eurysco_core#1' || $processrow[2] == 'httpd_eurysco_executor' || $processrow[2] == 'httpd_eurysco_executor#1' || $processrow[2] == 'httpd_eurysco_server' || $processrow[2] == 'eurysco.agent.status.check' || $processrow[2] == 'eurysco.agent.exec.timeout') {
+	if ($processrow[2] == 'euryscosrv' || $processrow[2] == 'euryscosrv#1' || $processrow[2] == 'euryscosrv#2' || $processrow[2] == 'euryscosrv#3' || $processrow[2] == 'euryscosrv#4' || $processrow[2] == 'euryscosrv#5' || $processrow[2] == 'euryscosrv#6' || $processrow[2] == 'php_eurysco_agent' || $processrow[2] == 'php_eurysco_core' || $processrow[2] == 'php_eurysco_executor' || $processrow[2] == 'php_eurysco_server' || $processrow[2] == 'httpd_eurysco_core' || $processrow[2] == 'httpd_eurysco_core#1' || $processrow[2] == 'httpd_eurysco_executor' || $processrow[2] == 'httpd_eurysco_executor#1' || $processrow[2] == 'httpd_eurysco_server' || $processrow[2] == 'httpd_eurysco_server#1' || $processrow[2] == 'eurysco.agent.status.check' || $processrow[2] == 'eurysco.agent.exec.timeout') {
 		array_push($processpagearray, '<tr class="rowselect" title="' . htmlentities($processrow[6]) . '"><td style="font-size:12px;" align="center">&nbsp;</td><td style="font-size:12px;" align="center">' . $processrow[1] . '</td><td style="font-size:12px;">' . $processrow[2] . '</td><td style="font-size:12px;" align="center"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">' . $processrow[10] . '</div></td><td style="font-size:12px;" align="center">' . $processrow[3] . '</td><td style="font-size:12px;" align="right">' . $processrow[4] . '</td><td style="font-size:12px;" align="center">' . $processrow[5] . '</td></tr>');
 	} else {
 		if (strlen($processrow[2]) > 15) { $LimitName = substr($processrow[2], 0, 15) . '&nbsp;[...]'; } else { $LimitName = $processrow[2]; }
@@ -232,9 +231,7 @@ foreach ($processarray as $processrow) {
 
 if ($_SESSION['csv_processes'] == '') { $csvexport = '<div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;"><a href="/processes.php?csv_processes&orderby=' . $orderby . '&filter=' . urlencode($filter) . '" style="font-size:12px; color:#777;" title="Create CSV"><div class="icon-download-2"></div></a>&nbsp;Total Elements:</div>'; }
 if ($_SESSION['csv_processes'] == 'csv_processes') {
-	session_start();
 	$_SESSION['csv_processes'] = $tmpcsvexport;
-	session_write_close();
 }
 if ($_SESSION['csv_processes'] != '') { $csvexport = '<div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;"><a href="/csv.php?export=csv_processes&source=' . $envcomputername . '" style="font-size:12px;" title="Export CSV"><div class="icon-download-2"></div></a>&nbsp;Total Elements:</div>'; }
 

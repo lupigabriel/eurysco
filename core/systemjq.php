@@ -15,8 +15,6 @@ $time = $time[1] + $time[0];
 $start = $time;
 
 include('/include/init.php');
-session_write_close();
-
 
 $systemi = '';
 

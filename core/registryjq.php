@@ -16,7 +16,6 @@ $start = $time;
 
 include('/include/init.php');
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['systemregistry'] > 0) {  } else { exit; }
-session_write_close();
 
 require('/include/class.WindowsRegistry.php');
 

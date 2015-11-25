@@ -16,7 +16,6 @@ $start = $time;
 
 include('/include/init.php');
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Operators' || $_SESSION['usertype'] == 'Users' || $_SESSION['usersett']['wmiexplorer'] > 0) {  } else { exit; }
-session_write_close();
 
 if (isset($_GET['filter'])) {
 	$filter = urldecode($_GET['filter']);

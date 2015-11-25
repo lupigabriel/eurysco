@@ -16,7 +16,6 @@ $start = $time;
 
 include('/include/init.php');
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Operators' || $_SESSION['usertype'] == 'Users' || $_SESSION['usersett']['nagiosstatus'] > 0) {  } else { exit; }
-session_write_close();
 
 if (isset($_GET['orderby'])) {
 	$orderby = $_GET['orderby'];
@@ -280,9 +279,7 @@ foreach ($nagiosarray as $nagiosrow) {
 
 if ($_SESSION['csv_nagios'] == '') { $csvexport = '<div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;"><a href="/nagios.php?csv_nagios&orderby=' . $orderby . '&filter=' . urlencode($filter) . '" style="font-size:12px; color:#777;" title="Create CSV"><div class="icon-download-2"></div></a>&nbsp;Total Elements:</div>'; }
 if ($_SESSION['csv_nagios'] == 'csv_nagios') {
-	session_start();
 	$_SESSION['csv_nagios'] = $tmpcsvexport;
-	session_write_close();
 }
 if ($_SESSION['csv_nagios'] != '') { $csvexport = '<div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;"><a href="/csv.php?export=csv_nagios&source=' . $envcomputername . '" style="font-size:12px;" title="Export CSV"><div class="icon-download-2"></div></a>&nbsp;Total Elements:</div>'; }
 

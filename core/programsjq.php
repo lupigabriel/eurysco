@@ -16,7 +16,6 @@ $start = $time;
 
 include('/include/init.php');
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Operators' || $_SESSION['usertype'] == 'Users' || $_SESSION['usersett']['installedprograms'] > 0) {  } else { exit; }
-session_write_close();
 
 if (isset($_GET['orderby'])) {
 	$orderby = $_GET['orderby'];
@@ -163,9 +162,7 @@ foreach ($programarray as $programrow) {
 
 if ($_SESSION['csv_programs'] == '') { $csvexport = '<div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;"><a href="/programs.php?csv_programs&orderby=' . $orderby . '&filter=' . urlencode($filter) . '" style="font-size:12px; color:#777;" title="Create CSV"><div class="icon-download-2"></div></a>&nbsp;Total Elements:</div>'; }
 if ($_SESSION['csv_programs'] == 'csv_programs') {
-	session_start();
 	$_SESSION['csv_programs'] = $tmpcsvexport;
-	session_write_close();
 }
 if ($_SESSION['csv_programs'] != '') { $csvexport = '<div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;"><a href="/csv.php?export=csv_programs&source=' . $envcomputername . '" style="font-size:12px;" title="Export CSV"><div class="icon-download-2"></div></a>&nbsp;Total Elements:</div>'; }
 
