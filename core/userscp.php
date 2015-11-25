@@ -19,6 +19,7 @@ if ($action == 'logon') { echo 'logon'; exit; }
 if ($action == 'verifypass') { echo 'verifypass'; exit; }
 if ($action == 'prechangepass') { echo 'prechangepass'; exit; }
 if ($action == 'prereconcilepass') { echo 'prereconcilepass'; exit; }
+if ($action != '') { echo $action; }
 
 set_time_limit(10);
 

@@ -46,7 +46,7 @@ if (file_exists($config_agentsrv)) {
 
 $username = str_replace('UserName=', '', trim($_ENV['usernm']));
 
-$realm = 'eurysco Authentication';
+$realm = '';
 $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
 $iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);
 $mcrykey = pack('H*', hash('sha256', hash('sha512', 'vNqgi_R1QX%C;z-724p4lFHm*?7c!e2%vG9tp+-*@#%=?!_;./' . hash('tiger128,4', $eurysco_serverconport) . '-*@#%=?!_;./-f;bTh2XXqW%Zs%88+/-7pVb;X')));
@@ -62,7 +62,7 @@ curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $eurysco_sslverifyhost);
 curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport . '/userscp.php');
 curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 10000);
 curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-curl_setopt($ch, CURLOPT_USERPWD, hash('sha256', $eurysco_serverconport . 'euryscoServer' . $eurysco_serverconport) . ':' . mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($eurysco_serverconpassword), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($eurysco_serverconpassword), 0, $iv_size)));
+curl_setopt($ch, CURLOPT_USERPWD, hash('sha256', $eurysco_serverconport . 'euryscoServer' . $eurysco_serverconport) . ':' . trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($eurysco_serverconpassword), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($eurysco_serverconpassword), 0, $iv_size))));
 curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST, true);
@@ -79,7 +79,7 @@ $response = 2101;
 $response = curl_exec($ch);
 curl_close($ch);
 
-if ($response === false) {
+if ($response === false || $response == '') {
 	exit(2102);
 } else {
 	if (preg_match_all('/locked out/', strtolower($response))) {

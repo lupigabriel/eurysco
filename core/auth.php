@@ -479,9 +479,6 @@ if (!isset($_SESSION['session']) || $_SESSION['session'] != hash('sha512', $_SER
 		}
 		echo '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/html" lang="en"><head><meta charset="utf-8"><meta name="viewport" content="target-densitydpi=device-dpi, width=device-width, initial-scale=1.0, maximum-scale=1"><meta name="description" content="eurysco"><meta name="author" content="eurysco"><meta name="keywords" content="eurysco"><link href="css/modern.css" rel="stylesheet"><link href="css/modern-responsive.css" rel="stylesheet"><title>eurysco Authentication Error</title></head><body class="metrouicss"><br /><br /><table width="100%" border="0" cellspacing="0" cellpadding="0"><tr><td style="border:none;" align="center"><a href="/" class="eurysco-bg big page-back"></a>';
 		echo '<br />';
-		echo $data['username'] . '<br />';
-		echo $data['response'] . '<br />';
-		echo $valid_response . '<br />';
 		echo '<h2>Authentication Error</h2>';
 		echo '<table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped" style="width:280px;">';
 		echo '<tr><td colspan="2" style="font-size:12px;" align="center">Invalid Credentials</td></tr>';
