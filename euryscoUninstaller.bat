@@ -36,6 +36,8 @@ netsh.exe advfirewall firewall delete rule name=httpd_eurysco_core dir=in
 netsh.exe advfirewall firewall delete rule name=httpd_eurysco_executor dir=in
 netsh.exe advfirewall firewall delete rule name=httpd_eurysco_server dir=in
 
+reg.exe delete "HKLM\SOFTWARE\eurysco" /f
+
 del .\chromium\euryscoLogin.prt /f /q
 del .\cert\*.* /f /q
 del .\server\conf\*.xml /f /q

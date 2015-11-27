@@ -12,6 +12,19 @@ if %osarc% equ x86 if %osold% equ "_xp2k3" "%cd%\installs\vcredist_%osarc%%osold
 if %osarc% equ x86 if %osold% equ "" "%cd%\installs\vcredist_%osarc%%osold:~1,-1%.exe" /passive /norestart
 if %osarc% equ x64 "%cd%\installs\vcredist_%osarc%.exe" /passive /norestart
 
+reg.exe delete "HKLM\SOFTWARE\eurysco" /f
+type "%cd%\core\version.phtml" | find /i "return">"%cd%\version"
+set /p version=<"%cd%\version"
+del "%cd%\version" /f /q
+reg.exe add "HKLM\SOFTWARE\eurysco" /v "DisplayName" /t REG_SZ /d "eurysco %version:~8,-2%" /f
+reg.exe add "HKLM\SOFTWARE\eurysco" /v "DisplayVersion" /t REG_SZ /d "%version:~8,-2%" /f
+reg.exe add "HKLM\SOFTWARE\eurysco" /v "HelpLink" /t REG_SZ /d "http://www.eurysco.com" /f
+reg.exe add "HKLM\SOFTWARE\eurysco" /v "InstallLocation" /t REG_SZ /d "%cd%\\" /f
+reg.exe add "HKLM\SOFTWARE\eurysco" /v "Publisher" /t REG_SZ /d "eurysco" /f
+reg.exe add "HKLM\SOFTWARE\eurysco" /v "MajorVersion" /t REG_DWORD /d %version:~8,-5% /f
+reg.exe add "HKLM\SOFTWARE\eurysco" /v "MinorVersion" /t REG_DWORD /d %version:~10,-2% /f
+echo eurysco %version:~8,-2%>"%cd%\version.%version:~8,-2%"
+
 echo y|cacls.exe "%cd%" /s:D:PAI(D;OICI;DCLCRPDTCRSDWDWO;;;SY)(A;OICI;0x1200a9;;;SY)(A;OICI;FA;;;BA)(A;OICI;0x1200a9;;;BU)
 echo y|cacls.exe "%cd%\agent\conf" /s:D:PAI(A;OICI;0x1301ff;;;SY)(A;OICI;FA;;;BA)(A;OICI;0x1200a9;;;BU)
 echo y|cacls.exe "%cd%\agent\groups" /s:D:PAI(A;OICI;0x1301ff;;;SY)(A;OICI;FA;;;BA)(A;OICI;0x1200a9;;;BU)
