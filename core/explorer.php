@@ -78,11 +78,9 @@ if ($_SESSION['usersett']['filebrowserf'] != '') {
 			$('#finfo_mime_encoding').html('<td style="font-size:12px;">Mime Encoding:&nbsp;</td><td style="font-size:12px;" title="' + data.title_mime_encoding + '">' + data.finfo_mime_encoding + '</td>');
 			}
 		});
-		ObjTypeCopy = '';
-		if (ObjType == 'File') { ObjTypeCopy = '<option value="Copy">&nbsp;COPY&nbsp;&nbsp;</option>'; }
 		$.Dialog({
 			'title'       : '<span style="font-size:16px;">&nbsp;<div class="icon-folder" style="position:inherit;"></div>&nbsp; ' + ObjType + ': <strong>' + DetailName + '</strong></span>',
-			'content'     : '<form id="updateform" name="updateform" method="post"><table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped"><tr class="rowselect"><td width="50%" style="font-size:12px;">Name:&nbsp;</td><td width="50%" style="font-size:10px;"><input type="text" id="newname" name="newname" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:118px; padding-left:4px; padding-right:4px; font-size:12px;" value="' + Name + '"></td></tr><tr class="rowselect"><td style="font-size:12px;">Created:&nbsp;</td><td style="font-size:12px;">' + CrtDate + '</td></tr><tr class="rowselect"><td style="font-size:12px;">Modified:&nbsp;</td><td style="font-size:12px;">' + ModDate + '</td></tr><tr class="rowselect"><td style="font-size:12px;">Accessed:&nbsp;</td><td style="font-size:12px;">' + AccDate + '</td></tr><tr class="rowselect"><td style="font-size:12px;">Confirm&nbsp;Operation:&nbsp;</td><td style="font-size:10px;"><select id="confirmoperation" name="confirmoperation" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:118px;"><option value="nothing">&nbsp;-&nbsp;</option>' + ObjTypeCopy + '<option value="Move">&nbsp;MOVE&nbsp;&nbsp;</option><option value="delete">&nbsp;DELETE&nbsp;&nbsp;</option></select><input type="hidden" id="pathfile" name="pathfile" value="' + PathFile + '"><input type="hidden" id="oldname" name="oldname"></td></tr><tr class="rowselect" id="finfo_mime_type"></tr><tr class="rowselect" id="finfo_symlink"></tr><tr class="rowselect" id="finfo_mime_encoding"></tr></table></form>',
+			'content'     : '<form id="updateform" name="updateform" method="post"><table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped"><tr class="rowselect"><td width="50%" style="font-size:12px;">Name:&nbsp;</td><td width="50%" style="font-size:10px;"><input type="text" id="newname" name="newname" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:118px; padding-left:4px; padding-right:4px; font-size:12px;" value="' + Name + '"></td></tr><tr class="rowselect"><td style="font-size:12px;">Created:&nbsp;</td><td style="font-size:12px;">' + CrtDate + '</td></tr><tr class="rowselect"><td style="font-size:12px;">Modified:&nbsp;</td><td style="font-size:12px;">' + ModDate + '</td></tr><tr class="rowselect"><td style="font-size:12px;">Accessed:&nbsp;</td><td style="font-size:12px;">' + AccDate + '</td></tr><tr class="rowselect"><td style="font-size:12px;">Confirm&nbsp;Operation:&nbsp;</td><td style="font-size:10px;"><select id="confirmoperation" name="confirmoperation" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:118px;"><option value="nothing">&nbsp;-&nbsp;</option><option value="Copy">&nbsp;COPY&nbsp;&nbsp;</option><option value="Move">&nbsp;MOVE&nbsp;&nbsp;</option><option value="delete">&nbsp;DELETE&nbsp;&nbsp;</option></select><input type="hidden" id="pathfile" name="pathfile" value="' + PathFile + '"><input type="hidden" id="oldname" name="oldname"></td></tr><tr class="rowselect" id="finfo_mime_type"></tr><tr class="rowselect" id="finfo_symlink"></tr><tr class="rowselect" id="finfo_mime_encoding"></tr></table></form>',
 			'draggable'   : true,
 			'overlay'     : true,
 			'closeButton' : false,
@@ -221,9 +219,15 @@ if ($_SESSION['usersett']['filebrowserf'] != '') {
 						} else {
 							$mocotype = 'File';
 						}
-						session_write_close();
-						$mocooperoutput = exec(strtolower($_SESSION['explorermocooper']) . ' /y "' . $_SESSION['explorermocopath'] . '\\' . $_SESSION['explorermoconame'] . '" "' . $currentpath . '"', $errorarray, $errorlevel);
-						session_start();
+						if ($_SESSION['explorermocooper'] == 'Copy' && $mocotype == 'Folder') {
+							session_write_close();
+							$mocooperoutput = exec('xcopy.exe "' . $_SESSION['explorermocopath'] . '\\' . $_SESSION['explorermoconame'] . '" "' . $currentpath . '\\' . $_SESSION['explorermoconame'] . '" /s /e /c /i /h /r /k /y', $errorarray, $errorlevel);
+							session_start();
+						} else {
+							session_write_close();
+							$mocooperoutput = exec(strtolower($_SESSION['explorermocooper']) . ' /y "' . $_SESSION['explorermocopath'] . '\\' . $_SESSION['explorermoconame'] . '" "' . $currentpath . '"', $errorarray, $errorlevel);
+							session_start();
+						}
 						if ($errorlevel == 0) {
 							$message = '<blockquote style="font-size:12px; background-color:#0072C6; color:#FFFFFF; border-left-color:#324886;">' . $_SESSION['explorermocooper'] . ' ' . $mocotype . ' <strong>' . $_SESSION['explorermoconame'] . '</strong> in <strong>' . $currentpath . '</strong> completed</blockquote><br />';
 		                    $audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     file browser     ' . $_SESSION['explorermocooper'] . ' ' . $mocotype . ' "' . str_replace('\\\\', '\\', $_SESSION['explorermocopath'] . '\\' . $_SESSION['explorermoconame']) . '" in "' . $currentpath . '" completed';
@@ -301,6 +305,9 @@ if ($_SESSION['usersett']['filebrowserf'] != '') {
 							$deletepathfile = $_POST['pathfile'];
 							if (is_dir($deletepathfile)) {
 								@rmdir($deletepathfile);
+								session_write_close();
+								$mocooperoutput = exec('rd "' . $deletepathfile . '" /s /q', $errorarray, $errorlevel);
+								session_start();
 								if (file_exists($deletepathfile)) {
 									$deletefoldernotempty = '';
 									if (count(scandir($deletepathfile)) > 2) { $deletefoldernotempty = '... is not empty!'; }
@@ -314,7 +321,7 @@ if ($_SESSION['usersett']['filebrowserf'] != '') {
 								@unlink($deletepathfile);
 								if (file_exists($deletepathfile)) {
 									$message = '<blockquote style="font-size:12px; background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">file <strong>' . $_POST['oldname'] . '</strong> not deleted</blockquote><br />';
-				                    $audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     file browser     folder "' . $deletepathfile . '" not deleted';
+				                    $audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     file browser     file "' . $deletepathfile . '" not deleted';
 								} else {
 									$message = '<blockquote style="font-size:12px; background-color:#0072C6; color:#FFFFFF; border-left-color:#324886;">file <strong>' . $_POST['oldname'] . '</strong> deleted</blockquote><br />';
 				                    $audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     file browser     file "' . $deletepathfile . '" deleted';
@@ -399,9 +406,10 @@ if ($_SESSION['usersett']['filebrowserf'] != '') {
 						<?php } ?>
                         </div>
 					</blockquote>
+					<br />
+					<?php } ?>
 
 					<?php if (isset($_SESSION['explorermocooper']) && isset($_SESSION['explorermocopath']) && isset($_SESSION['explorermoconame'])) { ?>
-					<br />
 					<form id="mococancel" name="mococancel" method="post">
 						<input type="hidden" id="mococancelconf" name="mococancelconf" value="mococancelconf" />
 					</form>
@@ -418,7 +426,6 @@ if ($_SESSION['usersett']['filebrowserf'] != '') {
                     <blockquote style="font-size:12px;">
 						<?php echo $_SESSION['explorermocooper'] . ' ' . $mocotype; ?>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php echo str_replace('\\\\', '\\', $_SESSION['explorermocopath'] . '\\' . $_SESSION['explorermoconame']); ?>&nbsp;<?php if (strtolower($currentpath) != strtolower($_SESSION['explorermocopath']) && (strpos('|' . strtolower($currentpath), strtolower($_SESSION['explorermocopath'] . '\\' . $_SESSION['explorermoconame'])) + 0) == 0) { ?>&nbsp;<a href="#" onclick="document.mocooper.submit();" title="<?php echo $_SESSION['explorermocooper']; ?> Here"><div class="icon-forward"></div></a><?php } ?>&nbsp;<a href="#" onclick="document.mococancel.submit();" title="Cancel Operation"><div class="icon-cancel"></div></a>
 					</blockquote>
-					<?php } ?>
                     <br />
 					<?php } ?>
                     
