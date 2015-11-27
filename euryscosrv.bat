@@ -49,6 +49,7 @@ if %relpath:~1,-1% neq agent netsh.exe firewall delete allowedprogram "%cd%\apac
 if %relpath:~1,-1% neq agent netsh.exe advfirewall firewall delete rule name=httpd_%phpexe:~1,-1% dir=in
 if %relpath:~1,-1% neq agent sc.exe create "%servicename:~1,-1%SSL" start= "%servicestart:~1,-1%" binPath= "%cd%\euryscosrv.exe" obj= "%serviceuser:~1,-1%" DisplayName= "%servicedisplay:~1,-1% SSL"
 if %relpath:~1,-1% neq agent reg.exe add "HKLM\SYSTEM\CurrentControlSet\services\%servicename:~1,-1%SSL\Parameters" /v "Application" /t REG_SZ /d "\"%cd%\apache_%osarc%\bin\httpd_%phpexe:~1,-1%.exe\" -f \"%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%.conf\"" /f
+if %relpath:~1,-1% neq agent if %errorlevel% neq 0 cscript.exe "%cd%\euryscosrv.vbs" %servicename:~1,-1%SSL "@%cd%\apache_%osarc%\bin\httpd_%phpexe:~1,-1%.exe@ -f @%cd%\apache_%osarc%\conf\httpd_%phpexe:~1,-1%.conf@"
 if %relpath:~1,-1% neq agent if not exist "%cd%\apache_%osarc%\bin\httpd_%phpexe:~1,-1%.exe" if exist "%cd%\apache_%osarc%\bin\httpd.exe" copy "%cd%\apache_%osarc%\bin\httpd.exe" "%cd%\apache_%osarc%\bin\httpd_%phpexe:~1,-1%.exe" /y
 if %relpath:~1,-1% neq agent netsh.exe advfirewall firewall add rule name="httpd_%phpexe:~1,-1%" dir=in action=allow protocol=6 localport=%serviceport:~1,-1% program="%cd%\apache_%osarc%\bin\httpd_%phpexe:~1,-1%.exe" enable=yes
 if %relpath:~1,-1% neq agent if %errorlevel% neq 0 netsh.exe firewall add allowedprogram "%cd%\apache_%osarc%\bin\httpd_%phpexe:~1,-1%.exe" "httpd_%phpexe:~1,-1%" enable
@@ -62,7 +63,9 @@ reg.exe delete "HKLM\SYSTEM\CurrentControlSet\services\%servicename_last:~1,-1%"
 
 sc.exe create "%servicename:~1,-1%" start= "%servicestart:~1,-1%" binPath= "%cd%\euryscosrv.exe" obj= "%serviceuser:~1,-1%" DisplayName= "%servicedisplay:~1,-1%"
 if %relpath:~1,-1% neq agent reg.exe add "HKLM\SYSTEM\CurrentControlSet\services\%servicename:~1,-1%\Parameters" /v "Application" /t REG_SZ /d "\"%cd%\php_%osarc%%osold:~1,-1%\php_%phpexe:~1,-1%.exe\" -c \"%cd%\php_%osarc%%osold:~1,-1%\php.ini\" -t \"%cd%\%relpath:~1,-1%\" -S 127.0.0.1:%phpport:~1,-1%" /f
+if %relpath:~1,-1% neq agent if %errorlevel% neq 0 cscript.exe "%cd%\euryscosrv.vbs" %servicename:~1,-1% "@%cd%\php_%osarc%%osold:~1,-1%\php_%phpexe:~1,-1%.exe@ -c @%cd%\php_%osarc%%osold:~1,-1%\php.ini@ -t @%cd%\%relpath:~1,-1%@ -S 127.0.0.1:%phpport:~1,-1%"
 if %relpath:~1,-1% equ agent reg.exe add "HKLM\SYSTEM\CurrentControlSet\services\%servicename:~1,-1%\Parameters" /v "Application" /t REG_SZ /d "\"%cd%\php_%osarc%%osold:~1,-1%\php_%phpexe:~1,-1%.exe\" -c \"%cd%\php_%osarc%%osold:~1,-1%\php.ini\" \"%cd%\agent\conf\agent.init.php\"" /f
+if %relpath:~1,-1% equ agent if %errorlevel% neq 0 cscript.exe "%cd%\euryscosrv.vbs" %servicename:~1,-1% "@%cd%\php_%osarc%%osold:~1,-1%\php_%phpexe:~1,-1%.exe@ -c @%cd%\php_%osarc%%osold:~1,-1%\php.ini@ @%cd%\agent\conf\agent.init.php@"
 
 if %relpath:~1,-1% equ agent copy "%cd%\core\conf\config_agent.xml" "%cd%\agent\conf\config_agent.xml" /y
 if %relpath:~1,-1% equ agent copy "%cd%\core\conf\config_settings.xml" "%cd%\agent\conf\config_settings.xml" /y

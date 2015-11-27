@@ -85,7 +85,7 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 											$checkgroups = 1;
 											$checkgroupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $_POST['editusertype'] . '.xml', true)))));
 											$mcrykey = pack('H*', hash('sha256', hash('sha512', $checkgroupsxml->settings->groupname)));
-											$checkgroupsarray = unserialize(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($checkgroupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($checkgroupsxml->settings->groupsettings), 0, $iv_size)));
+											$checkgroupsarray = unserialize(trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($checkgroupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($checkgroupsxml->settings->groupsettings), 0, $iv_size))));
 											if ($checkgroupsarray['name'] == $_POST['editusertype']) { $checkgroups = 0; }
 											$checkgroups = 2;
 											if ($checkgroupsarray['auth'] == 'Distributed' || $checkgroupsarray['auth'] == $_POST['edituserauth']) { $checkgroups = 0; }
@@ -212,7 +212,7 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 												$checkgroups = 1;
 												$checkgroupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $newusertype . '.xml', true)))));
 												$mcrykey = pack('H*', hash('sha256', hash('sha512', $checkgroupsxml->settings->groupname)));
-												$checkgroupsarray = unserialize(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($checkgroupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($checkgroupsxml->settings->groupsettings), 0, $iv_size)));
+												$checkgroupsarray = unserialize(trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($checkgroupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($checkgroupsxml->settings->groupsettings), 0, $iv_size))));
 												if ($checkgroupsarray['name'] == $newusertype) { $checkgroups = 0; }
 												$checkgroups = 2;
 												if ($checkgroupsarray['auth'] == 'Distributed' || $checkgroupsarray['auth'] == $newuserauth) { $checkgroups = 0; }
@@ -350,7 +350,7 @@ if (isset($_POST['editgroupcancel'])) {
 if ($_SESSION['changegroup'] != '' && !isset($_POST['newgroupname'])) {
 	$mcrykey = pack('H*', hash('sha256', hash('sha512', $_SESSION['changegroup'])));
 	$groupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $_SESSION['changegroup'] . '.xml', true)))));
-	$newgroup = unserialize(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($groupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($groupsxml->settings->groupsettings), 0, $iv_size)));
+	$newgroup = unserialize(trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($groupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($groupsxml->settings->groupsettings), 0, $iv_size))));
 	$newaccordiongst = ' class="active"';
 }
 
@@ -1220,7 +1220,7 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 							$groupnamesetti = array();
 							$mcrykey = pack('H*', hash('sha256', hash('sha512', $group)));
 							$groupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group . '.xml', true)))));
-							$groupnamesetti = unserialize(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($groupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($groupsxml->settings->groupsettings), 0, $iv_size)));
+							$groupnamesetti = unserialize(trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($groupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($groupsxml->settings->groupsettings), 0, $iv_size))));
 							$$groupnamesetti_disable = $groupnamesetti['disable'];
 						}
 					}
@@ -1382,7 +1382,7 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 						<br />
                     <?php } ?>
                     
-					<?php foreach ($grouplist as $group) { if (pathinfo($group)['extension'] == 'xml' && filesize($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group) > 0) { $group = str_replace('.xml', '', $group); $groupnamearray = 'users' . strtolower($group) . 'array'; $groupnameusers = 'users' . strtolower($group); $mcrykey = pack('H*', hash('sha256', hash('sha512', $group))); $groupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group . '.xml', true))))); $groupname = unserialize(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($groupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($groupsxml->settings->groupsettings), 0, $iv_size))); ?>
+					<?php foreach ($grouplist as $group) { if (pathinfo($group)['extension'] == 'xml' && filesize($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group) > 0) { $group = str_replace('.xml', '', $group); $groupnamearray = 'users' . strtolower($group) . 'array'; $groupnameusers = 'users' . strtolower($group); $mcrykey = pack('H*', hash('sha256', hash('sha512', $group))); $groupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group . '.xml', true))))); $groupname = unserialize(trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($groupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($groupsxml->settings->groupsettings), 0, $iv_size)))); ?>
 						<h3><a href="?changegroup=<?php echo $group; ?>" title="Change: <?php echo $groupname['auth']; ?> Group"><img src="/img/<?php if ($groupname['auth'] == 'Local') { echo 'admle'; } else { echo 'admled'; } ?>.png" width="26" height="26" /></a>&nbsp;<?php echo $group; ?>:<?php if ($groupname['sastarttime'] != $groupname['sastoptime'] || $groupname['sasunday'] != 'on' || $groupname['samonday'] != 'on' || $groupname['satuesday'] != 'on' || $groupname['sawednesday'] != 'on' || $groupname['sathursday'] != 'on' || $groupname['safriday'] != 'on' || $groupname['sasaturday'] != 'on') { if ($groupname['sa' . strtolower(date('l'))] == 'on' && ($groupname['sastarttime'] == $groupname['sastoptime'] || (date('His', strtotime($groupname['sastarttime'])) < date('His', strtotime($groupname['sastoptime'])) && date('His', strtotime($groupname['sastarttime'])) <= date('His') && date('His') < date('His', strtotime($groupname['sastoptime']))) || (date('His', strtotime($groupname['sastarttime'])) > date('His', strtotime($groupname['sastoptime'])) && (date('His', strtotime($groupname['sastarttime'])) <= date('His') || date('His') < date('His', strtotime($groupname['sastoptime'])))))) { echo '&nbsp;&nbsp;<div class="icon-history" style="font-size:17px; color:#b5b5b5" title="Access Time Limits: Login Allowed"></div>'; } else { echo '&nbsp;&nbsp;<div class="icon-history" style="font-size:17px; color:#993300;" title="Access Time Limits: Login Denied"></div>'; } } ?></h3>
 						<?php if ($_SESSION['username'] != 'Administrator' && $group == 'eurysco Services') { ?><div style="font-size:12px;">* only administrator can manage this group</div><?php } ?>
 						<?php

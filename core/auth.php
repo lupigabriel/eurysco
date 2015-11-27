@@ -28,7 +28,7 @@ class EncryptedSessionHandler extends SessionHandler {
 	}
 	public function read($id) {
 		$data = parent::read($id);
-		return mcrypt_decrypt(MCRYPT_3DES, $this->key, $data, MCRYPT_MODE_ECB);
+		return trim(mcrypt_decrypt(MCRYPT_3DES, $this->key, $data, MCRYPT_MODE_ECB));
 	}
 	public function write($id, $data) {
 		$data = mcrypt_encrypt(MCRYPT_3DES, $this->key, $data, MCRYPT_MODE_ECB);
@@ -290,7 +290,7 @@ if (!isset($_SESSION['session']) || $_SESSION['session'] != hash('sha512', $_SER
 				if (hash('sha512', $_SESSION['username'] . $group) == $usersusertype) {
 					$mcrykey = pack('H*', hash('sha256', hash('sha512', $group)));
 					$groupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group . '.xml', true)))));
-					$_SESSION['usersett'] = unserialize(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($groupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($groupsxml->settings->groupsettings), 0, $iv_size)));
+					$_SESSION['usersett'] = unserialize(trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($groupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($groupsxml->settings->groupsettings), 0, $iv_size))));
 					$_SESSION['usertype'] = $group;
 				}
 			}
@@ -383,7 +383,7 @@ if (!isset($_SESSION['session']) || $_SESSION['session'] != hash('sha512', $_SER
 					curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $eurysco_sslverifyhost);
 					curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 10000);
 					curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-					curl_setopt($ch, CURLOPT_USERPWD, hash('sha256', $eurysco_serverconport . 'euryscoServer' . $eurysco_serverconport) . ':' . mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($eurysco_serverconpassword), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($eurysco_serverconpassword), 0, $iv_size)));
+					curl_setopt($ch, CURLOPT_USERPWD, hash('sha256', $eurysco_serverconport . 'euryscoServer' . $eurysco_serverconport) . ':' . trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($eurysco_serverconpassword), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($eurysco_serverconpassword), 0, $iv_size))));
 					curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
 					curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport . '/userscp.php');
 					curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -453,7 +453,7 @@ if (!isset($_SESSION['session']) || $_SESSION['session'] != hash('sha512', $_SER
 						curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 10000);
 						curl_setopt($ch, CURLOPT_FRESH_CONNECT, false);
 						curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-						curl_setopt($ch, CURLOPT_USERPWD, hash('sha256', $eurysco_serverconport . 'euryscoServer' . $eurysco_serverconport) . ':' . mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($eurysco_serverconpassword), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($eurysco_serverconpassword), 0, $iv_size)));
+						curl_setopt($ch, CURLOPT_USERPWD, hash('sha256', $eurysco_serverconport . 'euryscoServer' . $eurysco_serverconport) . ':' . trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($eurysco_serverconpassword), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($eurysco_serverconpassword), 0, $iv_size))));
 						curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
 						curl_setopt($ch, CURLOPT_POST, true);
 						$dataadt = array(

@@ -59,7 +59,7 @@ if (isset($_POST['configstatus']) && isset($_POST['agentversion']) && isset($_PO
 				if (hash('sha512', $groupxml->settings->groupname . 'Distributed') == $groupxml->settings->groupauth) {
 					$mcrykey = pack('H*', hash('sha256', hash('sha512', str_replace('.xml', '', $group))));
 					$groupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($corepath . '\\groups\\' . $group, true)))));
-					$usersett = unserialize(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($groupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($groupsxml->settings->groupsettings), 0, $iv_size)));
+					$usersett = unserialize(trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($groupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($groupsxml->settings->groupsettings), 0, $iv_size))));
 					$checkprefilter = 0;
 					if ($usersett['nodesstatusf'] != '') {
 						$wl_xmlstatus = strtolower('<computername>' . $_POST['computername'] . '</computername><osname>' . $_POST['osname'] . '</osname><osversion>' . $_POST['osversion'] . '</osversion><osservicepack>' . $_POST['osservicepack'] . '</osservicepack><osserialnumber>' . $_POST['osserialnumber'] . '</osserialnumber><manufacturer>' . $_POST['manufacturer'] . '</manufacturer><model>' . $_POST['model'] . '</model><domain>' . $_POST['domain'] . '</domain>');

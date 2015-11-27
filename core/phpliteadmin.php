@@ -77,7 +77,7 @@ if (file_exists($_SERVER['DOCUMENT_ROOT'] . '\\users\\Administrator.xml')) {
 	$userspassword = $userxml->settings->password;
 	$usersusertype = $userxml->settings->usertype;
 	$mcrykey = pack('H*', hash('sha256', $usersusertype));
-	$password = mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($userspassword), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($userspassword), 0, $iv_size));
+	$password = trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($userspassword), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($userspassword), 0, $iv_size)));
 }
 //directory relative to this file to search for databases (if false, manually list databases in the $databases variable)
 $directory = str_replace('\\core', '\\sqlite', $_SERVER['DOCUMENT_ROOT']) . '\\';

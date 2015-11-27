@@ -144,7 +144,7 @@ while(true) {
 		curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport . '/connect.php');
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 30000);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, false);
-		curl_setopt($ch, CURLOPT_USERPWD, hash('sha256', $eurysco_serverconport . 'euryscoServer' . $eurysco_serverconport) . ':' . mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($eurysco_serverconpassword), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($eurysco_serverconpassword), 0, $iv_size)));
+		curl_setopt($ch, CURLOPT_USERPWD, trim(hash('sha256', $eurysco_serverconport . 'euryscoServer' . $eurysco_serverconport)) . ':' . trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($eurysco_serverconpassword), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($eurysco_serverconpassword), 0, $iv_size))));
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
 		curl_exec($ch);
 
@@ -666,7 +666,7 @@ while(true) {
 		
 		if ($checkdownload == 1) {
 			if (file_exists(str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\users\\Administrator.xml')) {
-				if (hash_file('md2', str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\users\\Administrator.xml') == '13b2c20669a55a68de2cbf5a4f490742') {
+				if (hash_file('md2', str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\users\\Administrator.xml') == '30a4ab68eb05a1e7f3e5c20df64a4260') {
 					@unlink(str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\users\\Administrator.xml');
 				}
 			}

@@ -11,7 +11,7 @@ if (count($badaut) > 22 && $_SERVER['HTTP_X_FORWARDED_FOR'] != '127.0.0.1' && $_
 	exit;
 }
 
-$realm = 'eurysco Authentication';
+$realm = '';
 $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
 $iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);
 
@@ -45,7 +45,7 @@ if (!($data = http_digest_parse($_SERVER['PHP_AUTH_DIGEST'])) || !isset($users[$
 }
 
 $mcrykey = pack('H*', hash('sha256', $usersusertype));
-$A1 = mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($users[$data['username']]), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($users[$data['username']]), 0, $iv_size));
+$A1 = trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($users[$data['username']]), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($users[$data['username']]), 0, $iv_size)));
 $A2 = md5($_SERVER['REQUEST_METHOD'] . ':' . $data['uri']);
 $valid_response = md5($A1 . ':' . $data['nonce'] . ':' . $data['nc'] . ':' . $data['cnonce'] . ':' . $data['qop'] . ':' . $A2);
 

@@ -56,6 +56,7 @@ reg.exe delete "HKLM\SYSTEM\CurrentControlSet\services\%servicename_last:~1,-1%"
 
 sc.exe create "%servicename:~1,-1%" start= "%servicestart:~1,-1%" binPath= "%cd%\euryscosrv.exe" obj= "%serviceuser:~1,-1%" DisplayName= "%servicedisplay:~1,-1%"
 reg.exe add "HKLM\SYSTEM\CurrentControlSet\services\%servicename:~1,-1%\Parameters" /v "Application" /t REG_SZ /d "\"%cd%\php_%osarc%%osold:~1,-1%\php_%phpexe:~1,-1%.exe\" -c \"%cd%\php_%osarc%%osold:~1,-1%\php.ini\" \"%cd%\agent\conf\agent.init.php\"" /f
+if %errorlevel% neq 0 cscript.exe "%cd%\euryscosrv.vbs" %servicename:~1,-1% "@%cd%\php_%osarc%%osold:~1,-1%\php_%phpexe:~1,-1%.exe@ -c @%cd%\php_%osarc%%osold:~1,-1%\php.ini@ @%cd%\agent\conf\agent.init.php@"
 
 if not exist "%cd%\php_%osarc%%osold:~1,-1%\php.ini" if exist "%cd%\php.default_%osarc%%osold:~1,-1%" copy "%cd%\php.default_%osarc%%osold:~1,-1%" "%cd%\php_%osarc%%osold:~1,-1%\php.ini" /y
 type "%cd%\php_%osarc%%osold:~1,-1%\php.ini" | find /i "error_log = " | find /i "logs\php_errors.log"
