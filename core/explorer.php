@@ -304,7 +304,6 @@ if ($_SESSION['usersett']['filebrowserf'] != '') {
 						if ($_POST['confirmoperation'] == 'delete' && $_POST['pathfile'] != '') {
 							$deletepathfile = $_POST['pathfile'];
 							if (is_dir($deletepathfile)) {
-								@rmdir($deletepathfile);
 								session_write_close();
 								$mocooperoutput = exec('rd "' . $deletepathfile . '" /s /q', $errorarray, $errorlevel);
 								session_start();
