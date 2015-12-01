@@ -11,6 +11,8 @@ if %errorlevel% neq 0 set osold=""
 if %osarc% equ x86 if %osold% equ "_xp2k3" "%cd%\installs\vcredist_%osarc%%osold:~1,-1%.exe" /qb
 if %osarc% equ x86 if %osold% equ "" "%cd%\installs\vcredist_%osarc%%osold:~1,-1%.exe" /passive /norestart
 if %osarc% equ x64 "%cd%\installs\vcredist_%osarc%.exe" /passive /norestart
+copy "%cd%\installs\7z_%osarc%%osold:~1,-1%\7z.exe" "%cd%\core\7zip.exe" /y
+copy "%cd%\installs\7z_%osarc%%osold:~1,-1%\7z.dll" "%cd%\core\7z.dll" /y
 
 reg.exe delete "HKLM\SOFTWARE\eurysco" /f
 type "%cd%\core\version.phtml" | find /i "return">"%cd%\version"

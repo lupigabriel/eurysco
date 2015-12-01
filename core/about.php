@@ -296,12 +296,12 @@
                     <br />
                     <br />
 
-					<a href="http://www.7-zip.org"><h2>7-Zip 9.20</h2></a>
+					<a href="http://www.7-zip.org"><h2>7-Zip 15.12</h2></a>
 					This product includes <a href="http://www.7-zip.org">7-Zip</a>
 					<h3>GNU Lesser General Public License</h3>
                     <div class="input-control textarea">
                     <textarea id="licenseoutput" name="licenseoutput" readonly="readonly" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:12px; height:125px; font-weight:normal; overflow-x:hidden;"><?php
-						$name = $_SERVER['DOCUMENT_ROOT'] . '\\licenses\\7-Zip_9.20.license';
+						$name = $_SERVER['DOCUMENT_ROOT'] . '\\licenses\\7-Zip_15.12.license';
 						$licenseoutput = 'License File Not Found...';
 						if (file_exists($name) && is_readable($name)) {
 							$filearr = file($name);
