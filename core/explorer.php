@@ -453,7 +453,7 @@ if ($_SESSION['usersett']['filebrowserf'] != '') {
 						});
 					}
 					
-					<?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filebrowser'] > 1) { ?>
+					<?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filebrowser'] > 0) { ?>
 					var uploader = new plupload.Uploader({
 						runtimes : 'html5,html4',
 						browse_button : 'pickfiles',

@@ -144,7 +144,11 @@ fclose($in);
 // Check if file has been uploaded
 if (!$chunks || $chunk == $chunks - 1) {
 	// Strip the temp .part suffix off 
-	rename("{$filePath}.part", $filePath);
+	rename("{$filePath}.part", $filePath.".upload");
+	if (file_exists($filePath) && $_SESSION['usersett']['filebrowser'] < 2) {
+	} else {
+		rename("{$filePath}.upload", $filePath);
+	}
 	$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     file browser     upload request for file "' . str_replace('\\\\', '\\', $path . '\\' . $fileName) . '" completed';
 	include('/auditlog.php');
 }
