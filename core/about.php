@@ -22,7 +22,7 @@
 				<div class="row">
 		            <div class="span1"></div>
 		            <div class="span10">
-					
+
                     <a href="http://www.eurysco.com"><h2>eurysco: Heuristic System Control <?= include("version.phtml")?></h2></a>
 					Freely available from <a href="http://www.eurysco.com">http://www.eurysco.com</a>
                     <h3>GNU General Public License</h3>
@@ -149,12 +149,12 @@
                     <br />
                     <br />
 
-                    <a href="https://jquery.org"><h2>jQuery 1.9.1</h2></a>
+                    <a href="https://jquery.org"><h2>jQuery 2.1.4</h2></a>
 					This product includes <a href="https://jquery.org">jQuery JavaScript Library</a>
                     <h3>MIT License</h3>
                     <div class="input-control textarea">
                     <textarea id="licenseoutput" name="licenseoutput" readonly="readonly" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:12px; height:125px; font-weight:normal; overflow-x:hidden;"><?php
-						$name = $_SERVER['DOCUMENT_ROOT'] . '\\licenses\\jquery_1.9.1.license';
+						$name = $_SERVER['DOCUMENT_ROOT'] . '\\licenses\\jquery_2.1.4.license';
 						$licenseoutput = 'License File Not Found...';
 						if (file_exists($name) && is_readable($name)) {
 							$filearr = file($name);
@@ -191,12 +191,12 @@
                     <br />
                     <br />
 
-					<a href="http://www.plupload.com"><h2>Plupload 2.1.1</h2></a>
+					<a href="http://www.plupload.com"><h2>Plupload 2.1.8</h2></a>
 					This product includes <a href="http://www.plupload.com/license">Plupload - Multi-Runtime File Uploader</a>
 					<h3>GNU General Public License</h3>
                     <div class="input-control textarea">
                     <textarea id="licenseoutput" name="licenseoutput" readonly="readonly" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:12px; height:125px; font-weight:normal; overflow-x:hidden;"><?php
-						$name = $_SERVER['DOCUMENT_ROOT'] . '\\licenses\\plupload_2.1.1.license';
+						$name = $_SERVER['DOCUMENT_ROOT'] . '\\licenses\\plupload_2.1.8.license';
 						$licenseoutput = 'License File Not Found...';
 						if (file_exists($name) && is_readable($name)) {
 							$filearr = file($name);
@@ -275,8 +275,8 @@
                     <br />
                     <br />
 
-					<a href="http://qtweb.net"><h2>Chromium Portable 39.0.2145.4</h2></a>
-					This product includes <a href="http://www.chromium.org/getting-involved/dev-channel">Chromium Portable</a>
+					<a href="https://www.chromium.org"><h2>Chromium Portable 39.0.2145.4</h2></a>
+					This product includes <a href="https://www.chromium.org/getting-involved/dev-channel">Chromium Portable</a>
 					<h3>Open Source</h3>
                     <div class="input-control textarea">
                     <textarea id="licenseoutput" name="licenseoutput" readonly="readonly" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:12px; height:125px; font-weight:normal; overflow-x:hidden;"><?php

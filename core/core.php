@@ -121,7 +121,7 @@
 							}
 						}
 						
-						if (isset($_POST['submitform']) && (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'])) > 0) {
+						if (isset($_POST['submitform']) && strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']) > 0 && isset($_POST[substr(md5('$_POST' . $_SESSION['tokenl']), 5, 15)])) {
 							$coreservicename_last = '';
 							if (isset($xmlcore) == 1) { $coreservicename_last = $xmlcore->settings->coreservicename; }
 							if (isset($_POST['startservice'])) {
@@ -155,11 +155,11 @@
 								exec('net.exe stop ' . $coreservicename_last, $errorarray, $errorlevel);
 								if ($errorlevel == 0 || $errorlevel == 2) { exec('sc.exe delete ' . $coreservicename_last, $errorarray, $errorlevel); }
 								if ($errorlevel == 0 && $errorlevelssl == 0) {
-									@unlink($_SERVER['DOCUMENT_ROOT'] . '\\' . $config_coresrv);
-									@unlink(str_replace('\\core', '\\cert\\eurysco_core.crt', $_SERVER['DOCUMENT_ROOT']));
-									@unlink(str_replace('\\core', '\\cert\\eurysco_core.key', $_SERVER['DOCUMENT_ROOT']));
-									@unlink(str_replace('\\core', '\\cert\\eurysco_core.csr', $_SERVER['DOCUMENT_ROOT']));
-									@unlink(str_replace('\\core', '\\cert\\eurysco_core.req', $_SERVER['DOCUMENT_ROOT']));
+									@unlink($config_coresrv);
+									@unlink($euryscoinstallpath . '\\cert\\eurysco_core.crt');
+									@unlink($euryscoinstallpath . '\\cert\\eurysco_core.key');
+									@unlink($euryscoinstallpath . '\\cert\\eurysco_core.csr');
+									@unlink($euryscoinstallpath . '\\cert\\eurysco_core.req');
 								}
 								session_start();
 								if ($errorlevel == 0 && $errorlevelssl == 0) {
@@ -171,10 +171,10 @@
 							if (isset($_POST['editcreateservice']) && !isset($_POST['deleteconfiguration'])) {
 								if (isset($_POST['coretrustedcertificate'])) {
 									if (!preg_match_all('/eurysco .* SSL Trusted Certificate/', $_POST['coretrustedcertificate'])) {
-										$fp = @fopen(str_replace('\\core', '\\cert\\eurysco_core.crt', $_SERVER['DOCUMENT_ROOT']), 'w');
+										$fp = @fopen($euryscoinstallpath . '\\cert\\eurysco_core.crt', 'w');
 										@fwrite($fp, $_POST['coretrustedcertificate']);
 										@fclose($fp);
-										@unlink(str_replace('\\core', '\\cert\\eurysco_core.csr', $_SERVER['DOCUMENT_ROOT']));
+										@unlink($euryscoinstallpath . '\\cert\\eurysco_core.csr');
 									}
 								}
 								if (is_null($coreservicename_last) || $coreservicename_last == '') { $coreservicename_last = 'eurysco_NULL_'; }
@@ -182,12 +182,10 @@
 								$sxe = new SimpleXMLElement($xml);
 								$sxe->asXML($config_coresrv);
 								session_write_close();
-								exec('set sslprotocol=TLSv1.2 & "' . str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\euryscosrv.bat" "' . $coreservicename_last . '" "' . $coreservicename_xml . '" "' . $coreservicestartuptype_xml . '" "' . $coreservicelogonas_xml . '" "' . $coreservicedisplayname_xml . '" "' . $corelisteningport_xml . '" "' . $corephpport_xml . '" "eurysco_core" "core"', $errorarray, $errorlevel);
-								$fp = fopen(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\chromium\\euryscoLogin.prt', 'w');
+								exec('set sslprotocol=TLSv1.2 & "' . $euryscoinstallpath . '\\euryscosrv.bat" "' . $coreservicename_last . '" "' . $coreservicename_xml . '" "' . $coreservicestartuptype_xml . '" "' . $coreservicelogonas_xml . '" "' . $coreservicedisplayname_xml . '" "' . $corelisteningport_xml . '" "' . $corephpport_xml . '" "eurysco_core" "core"', $errorarray, $errorlevel);
+								$fp = fopen($euryscoinstallpath . '\\chromium\\euryscoLogin.prt', 'w');
 								fwrite($fp, $corelisteningport_xml);
 								fclose($fp);
-								copy($config_coresrv, str_replace('\\core', '\\agent', $_SERVER['DOCUMENT_ROOT']) . '\\' . $config_coresrv);
-								copy($config_coresrv, str_replace('\\core', '\\server', $_SERVER['DOCUMENT_ROOT']) . '\\' . $config_coresrv);
 								session_start();
 								if ($errorlevel == 0) {
 			                    	$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     core config     eurysco core configuration edited';
@@ -195,13 +193,14 @@
 									$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     core config     eurysco core configuration not edited';
 								}
 							}
-							header('location: https://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
+							header('location: ' . $_SERVER['PHP_SELF']);
+							exit;
 						}
 						
 						?>
 
                         <?php $span = '6'; ?>
-						<?php include('/include/core_status_' . $corestatus . '.php'); ?>
+						<?php include($euryscoinstallpath . '\\include\\core_status_' . $corestatus . '.php'); ?>
                         <p>&nbsp;</p>
                     	<form method="post">
 						<div class="input-control text">
@@ -238,20 +237,20 @@
 							<button class="btn-clear"></button>
 							<textarea wrap="off" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:12px; height:100px; font-weight:normal;" disabled="disabled"><?php
 							
-							if (file_exists(str_replace('\\core', '\\cert\\eurysco_core.csr', $_SERVER['DOCUMENT_ROOT']))) {
+							if (file_exists($euryscoinstallpath . '\\cert\\eurysco_core.csr')) {
 								echo 'eurysco Core SSL Self-Signed Certificate Information' . "\n\n";
 							} else {
 								echo 'eurysco Core SSL Trusted Certificate Information' . "\n\n";
 							}
 							
-							if (file_exists(str_replace('\\core', '\\cert\\eurysco_core.crt', $_SERVER['DOCUMENT_ROOT']))) {
+							if (file_exists($euryscoinstallpath . '\\cert\\eurysco_core.crt')) {
 								
-								$data = openssl_x509_parse(file_get_contents(str_replace('\\core', '\\cert\\eurysco_core.crt', $_SERVER['DOCUMENT_ROOT'])));
+								$data = openssl_x509_parse(file_get_contents($euryscoinstallpath . '\\cert\\eurysco_core.crt'));
 
 								$validFrom = date('d/m/Y H:i:s', $data['validFrom_time_t']);
 								$validTo = date('d/m/Y H:i:s', $data['validTo_time_t']);
 								
-								$fp = fopen(str_replace('\\core', '\\cert\\eurysco_core.crt', $_SERVER['DOCUMENT_ROOT']), 'r'); 
+								$fp = fopen($euryscoinstallpath . '\\cert\\eurysco_core.crt', 'r'); 
 								$cert = fread($fp, 8192); 
 								fclose($fp); 
 
@@ -270,7 +269,7 @@
 
 							?></textarea>
 						</div>
-						<?php $name = str_replace('\\core', '\\cert\\eurysco_core.csr', $_SERVER['DOCUMENT_ROOT']); if (file_exists($name) && is_readable($name)) { ?>
+						<?php $name = $euryscoinstallpath . '\\cert\\eurysco_core.csr'; if (file_exists($name) && is_readable($name)) { ?>
 						<div class="input-control text">
                         	<h3>Core SSL Certificate Request:</h3>
 							<textarea wrap="off" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:10px; height:100px; font-weight:normal;" readonly="readonly"><?php
@@ -299,7 +298,7 @@ eurysco Core SSL Trusted Certificate ( Base 64 Encoded )
 						<div class="input-control text">
                         	<h3>Core SSL Trusted Certificate:</h3>
 							<textarea wrap="off" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:10px; height:100px; font-weight:normal;" disabled="disabled"><?php
-								$name = str_replace('\\core', '\\cert\\eurysco_core.crt', $_SERVER['DOCUMENT_ROOT']);
+								$name = $euryscoinstallpath . '\\cert\\eurysco_core.crt';
 								$csroutput = 'Trusted Certificate Not Found...';
 								if (file_exists($name) && is_readable($name)) {
 									$filearr = file($name);
@@ -323,7 +322,8 @@ eurysco Core SSL Trusted Certificate ( Base 64 Encoded )
 	                        <input type="submit" id="editcreateservice" name="editcreateservice" value="<?php if ($corestatus != 'cfg') { echo 'Edit Core'; } else { echo 'Create Core'; } ?>" style="background-color:#0072C6;" />
                             <?php if ($corestatus == 'run') { echo '<input type="submit" id="stopservice" name="stopservice" class="bg-color-red" value="Stop Core Service"/>'; } ?>
                             <?php if ($corestatus == 'nrn') { echo '<input type="submit" id="startservice" name="startservice" class="bg-color-green" value="Start Core Service"/>'; } ?>
-                        </form>
+							<input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" />
+						</form>
 					</div>
 				</div>
 			</div>

@@ -10,7 +10,9 @@ if (!isset($_GET['source'])) {
 	exit;
 }
 
-include('/include/init.php');
+include(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_core.php');
+
+if (!isset($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)])) { exit; } else { if ($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)] != substr(md5('$_GET' . $sessiontoken), 15, 25)) { exit; } }
 
 set_time_limit(60);
 
@@ -24,14 +26,14 @@ header("Content-Type: application/octet-stream");
 header("Content-Disposition: attachment; filename=\"$table.xml\";" ); 
 header("Content-Transfer-Encoding: binary");  
 
-$nodepath = str_replace('\\core', '\\nodes', $_SERVER['DOCUMENT_ROOT']) . '\\' . $_GET['source'] . '\\';
+$nodepath = $euryscoinstallpath . '\\nodes\\' . $_GET['source'] . '\\';
 
 echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-$db = new SQLite3(str_replace('\\core', '\\sqlite', $_SERVER['DOCUMENT_ROOT']) . '\\euryscoServer');
+$db = new SQLite3($euryscoinstallpath . '\\sqlite\\euryscoServer');
 $db->busyTimeout(30000);
 $db->query('PRAGMA page_size = 2048; PRAGMA cache_size = 4000; PRAGMA temp_store = 2; PRAGMA journal_mode = OFF; PRAGMA synchronous = 0;');
 $xml = $db->querySingle('SELECT xml FROM xml' . ucfirst($_GET['export']) . ' WHERE node = "' . $_GET['source'] . '"');
-if ($xml == '') {
+if ($xml == '' && file_exists($nodepath . strtolower($_GET['export']) . '.xml.gz')) {
 	$fp = gzopen($nodepath . strtolower($_GET['export']) . '.xml.gz', 'rb');
 	$bl = '';
 	while (!feof($fp)) {

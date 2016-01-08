@@ -60,7 +60,7 @@
 					function update() {
 						$.ajax({
 							type: "GET",
-							url: 'systemjq.php?domain=<?php echo urlencode($cs_domain); ?>&manufacturer=<?php echo urlencode($cs_manufacturer); ?>&model=<?php echo urlencode($cs_model); ?>&phptimeout=<?php echo $phptimeout; ?>',
+							url: 'systemjq.php?<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15) . '=' . substr(md5('$_GET' . $sessiontoken), 15, 25); ?>&domain=<?php echo urlencode($cs_domain); ?>&manufacturer=<?php echo urlencode($cs_manufacturer); ?>&model=<?php echo urlencode($cs_model); ?>&phptimeout=<?php echo $phptimeout; ?>',
 							data: '',
 							dataType: 'json',
 							cache: false,
@@ -77,11 +77,11 @@
 
 					<?php
 					
-					$cleartempdir = scandir($_SERVER['DOCUMENT_ROOT'] . '\\temp');
+					$cleartempdir = scandir($euryscoinstallpath . '\\temp\\core');
 					foreach ($cleartempdir as $cleartemp) {
 						if ($cleartemp != '.' && $cleartemp != '..') {
-							if ((strtotime(date('Y-m-d H:i:s')) - strtotime(date('Y-m-d H:i:s', filemtime($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $cleartemp)))) > 86400) {
-								@unlink($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $cleartemp);
+							if ((strtotime(date('Y-m-d H:i:s')) - strtotime(date('Y-m-d H:i:s', filemtime($euryscoinstallpath . '\\temp\\core\\' . $cleartemp)))) > 86400) {
+								@unlink($euryscoinstallpath . '\\temp\\core\\' . $cleartemp);
 							}
 						}
 					}
@@ -131,8 +131,8 @@
 			<div class="grid">
 				<div class="row">
 		            <div class="span1"></div>
-					<?php include('/include/core_status_' . $corestatus . '.php'); ?>
-					<?php include('/include/core_status_' . $corestatus . '_des.php'); ?>
+					<?php include($euryscoinstallpath . '\\include\\core_status_' . $corestatus . '.php'); ?>
+					<?php include($euryscoinstallpath . '\\include\\core_status_' . $corestatus . '_des.php'); ?>
 				</div>
 			</div>
             <?php } ?>
@@ -141,31 +141,31 @@
 			<div class="grid">
 				<div class="row">
 		            <div class="span1"></div>
-					<?php include('/include/executor_status_' . $executorstatus . '.php'); ?>
-					<?php include('/include/executor_status_' . $executorstatus . '_des.php'); ?>
+					<?php include($euryscoinstallpath . '\\include\\executor_status_' . $executorstatus . '.php'); ?>
+					<?php include($euryscoinstallpath . '\\include\\executor_status_' . $executorstatus . '_des.php'); ?>
 				</div>
 			</div>
             <?php } ?>
 
             <?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['systeminfo'] > 2) { ?>
-	            <?php if (file_exists($_SERVER['DOCUMENT_ROOT'] . '\\' . $config_server)) { ?>
+	            <?php if (file_exists($config_server)) { ?>
 				<div class="grid">
 					<div class="row">
 			            <div class="span1"></div>
-						<?php include('/include/server_status_' . $serverstatus . '.php'); ?>
-						<?php include('/include/server_status_' . $serverstatus . '_des.php'); ?>
+						<?php include($euryscoinstallpath . '\\include\\server_status_' . $serverstatus . '.php'); ?>
+						<?php include($euryscoinstallpath . '\\include\\server_status_' . $serverstatus . '_des.php'); ?>
 					</div>
 				</div>
 	            <?php } ?>
             <?php } ?>
 
 			<?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Operators' || $_SESSION['usersett']['systeminfo'] > 1) { ?>
-	            <?php if (file_exists($_SERVER['DOCUMENT_ROOT'] . '\\' . $config_agentsrv)) { ?>
+	            <?php if (file_exists($config_agentsrv)) { ?>
 				<div class="grid">
 					<div class="row">
 			            <div class="span1"></div>
-						<?php include('/include/agent_status_' . $agentstatus . '.php'); ?>
-						<?php include('/include/agent_status_' . $agentstatus . '_des.php'); ?>
+						<?php include($euryscoinstallpath . '\\include\\agent_status_' . $agentstatus . '.php'); ?>
+						<?php include($euryscoinstallpath . '\\include\\agent_status_' . $agentstatus . '_des.php'); ?>
 					</div>
 				</div>
 	            <?php } ?>

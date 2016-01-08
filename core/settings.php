@@ -12,7 +12,7 @@
 <div class="page secondary">
 	<div class="page-header">
 		<div class="page-header-content">
-			<h1>Change<small>settings</small></h1>
+			<h1>General<small>settings</small></h1>
 			<a href="<?php echo $_SERVER['SCRIPT_NAME']; ?>" class="eurysco-settings-button big page-back"></a>
 		</div>
 	</div>
@@ -30,7 +30,7 @@
                     <?php
 					$message = '';
 					
-					if(isset($_POST['submitform']) && (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'])) > 0) {
+					if(isset($_POST['submitform']) && strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']) > 0 && isset($_POST[substr(md5('$_POST' . $_SESSION['tokenl']), 5, 15)])) {
 						
 						if(isset($_POST['timezonesetting'])) {
 							$timezonesetting = $_POST['timezonesetting'];
@@ -276,8 +276,6 @@
 							$writexml = fopen($config_settings, 'w');
 							fwrite($writexml, base64_encode(base64_encode(base64_encode($xml))));
 							fclose($writexml);
-							copy($config_settings, str_replace('\\core', '\\agent', $_SERVER['DOCUMENT_ROOT']) . '\\' . $config_settings);
-							copy($config_settings, str_replace('\\core', '\\server', $_SERVER['DOCUMENT_ROOT']) . '\\' . $config_settings);
 							$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     change settings     settings changed successfully';
 							if ($mapsharesettingclear == 'Enable') {
 								$clear_mapsharesetting = exec('net.exe use * /delete /y', $errorarray, $errorlevel);
@@ -288,7 +286,7 @@
 							}
 							header('location: ' . $_SERVER['PHP_SELF']);
 						} else {
-							$writexml = fopen(str_replace('\\core', '\\server\\settings\\' . md5($_SESSION['username']) . '.xml', $_SERVER['DOCUMENT_ROOT']), 'w');
+							$writexml = fopen($euryscoinstallpath . '\\server\\settings\\' . md5($_SESSION['username']) . '.xml', 'w');
 							fwrite($writexml, base64_encode(base64_encode(base64_encode($xml))));
 							fclose($writexml);
 							$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     change settings     settings deploy ready';
@@ -730,7 +728,7 @@
 					<table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped">
 						<tr>
 							<td width="50%" style="background-color:#eeeaf6; font-size:13px;">BlackList:</td>
-							<td width="50%" style="background-color:#eeeaf6;"><?php if ($_SESSION['username'] == 'Administrator') { ?><input type="text" id="nodescommandblacklist" name="nodescommandblacklist" placeholder="chkdsk,bcedit,del,dism,diskpart,format,fsutil,move,net user,powershell.*clear,powershell.*disconnect,powershell.*dismount,powershell.*remove,powershell.*stop-computer,rd,ren,rename,rmdir,servercanagercmd.*install,servercanagercmd.*remove,sc config,sc delete,shutdown,wmic,reg,regedit,takeown,icacls,cacls,repadmin,dcpromo" value="<?php echo $nodescommandblacklist; ?>" style="font-family:'Segoe UI Light','Open Sans',Verdana,Arial,Helvetica,sans-serif; font-size:12px; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#f4f2f9; width:100%; padding-left:5px; padding-right:5px;" /><?php } else { ?><input type="text" id="nodescommandblacklist" name="nodescommandblacklist" placeholder="chkdsk,bcedit,del,dism,diskpart,format,fsutil,move,net.*user.*delete,powershell.*clear,powershell.*disconnect,powershell.*dismount,powershell.*remove,powershell.*stop-computer,rd,ren,rename,rmdir,servercanagercmd.*install,servercanagercmd.*remove,sc.*config,sc.*delete,shutdown" value="<?php echo $nodescommandblacklist; ?>" style="font-family:'Segoe UI Light','Open Sans',Verdana,Arial,Helvetica,sans-serif; font-size:12px; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#f4f2f9; width:100%; padding-left:5px; padding-right:5px;" disabled="disabled" /><input type="hidden" id="nodescommandblacklist" name="nodescommandblacklist" value="<?php echo $nodescommandblacklist; ?>" /><?php } ?></td>
+							<td width="50%" style="background-color:#eeeaf6;"><?php if ($_SESSION['username'] == 'Administrator') { ?><input type="text" id="nodescommandblacklist" name="nodescommandblacklist" placeholder="chkdsk,bcedit,del,dism,diskpart,format,nslookup,fsutil,move,net user,powershell.*clear,powershell.*disconnect,powershell.*dismount,powershell.*remove,powershell.*stop-computer,rd,ren,rename,rmdir,servercanagercmd.*install,servercanagercmd.*remove,sc config,sc delete,shutdown,wmic,reg,regedit,takeown,icacls,cacls,repadmin,dcpromo" value="<?php echo $nodescommandblacklist; ?>" style="font-family:'Segoe UI Light','Open Sans',Verdana,Arial,Helvetica,sans-serif; font-size:12px; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#f4f2f9; width:100%; padding-left:5px; padding-right:5px;" /><?php } else { ?><input type="text" id="nodescommandblacklist" name="nodescommandblacklist" placeholder="chkdsk,bcedit,del,dism,diskpart,format,fsutil,move,net.*user.*delete,powershell.*clear,powershell.*disconnect,powershell.*dismount,powershell.*remove,powershell.*stop-computer,rd,ren,rename,rmdir,servercanagercmd.*install,servercanagercmd.*remove,sc.*config,sc.*delete,shutdown" value="<?php echo $nodescommandblacklist; ?>" style="font-family:'Segoe UI Light','Open Sans',Verdana,Arial,Helvetica,sans-serif; font-size:12px; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#f4f2f9; width:100%; padding-left:5px; padding-right:5px;" disabled="disabled" /><input type="hidden" id="nodescommandblacklist" name="nodescommandblacklist" value="<?php echo $nodescommandblacklist; ?>" /><?php } ?></td>
 						</tr>
 					</table>
                     <br />
@@ -741,7 +739,7 @@
 					<table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped">
 						<tr>
 							<td width="50%" style="font-size:13px;">BlackList:</td>
-							<td width="50%"><input type="text" id="localcommandblacklist" name="localcommandblacklist" placeholder="chkdsk,bcedit,dism,diskpart,format,fsutil,net user,powershell.*clear,powershell.*disconnect,powershell.*dismount,powershell.*remove,powershell.*stop-computer,servercanagercmd.*install,servercanagercmd.*remove,sc config,sc delete,shutdown,wmic,reg,regedit,takeown,icacls,cacls,repadmin,dcpromo" value="<?php echo $localcommandblacklist; ?>" style="font-family:'Segoe UI Light','Open Sans',Verdana,Arial,Helvetica,sans-serif; font-size:12px; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:100%; padding-left:5px; padding-right:5px;" /></td>
+							<td width="50%"><input type="text" id="localcommandblacklist" name="localcommandblacklist" placeholder="chkdsk,bcedit,dism,diskpart,format,nslookup,fsutil,net user,powershell.*clear,powershell.*disconnect,powershell.*dismount,powershell.*remove,powershell.*stop-computer,servercanagercmd.*install,servercanagercmd.*remove,sc config,sc delete,shutdown,wmic,reg,regedit,takeown,icacls,cacls,repadmin,dcpromo" value="<?php echo $localcommandblacklist; ?>" style="font-family:'Segoe UI Light','Open Sans',Verdana,Arial,Helvetica,sans-serif; font-size:12px; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:100%; padding-left:5px; padding-right:5px;" /></td>
 						</tr>
 					</table>
                     <br />
@@ -836,6 +834,7 @@
 					<?php if ($serverstatus == 'run') { ?>
                     <input type="submit" id="deploysettings" name="deploysettings" class="bg-color-purple" value="Deploy Settings" />
                     <?php } ?>
+					<input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" />
                     </form>
 
 					<script language="javascript" type="text/javascript">
@@ -844,7 +843,7 @@
 					function update() {
 						$.ajax({
 							type: "GET",
-							url: 'datetimejq.php',
+							url: 'datetimejq.php?<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15) . '=' . substr(md5('$_GET' . $sessiontoken), 15, 25); ?>',
 							data: '',
 							dataType: 'json',
 							cache: false,

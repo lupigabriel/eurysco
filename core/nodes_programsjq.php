@@ -28,7 +28,11 @@ if (isset($_GET['executorport'])) {
 }
 
 if (isset($_GET['phptimeout'])) {
-	set_time_limit($_GET['phptimeout']);
+	if (is_numeric($_GET['phptimeout'])) {
+		set_time_limit($_GET['phptimeout']);
+	} else {
+		set_time_limit(120);
+	}
 } else {
 	set_time_limit(120);
 }
@@ -38,8 +42,10 @@ $time = explode(" ", $time);
 $time = $time[1] + $time[0];
 $start = $time;
 
-include('/include/init.php');
+include(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_core.php');
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Operators' || $_SESSION['usertype'] == 'Users' || $_SESSION['usersett']['nodesinstalledprograms'] > 0) {  } else { exit; }
+
+if (!isset($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)])) { exit; } else { if ($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)] != substr(md5('$_GET' . $sessiontoken), 15, 25)) { exit; } }
 
 if (isset($_GET['orderby'])) {
 	$orderby = $_GET['orderby'];
@@ -60,13 +66,21 @@ if (isset($_GET['cid'])) {
 }
 
 if (isset($_GET['message'])) {
-	$message = $_GET['message'];
+	if ($_GET['message'] != '') {
+		$message = '<blockquote style="font-size:12px; background-color:#0072C6; color:#FFFFFF; border-left-color:#324886;">' . str_replace('&lt;/strong&gt;', '</strong>', str_replace('&lt;strong&gt;', '<strong>', urldecode($_GET['message']))) . '</blockquote><br />';
+	} else {
+		$message = '';
+	}
 } else {
 	$message = '';
 }
 
 if (isset($_GET['page'])) {
-	$pgkey = $_GET['page'];
+	if (is_numeric($_GET['page'])) {
+		$pgkey = $_GET['page'];
+	} else {
+		$pgkey = 0;
+	}
 } else {
 	$pgkey = 0;
 }
@@ -92,17 +106,15 @@ if ($orderby == 'InstallDate') { $obyInstallDate = ' color:#8063C8;'; } else { $
 
 $programtable = '<table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped"><tr>' . $columnicon . '<td width="25%" align="center"><a href="?orderby=Vendor&node=' . $node . '&domain=' . $domain . '&computerip=' . $computerip . '&executorport=' . $executorport . '&filter=' . urlencode($filter) . '" style="font-size:12px; font-weight:bold;' . $obyVendor . '" title="Ascending Order by Vendor">Vendor</a></td><td width="50%"><a href="?orderby=Name&node=' . $node . '&domain=' . $domain . '&computerip=' . $computerip . '&executorport=' . $executorport . '&filter=' . urlencode($filter) . '" style="font-size:12px; font-weight:bold;' . $obyName . '" title="Ascending Order by Name">Name</a></td><td width="15%" align="center"><a href="?orderby=Version&node=' . $node . '&domain=' . $domain . '&computerip=' . $computerip . '&executorport=' . $executorport . '&filter=' . urlencode($filter) . '" style="font-size:12px; font-weight:bold;' . $obyVersion . '" title="Descending Order by Version">Version</a></td><td width="10%" align="center"><a href="?orderby=InstallDate&node=' . $node . '&domain=' . $domain . '&computerip=' . $computerip . '&executorport=' . $executorport . '&filter=' . urlencode($filter) . '" style="font-size:12px; font-weight:bold; white-space:nowrap; table-layout:fixed; overflow:hidden;' . $obyInstallDate . '" title="Descending Order by Install Date">Install Date</a></td></tr>';
 
-$db = new SQLite3(str_replace('\\core', '\\sqlite', $_SERVER['DOCUMENT_ROOT']) . '\\euryscoServer');
+$db = new SQLite3($euryscoinstallpath . '\\sqlite\\euryscoServer');
 $db->busyTimeout(5000);
 $db->query('PRAGMA page_size = 2048; PRAGMA cache_size = 4000; PRAGMA temp_store = 2; PRAGMA journal_mode = OFF; PRAGMA synchronous = 0;');
 
 if ($cid != '') {
-	$dbaudit = new SQLite3(str_replace('\\core', '\\sqlite', $_SERVER['DOCUMENT_ROOT']) . '\\euryscoAudit');
+	$dbaudit = new SQLite3($euryscoinstallpath . '\\sqlite\\euryscoAudit');
 	$dbaudit->busyTimeout(30000);
 	$dbaudit->query('PRAGMA page_size = 2048; PRAGMA cache_size = 4000; PRAGMA temp_store = 2; PRAGMA journal_mode = OFF; PRAGMA synchronous = 0;');
-	$audittot = $dbaudit->querySingle('SELECT COUNT(id) FROM auditLog');
-	if ($audittot > 500) { $audittot = $audittot - 500; } else { $audittot = 0; }
-	$allaudit = $dbaudit->query('SELECT description, exitcode FROM auditLog WHERE cid = "' . $cid . '" LIMIT 500 OFFSET ' . $audittot);
+	$allaudit = $dbaudit->query('SELECT description, exitcode FROM auditLog WHERE cid = "' . $cid . '"');
 	while ($auditrow = $allaudit->fetchArray()) {
 		if ($auditrow['exitcode'] == 0) {
 			$message = '<blockquote style="font-size:12px; background-color:#603CBA; color:#FFFFFF; border-left-color:#482E8C;">' . urldecode($auditrow['description']) . '</blockquote><br />';
@@ -116,11 +128,11 @@ if ($cid != '') {
 $programarray = array();
 $programcounter = 0;
 
-$nodepath = str_replace('\\core', '\\nodes', $_SERVER['DOCUMENT_ROOT']) . '\\' . $node . '\\';
+$nodepath = $euryscoinstallpath . '\\nodes\\' . $node . '\\';
 
 $lastupdate = 'N/A';
 if (!is_null($db->querySingle('SELECT node FROM xmlPrograms WHERE node = "' . $node . '"')) || file_exists($nodepath . 'programs.xml.gz')) {
-	if (file_exists($nodepath . 'programs.xml.gz')) { $lastupdate = date('d/m/Y H:i:s', filemtime(str_replace('\\core', '\\nodes', $_SERVER['DOCUMENT_ROOT']) . '\\' . $node . '\\programs.xml.gz')); }
+	if (file_exists($nodepath . 'programs.xml.gz')) { $lastupdate = date('d/m/Y H:i:s', filemtime($euryscoinstallpath . '\\nodes\\' . $node . '\\programs.xml.gz')); }
 	$xml = simplexml_load_string($db->querySingle('SELECT xml FROM xmlPrograms WHERE node = "' . $node . '"'));
 	if (!is_object($xml)) {
 		$fp = gzopen($nodepath . 'programs.xml.gz', 'rb');

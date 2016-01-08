@@ -1,6 +1,6 @@
 <?php
 
-include('/include/init.php');
+include(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_core.php');
 
 if (!isset($_POST['xml'])) { exit; }
 if (!isset($_POST['ath'])) { exit; }
@@ -33,15 +33,15 @@ if ($action == 'prereconcilepass' || $action == 'reconcilepass') {
 if ($changeuser == 'Administrator' && base64_decode($_POST['ath']) != 'Local') {
 	echo 'authentication error';
 } else {
-	if (!file_exists($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $changeuser . '.xml')) {
+	if (!file_exists($euryscoinstallpath . '\\users\\' . $changeuser . '.xml')) {
 		echo 'authentication error';
 	} else {
-		$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $changeuser . '.xml', true)))));
+		$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($euryscoinstallpath . '\\users\\' . $changeuser . '.xml', true)))));
 		$usersuserauth = $userxml->settings->userauth;
 		if (hash('sha512', $changeuser . 'Distributed') != $usersuserauth && base64_decode($_POST['ath']) != 'Local') {
 			echo 'authentication error';
 		} else {
-			$writexml = fopen($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $changeuser . '.xml', 'w');
+			$writexml = fopen($euryscoinstallpath . '\\users\\' . $changeuser . '.xml', 'w');
 			fwrite($writexml, base64_encode(base64_encode($_POST['xml'])));
 			fclose($writexml);
 			echo md5($_POST['xml']);

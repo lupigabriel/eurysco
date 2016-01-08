@@ -1,14 +1,14 @@
 <?php
 
-include('/include/init.php');
+include(str_replace('\\server', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_server.php');
 
 set_time_limit(60);
 
 if (isset($_POST['type']) && isset($_POST['download'])) {
 	$filelocation = '';
-	if ($_POST['type'] == 'groups') { $filelocation = str_replace('\\server', '\\core', $_SERVER['DOCUMENT_ROOT']) . '\\groups\\' . $_POST['download']; }
-	if ($_POST['type'] == 'users') { $filelocation = str_replace('\\server', '\\core', $_SERVER['DOCUMENT_ROOT']) . '\\users\\' . $_POST['download']; }
-	if ($_POST['type'] == 'settings' && isset($_POST['computername'])) { $filelocation = str_replace('\\server', '\\nodes', $_SERVER['DOCUMENT_ROOT']) . '\\' . $_POST['computername'] . '\\' . $_POST['download']; }
+	if ($_POST['type'] == 'groups') { $filelocation = $euryscoinstallpath . '\\groups\\' . $_POST['download']; }
+	if ($_POST['type'] == 'users') { $filelocation = $euryscoinstallpath . '\\users\\' . $_POST['download']; }
+	if ($_POST['type'] == 'settings' && isset($_POST['computername'])) { $filelocation = $euryscoinstallpath . '\\nodes\\' . $_POST['computername'] . '\\' . $_POST['download']; }
 	if ($filelocation == '') { exit; }
 	if (file_exists($filelocation)) {
 		if (false != ($handler = fopen($filelocation, 'r'))) {

@@ -11,7 +11,12 @@ if (isset($_GET['node'])) {
 	exit;
 }
 
-if (!strpos('#' . $_SESSION['nodelist'] . '#', '#' . $node . '#') || !isset($_SESSION['nodelist'])) {
+if (isset($_SESSION['nodelist'])) {
+	if (!strpos('#' . $_SESSION['nodelist'] . '#', '#' . $node . '#')) {
+		header('location: ' . $corelink . '/nodes.php');
+		exit;
+	}
+} else {
 	header('location: ' . $corelink . '/nodes.php');
 	exit;
 }
@@ -45,11 +50,11 @@ if (isset($_GET['csv_nodes_processes'])) {
 
 $processesrrsetting = 5000;
 
-$nodepath = str_replace('\\core', '\\nodes', $_SERVER['DOCUMENT_ROOT']) . '\\' . $node . '\\';
+$nodepath = $euryscoinstallpath . '\\nodes\\' . $node . '\\';
 
 ?>
 
-<?php if (!isset($_GET['csv_nodes_processes'])) { $_SESSION['nodes_processes'] = '<a href="' . $_SERVER['REQUEST_URI'] . '" title="Process Control"><div class="icon-bars"></div>' . $node . '</a>'; } ?>
+<?php if (!isset($_GET['csv_nodes_processes'])) { $_SESSION['nodes_processes'] = '<a href="' . htmlspecialchars((string)$_SERVER['REQUEST_URI'], ENT_QUOTES, 'UTF-8') . '" title="Process Control"><div class="icon-bars"></div>' . $node . '</a>'; } ?>
 
 <?php include("navigation.php"); ?>
 
@@ -62,7 +67,7 @@ $nodepath = str_replace('\\core', '\\nodes', $_SERVER['DOCUMENT_ROOT']) . '\\' .
 	function endprocess(IDProcess,Name,PercentProcessorTime,WorkingSetPrivate,CreatingProcessID,LimitName,UrlName,UserName){
 		$.ajax({
 			type: "GET",
-			url: 'nodes_processesjqsrv.php?idprocess=' + IDProcess + '&node=<?php echo $node; ?>&domain=<?php echo $domain; ?>&pid=' + CreatingProcessID,
+			url: 'nodes_processesjqsrv.php?<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15) . '=' . substr(md5('$_GET' . $sessiontoken), 15, 25); ?>&idprocess=' + IDProcess + '&node=<?php echo $node; ?>&domain=<?php echo $domain; ?>&pid=' + CreatingProcessID,
 			data: '',
 			dataType: 'json',
 			cache: false,
@@ -173,10 +178,10 @@ $nodepath = str_replace('\\core', '\\nodes', $_SERVER['DOCUMENT_ROOT']) . '\\' .
 					$cid = '';
 					$exectimeout = 30000;
 					
-					if ($endidprocess != '' && $endtypeprocess != '' && (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'])) > 0) {
+					if ($endidprocess != '' && $endtypeprocess != '' && strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']) > 0 && isset($_POST[substr(md5('$_POST' . $_SESSION['tokenl']), 5, 15)])) {
 						$cid = md5(date('r') . $_SESSION['username'] . $node);
-						if ($endtypeprocess == 1) {
-							$mcrykeycmd = pack('H*', hash('sha256', md5(strtolower($node))));
+						if ($endtypeprocess == 1 && file_exists($euryscoinstallpath . '\\nodes\\' . strtolower($node) . '\\agent.key')) {
+							$mcrykeycmd = pack('H*', hash('sha256', fgets(fopen($euryscoinstallpath . '\\nodes\\' . strtolower($node) . '\\agent.key', 'r'))));
 							$endprocessoutput = 'taskkill.exe /f /pid ' . $endidprocess;
 							$xml = '<exec>' . "\n";
 							$xml = $xml . '	<auditok>' . base64_encode(base64_encode(base64_encode(base64_encode(base64_encode(base64_encode('     ' . $_SESSION['username'] . '     ' . $node . '     process control     process "' . $endnameprocess . '" ended (command sent from server "' . $envcomputername . '")')))))) . '</auditok>' . "\n";
@@ -191,11 +196,11 @@ $nodepath = str_replace('\\core', '\\nodes', $_SERVER['DOCUMENT_ROOT']) . '\\' .
 							fclose($fp);
 							$fp = fopen($nodepath . 'exec.on', 'w');
 							fclose($fp);
-							$message = '<blockquote style="font-size:12px; background-color:#0072C6; color:#FFFFFF; border-left-color:#324886;">process <strong>' . $endnameprocess . '</strong> end command sent to node <strong>' . $node . '</strong></blockquote><br />';
+							$message = 'process <strong>' . $endnameprocess . '</strong> end command sent to node <strong>' . $node . '</strong>';
 		                    $audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     process control     process "' . $endnameprocess . '" end command sent to node "' . $node . '"';
 						}
-						if ($endtypeprocess == 2) {
-							$mcrykeycmd = pack('H*', hash('sha256', md5(strtolower($node))));
+						if ($endtypeprocess == 2 && file_exists($euryscoinstallpath . '\\nodes\\' . strtolower($node) . '\\agent.key')) {
+							$mcrykeycmd = pack('H*', hash('sha256', fgets(fopen($euryscoinstallpath . '\\nodes\\' . strtolower($node) . '\\agent.key', 'r'))));
 							$endprocessoutput = 'taskkill.exe /f /pid ' . $endidprocess . ' /t';
 							$xml = '<exec>' . "\n";
 							$xml = $xml . '	<auditok>' . base64_encode(base64_encode(base64_encode(base64_encode(base64_encode(base64_encode('     ' . $_SESSION['username'] . '     ' . $node . '     process control     tree process "' . $endnameprocess . '" ended (command sent from server "' . $envcomputername . '")')))))) . '</auditok>' . "\n";
@@ -210,13 +215,17 @@ $nodepath = str_replace('\\core', '\\nodes', $_SERVER['DOCUMENT_ROOT']) . '\\' .
 							fclose($fp);
 							$fp = fopen($nodepath . 'exec.on', 'w');
 							fclose($fp);
-							$message = '<blockquote style="font-size:12px; background-color:#0072C6; color:#FFFFFF; border-left-color:#324886;">tree process <strong>' . $endnameprocess . '</strong> end command sent to node <strong>' . $node . '</strong></blockquote><br />';
+							$message = 'tree process <strong>' . $endnameprocess . '</strong> end command sent to node <strong>' . $node . '</strong>';
 		                    $audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     process control     tree process "' . $endnameprocess . '" end command sent to node "' . $node . '"';
 						}
 					}
 
 					if (isset($_GET['page'])) {
-						$pgkey = $_GET['page'] - 1;
+						if (is_numeric($_GET['page'])) {
+							$pgkey = $_GET['page'] - 1;
+						} else {
+							$pgkey = 0;
+						}
 					} else {
 						$pgkey = 0;
 					}
@@ -230,23 +239,24 @@ $nodepath = str_replace('\\core', '\\nodes', $_SERVER['DOCUMENT_ROOT']) . '\\' .
                     	<tr><td width="20%"><div id="csvexport"></div></td><td colspan="<?php echo $navspan; ?>"><div id="totalelement" style="font-size:12px;"></div></td></tr>
                     	<tr><td width="20%"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">Page Loading Time:</div></td><td colspan="<?php echo $navspan; ?>"><div id="totaltime" style="font-size:12px;"></div></td></tr>
                     	<tr><td width="20%"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">Reloading Time:</div></td><td colspan="<?php echo $navspan; ?>" style="font-size:12px;"><?php if ($processesrrsetting != 'Hold') { echo number_format(($processesrrsetting / 1000), 0, ',', '.') . '&nbsp;sec&nbsp;&nbsp;'; } else { echo $processesrrsetting . '&nbsp;&nbsp;'; } ?><a href="?orderby=<?php echo $orderby; ?>&node=<?php echo $node; ?>&domain=<?php echo $domain; ?>&computerip=<?php echo $computerip; ?>&executorport=<?php echo $executorport; ?>&filter=<?php echo urlencode($filter); ?>&page=<?php echo $pgkey + 1; ?>" title="Reload Now"><div class="icon-loop"></div></a></td></tr>
-						<?php if ($filter != '') { ?><tr><td width="20%"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">Filter:</div></td><td colspan="<?php echo $navspan; ?>" style="font-size:12px;"><i><?php echo $filter; ?></i></td></tr><?php } ?>
+						<?php if ($filter != '') { ?><tr><td width="20%"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">Filter:</div></td><td colspan="<?php echo $navspan; ?>" style="font-size:12px;"><i><?php echo str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$filter, ENT_QUOTES, 'UTF-8')))); ?></i></td></tr><?php } ?>
                     </table>
                     
 					<div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">
                     <blockquote style="font-size:12px; height:33px;" title="<?php echo 'Use Normal String for SIMPLE SEARCH' . "\n" . 'Use Regular Expression for COMPLEX SEARCH' . "\n" . 'Use Minus  -  for NOT CONTAIN' . "\n" . 'Use Pipe  |  for OR OPERATOR' . "\n" . 'Use Raw Data View for REFERENCES'; ?>">
                     	<form id="filterform" name="filterform" method="get">
-                        	Filter:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" id="filter" name="filter" placeholder="Regular Expression..." value="<?php echo $filter; ?>" title="<?php echo $filter; ?>" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; font-size:12px; border:solid; border-width:1px; border-color:#e5e5e5; width:150px; height:23px; padding-top:0px; padding-left:4px; padding-right:4px;" />&nbsp;&nbsp;<a href="javascript:;" onClick="document.getElementById('filterform').submit();" title="Filter by String or Regular Expression"><div class="icon-search"<?php if ($filter != '') { echo ' style="color:#8063C8;"'; } ?>></div></a><?php if ($filter != '') { ?>&nbsp;<a href="/nodes.php?find=<?php echo urlencode($filter); ?>&findtype=processes" title="Filter All Nodes"><div class="icon-reply-2"></div></a>&nbsp;<a href="?orderby=<?php echo $orderby; ?>&node=<?php echo $node; ?>&domain=<?php echo $domain; ?>&computerip=<?php echo $computerip; ?>&executorport=<?php echo $executorport; ?>" title="Clear Filter"><div class="icon-cancel"></div></a><?php } ?>
+                        	Filter:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" id="filter" name="filter" placeholder="Regular Expression..." value="<?php echo str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$filter, ENT_QUOTES, 'UTF-8')))); ?>" title="<?php echo str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$filter, ENT_QUOTES, 'UTF-8')))); ?>" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; font-size:12px; border:solid; border-width:1px; border-color:#e5e5e5; width:150px; height:23px; padding-top:0px; padding-left:4px; padding-right:4px;" />&nbsp;&nbsp;<a href="javascript:;" onClick="document.getElementById('filterform').submit();" title="Filter by String or Regular Expression"><div class="icon-search"<?php if ($filter != '') { echo ' style="color:#8063C8;"'; } ?>></div></a><?php if ($filter != '') { ?>&nbsp;<a href="/nodes.php?find=<?php echo urlencode($filter); ?>&findtype=processes" title="Filter All Nodes"><div class="icon-reply-2"></div></a>&nbsp;<a href="?orderby=<?php echo $orderby; ?>&node=<?php echo $node; ?>&domain=<?php echo $domain; ?>&computerip=<?php echo $computerip; ?>&executorport=<?php echo $executorport; ?>" title="Clear Filter"><div class="icon-cancel"></div></a><?php } ?>
                             <input type="hidden" id="orderby" name="orderby" value="<?php echo $orderby; ?>" />
 							<input type="hidden" id="node" name="node" value="<?php echo $node; ?>" />
 							<input type="hidden" id="domain" name="domain" value="<?php echo $domain; ?>" />
 							<input type="hidden" id="computerip" name="computerip" value="<?php echo $computerip; ?>" />
 							<input type="hidden" id="executorport" name="executorport" value="<?php echo $executorport; ?>" />
+							<input type="hidden" id="<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_GET' . $sessiontoken), 15, 25); ?>" />
 						</form>
 					</blockquote>
 					</div>
 					<br />
-                    
+
 					<div id="message"></div>
 					
                     <div id="processtable"></div>
@@ -258,7 +268,7 @@ $nodepath = str_replace('\\core', '\\nodes', $_SERVER['DOCUMENT_ROOT']) . '\\' .
 					function update() {
 						$.ajax({
 							type: "GET",
-							url: 'nodes_processesjq.php?orderby=<?php echo $orderby; ?>&node=<?php echo $node; ?>&domain=<?php echo $domain; ?>&computerip=<?php echo $computerip; ?>&executorport=<?php echo $executorport; ?>&filter=<?php echo urlencode($filter); ?>&page=<?php echo $pgkey; ?>&phptimeout=<?php echo $phptimeout; ?>&cid=<?php echo $cid; ?>&message=<?php echo urlencode($message); ?>',
+							url: 'nodes_processesjq.php?<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15) . '=' . substr(md5('$_GET' . $sessiontoken), 15, 25); ?>&orderby=<?php echo $orderby; ?>&node=<?php echo $node; ?>&domain=<?php echo $domain; ?>&computerip=<?php echo $computerip; ?>&executorport=<?php echo $executorport; ?>&filter=<?php echo urlencode($filter); ?>&page=<?php echo $pgkey; ?>&phptimeout=<?php echo $phptimeout; ?>&cid=<?php echo $cid; ?>&message=<?php echo urlencode($message); ?>',
 							data: '',
 							dataType: 'json',
 							cache: false,
@@ -268,7 +278,7 @@ $nodepath = str_replace('\\core', '\\nodes', $_SERVER['DOCUMENT_ROOT']) . '\\' .
 							$('#processtable').html(data.processtable);
 							$('#totalelement').html(data.totalelement + '&nbsp;&nbsp;<a href="<?php echo $_SERVER['SCRIPT_NAME']; ?>?node=<?php echo $node; ?>&domain=<?php echo $domain; ?>&computerip=<?php echo $computerip; ?>&executorport=<?php echo $executorport; ?>" title="Reset View"><div class="icon-undo"></div></a>');
 							$('#totaltime').html(data.totaltime);
-							$('#lastupdate').html('<?php if ($_SESSION['usersett']['nodesprocesscontrolf'] == '') { ?><a href="/xml.php?export=processes&source=<?php echo $node; ?>" style="font-size:12px;" title="Export Source XML"><div class="icon-file-xml"></div></a><?php } ?>Last&nbsp;Update:&nbsp;' + data.lastupdate);
+							$('#lastupdate').html('<?php if ($_SESSION['usersett']['nodesprocesscontrolf'] == '') { ?><a href="/xml.php?<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15) . '=' . substr(md5('$_GET' . $sessiontoken), 15, 25); ?>&export=processes&source=<?php echo $node; ?>" style="font-size:12px;" title="Export Source XML"><div class="icon-file-xml"></div></a><?php } ?>Last&nbsp;Update:&nbsp;' + data.lastupdate);
 							$('#csvexport').html(data.csvexport);
 							$('#message').html(data.message);
 							}
@@ -280,6 +290,7 @@ $nodepath = str_replace('\\core', '\\nodes', $_SERVER['DOCUMENT_ROOT']) . '\\' .
 						<input type="hidden" id="endidprocess" name="endidprocess" />
 						<input type="hidden" id="endnameprocess" name="endnameprocess" />
 						<input type="hidden" id="endtypeprocess" name="endtypeprocess" />
+						<input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" />
 					</form>
 
 					</div>

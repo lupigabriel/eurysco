@@ -2,7 +2,7 @@
 
 <?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filebrowser'] > 0) {  } else { header('location: /'); exit; } ?>
 
-<?php $_SESSION['textreader'] = $_SERVER['REQUEST_URI']; ?>
+<?php $_SESSION['textreader'] = htmlspecialchars((string)$_SERVER['REQUEST_URI'], ENT_QUOTES, 'UTF-8'); ?>
 
 <?php include("navigation.php"); ?>
 
@@ -14,9 +14,10 @@
 <?php
 
 if (isset($_GET["file"])) {
-	$filetoread = $_GET["file"];
+	$filetoread = $_GET['file'];
 } else {
-	$filetoread = '';
+	unset($_SESSION['zipextract']);
+	header('location: /'); exit;
 }
 
 if (isset($_GET['path'])) {
@@ -32,15 +33,15 @@ if (isset($_GET['download'])) {
 }
 
 $message = '';
-if (isset($_POST['tailoutput'])) {
+if (isset($_POST['tailoutput']) && strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']) > 0 && isset($_POST[substr(md5('$_POST' . $_SESSION['tokenl']), 5, 15)])) {
 	if (mb_detect_encoding($_POST['tailoutput']) == 'ASCII') {
-		$origfmd = hash_file('md2', $filetoread);
+		$origfmd = hash_file('md5', $filetoread);
 		session_write_close();
 		$fp = @fopen($filetoread, 'w');
 		@fwrite($fp, $_POST['tailoutput']);
 		@fclose($fp);
 		session_start();
-		if ($origfmd != hash_file('md2', $filetoread)) {
+		if ($origfmd != hash_file('md5', $filetoread)) {
 			$message = '<blockquote style="font-size:12px; background-color:#0072C6; color:#FFFFFF; border-left-color:#324886;">file content changed</blockquote><br />';
 			$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     text reader     file content in "' . str_replace('\\\\', '\\', $filetoread) . '" changed';
 		} else {
@@ -53,13 +54,13 @@ if (isset($_POST['tailoutput'])) {
 	}
 }
 
-if (isset($_POST['openeditconf'])) {
+if (isset($_POST['openeditconf']) && strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']) > 0) {
 	$openeditconf = 'on';
 } else {
 	$openeditconf = '';
 }
 
-if ((isset($_GET["pause"]) || isset($_POST['openeditconf'])) && (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'])) > 0) {
+if ((isset($_GET["pause"]) || isset($_POST['openeditconf'])) && strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']) > 0) {
 	$tailcommand = '&resume';
 	if (isset($_POST['openeditconf'])) { $tailbuttval = 'Tail'; } else { $tailbuttval = 'Resume'; }
 	$tailbuttcol = '0072C6';
@@ -71,7 +72,7 @@ if ((isset($_GET["pause"]) || isset($_POST['openeditconf'])) && (strpos($_SERVER
 	$tailinterva = 'setInterval(update, ' . $tailrrsetting . ');';
 }
 
-if (isset($_GET["close"])) {
+if (isset($_GET["close"]) && strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']) > 0) {
 	unset($_GET["close"]);
 	unset($_SESSION['textreader']);
 	header('location: /explorer.php?path=' . urlencode($path));
@@ -102,7 +103,7 @@ if (isset($_GET["close"])) {
 					<h2>Tail:</h2>
 					<?php if ($filetoread != '') { ?>
 						<blockquote style="font-size:12px;">
-							<?php echo strtolower($filetoread); ?><?php if ($download != '' && $path != '' ) { ?><?php if (file_exists($filetoread) && is_readable($filetoread)) { ?><?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filetransfer'] > 1) { ?>&nbsp;&nbsp;<a href="download.php?download=<?php echo urlencode($download); ?>&path=<?php echo urlencode($path); ?>" style="font-size:12px;" title="Download"><div class="icon-download-2"></div></a><?php } ?><?php } ?><?php } ?>
+							<?php echo strtolower(str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$filetoread, ENT_QUOTES, 'UTF-8'))))); ?><?php if ($download != '' && $path != '' ) { ?><?php if (file_exists($filetoread) && is_readable($filetoread)) { ?><?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filetransfer'] > 1) { ?>&nbsp;&nbsp;<a href="download.php?<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15) . '=' . substr(md5('$_GET' . $sessiontoken), 15, 25); ?>&download=<?php echo urlencode($download); ?>&path=<?php echo urlencode($path); ?>" style="font-size:12px;" title="Download"><div class="icon-download-2"></div></a><?php } ?><?php } ?><?php } ?>
 						</blockquote>
 					<?php } ?>
 					<br />
@@ -112,9 +113,11 @@ if (isset($_GET["close"])) {
 					<form name="tailedit" method="post">
 						<textarea id="tailoutput"<?php if (!isset($_POST['openeditconf'])) { ?> readonly="readonly"<?php } ?> name="tailoutput" wrap="off" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:12px; height:301px; font-weight:normal;"></textarea>
 						<input type="hidden" id="openeditconf" name="openeditconf" />
+						<input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" />
 					</form>
 					<form name="openedit" method="post">
 						<input type="hidden" id="openeditconf" name="openeditconf" />
+						<input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" />
 					</form>
 					</div>
 					
@@ -130,7 +133,7 @@ if (isset($_GET["close"])) {
 					function update() {
 						$.ajax({
 							type: "GET",
-							url: 'tailjq.php?file=<?php echo urlencode($filetoread); ?>&path=<?php echo urlencode($path); ?>&openeditconf=<?php echo $openeditconf; ?>',
+							url: 'tailjq.php?<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15) . '=' . substr(md5('$_GET' . $sessiontoken), 15, 25); ?>&file=<?php echo urlencode($filetoread); ?>&path=<?php echo urlencode($path); ?>&openeditconf=<?php echo $openeditconf; ?>',
 							data: '',
 							dataType: 'json',
 							cache: false,

@@ -1,9 +1,9 @@
-<?php include('/include/init.php'); ?>
+<?php include(str_replace('\\server', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_server.php'); ?>
 
 <?php
 
-$corepath = str_replace('\\server', '\\core', $_SERVER['DOCUMENT_ROOT']);
-$nodespath = str_replace('\\server', '\\nodes', $_SERVER['DOCUMENT_ROOT']);
+$corepath = $euryscoinstallpath . '\\core';
+$nodespath = $euryscoinstallpath . '\\nodes';
 
 if (isset($_POST['configstatus']) && isset($_POST['agentversion']) && isset($_POST['refreshrate']) && isset($_POST['computername']) && isset($_POST['coreport']) && isset($_POST['executorport']) && isset($_POST['cpuusage']) && isset($_POST['cpumanufacturer']) && isset($_POST['cpumodel']) && isset($_POST['cpucurrentclock']) && isset($_POST['cpumaxclock']) && isset($_POST['cpuarchitecture']) && isset($_POST['cpucores']) && isset($_POST['cputhreads']) && isset($_POST['cpusockettype']) && isset($_POST['osname']) && isset($_POST['osversion']) && isset($_POST['osservicepack']) && isset($_POST['osserialnumber']) && isset($_POST['manufacturer']) && isset($_POST['model']) && isset($_POST['domain']) && isset($_POST['totalprocesses']) && isset($_POST['localdatetime']) && isset($_POST['lastbootuptime']) && isset($_POST['uptime']) && isset($_POST['memoryusage']) && isset($_POST['totalmemory']) && isset($_POST['usedmemory']) && isset($_POST['freememory']) && isset($_POST['sysdiskuspc']) && isset($_POST['sysdiskfree']) && isset($_POST['sysdisksize']) && isset($_POST['sysdiskused']) && isset($_POST['sysdisktype']) && isset($_POST['services_total']) && isset($_POST['services_running']) && isset($_POST['services_error']) && isset($_POST['scheduler_total']) && isset($_POST['scheduler_error']) && isset($_POST['events_warning']) && isset($_POST['events_error']) && isset($_POST['nagios_status']) && isset($_POST['nagiostotalcount']) && isset($_POST['nagiosnormacount']) && isset($_POST['nagioswarnicount']) && isset($_POST['nagioscriticount']) && isset($_POST['nagiosunknocount']) && isset($_POST['netstatestcount']) && isset($_POST['netstatliscount']) && isset($_POST['netstattimcount']) && isset($_POST['netstatclocount']) && isset($_POST['netstat_status']) && isset($_POST['inventory_status']) && isset($_POST['programs_status'])) {
 
@@ -16,7 +16,7 @@ if (isset($_POST['configstatus']) && isset($_POST['agentversion']) && isset($_PO
 
 	if (file_exists($nodespath . '\\' . $_POST['computername'] . '\\exec.on')) { echo '<exec>on</exec>' . "\n"; } else { echo '<exec>off</exec>' . "\n"; }
 
-	$db = new SQLite3(str_replace('\\server', '\\sqlite', $_SERVER['DOCUMENT_ROOT']) . '\\euryscoServer');
+	$db = new SQLite3($euryscoinstallpath . '\\sqlite\\euryscoServer');
 	$db->busyTimeout(30000);
 	$db->query('PRAGMA page_size = 2048; PRAGMA cache_size = 4000; PRAGMA temp_store = 2; PRAGMA journal_mode = OFF; PRAGMA synchronous = 0;');
 
@@ -31,8 +31,8 @@ if (isset($_POST['configstatus']) && isset($_POST['agentversion']) && isset($_PO
 	if (!file_exists($nodespath . '\\' . $_POST['computername'] . '\\config_settings.xml')) { echo '0null'; } else { echo hash_file('md2', $nodespath . '\\' . $_POST['computername'] . '\\config_settings.xml'); }
 	echo '</settings>' . "\n";
 
-	if (!file_exists($nodespath . '\\' . strtolower($_POST['computername']) . '\\')) { mkdir($nodespath . '\\' . strtolower($_POST['computername']) . '\\', 0777); @copy($corepath . '\\conf\\config_settings.xml', $nodespath . '\\' . strtolower($_POST['computername']) . '\\config_settings.xml'); }
-	if ($_POST['configstatus'] == 0 && file_exists($config_settings)) { @copy($corepath . '\\conf\\config_settings.xml', $nodespath . '\\' . strtolower($_POST['computername']) . '\\config_settings.xml'); }
+	if (!file_exists($nodespath . '\\' . strtolower($_POST['computername']) . '\\')) { mkdir($nodespath . '\\' . strtolower($_POST['computername']) . '\\', 0777); @copy($euryscoinstallpath . '\\conf\\config_settings.xml', $nodespath . '\\' . strtolower($_POST['computername']) . '\\config_settings.xml'); }
+	if ($_POST['configstatus'] == 0 && file_exists($config_settings)) { @copy($euryscoinstallpath . '\\conf\\config_settings.xml', $nodespath . '\\' . strtolower($_POST['computername']) . '\\config_settings.xml'); }
 	$lastcom = date('Y-m-d H:i:s');
 	if (strtolower($_POST['computername']) == strtolower($envcomputername)) { $nodeip = '127.0.0.1'; } else { $nodeip = $_SERVER['HTTP_X_FORWARDED_FOR']; }
 	if (is_null($db->querySingle('SELECT node FROM nodesStatus WHERE node = "' . strtolower($_POST['computername']) . '"'))) {
@@ -48,17 +48,17 @@ if (isset($_POST['configstatus']) && isset($_POST['agentversion']) && isset($_PO
 	}
 	
 	echo '<groups>' . "\n";
-	$grouplist = scandir($corepath . '\\groups\\');
+	$grouplist = scandir($euryscoinstallpath . '\\groups\\');
 	$grouplistcheck = 'Administrators;Auditors;Operators;Users;';
 	foreach($grouplist as $group) {
 		if(pathinfo($group)['extension'] == 'xml') {
-			if (filesize($corepath . '\\groups\\' . $group) == 0) {
-				@unlink($corepath . '\\groups\\' . $group);
+			if (filesize($euryscoinstallpath . '\\groups\\' . $group) == 0) {
+				@unlink($euryscoinstallpath . '\\groups\\' . $group);
 			} else {
-				$groupxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($corepath . '\\groups\\' . $group, true)))));
+				$groupxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($euryscoinstallpath . '\\groups\\' . $group, true)))));
 				if (hash('sha512', $groupxml->settings->groupname . 'Distributed') == $groupxml->settings->groupauth) {
 					$mcrykey = pack('H*', hash('sha256', hash('sha512', str_replace('.xml', '', $group))));
-					$groupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($corepath . '\\groups\\' . $group, true)))));
+					$groupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($euryscoinstallpath . '\\groups\\' . $group, true)))));
 					$usersett = unserialize(trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($groupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($groupsxml->settings->groupsettings), 0, $iv_size))));
 					$checkprefilter = 0;
 					if ($usersett['nodesstatusf'] != '') {
@@ -83,7 +83,7 @@ if (isset($_POST['configstatus']) && isset($_POST['agentversion']) && isset($_PO
 					if ($checkprefilter == 0) {
 						echo '<' . str_replace('.xml', '', str_replace(' ', '', $group)) . '>';
 						echo '<file>' . $group . '</file>';
-						echo '<hash>' . hash_file('md2', $corepath . '\\groups\\' . $group) . '</hash>';
+						echo '<hash>' . hash_file('md2', $euryscoinstallpath . '\\groups\\' . $group) . '</hash>';
 						echo '</' . str_replace('.xml', '', str_replace(' ', '', $group)) . '>' . "\n";
 						$grouplistcheck = $grouplistcheck . str_replace('.xml', '', $group) . ';';
 					}
@@ -95,20 +95,20 @@ if (isset($_POST['configstatus']) && isset($_POST['agentversion']) && isset($_PO
 	echo '</groups>' . "\n";
 
 	echo '<users>' . "\n";
-	$userlist = scandir($corepath . '\\users\\');
+	$userlist = scandir($euryscoinstallpath . '\\users\\');
 	foreach($userlist as $user) {
 		if(pathinfo($user)['extension'] == 'xml') {
-			if (filesize($corepath . '\\users\\' . $user) == 0) {
-				@unlink($corepath . '\\users\\' . $user);
+			if (filesize($euryscoinstallpath . '\\users\\' . $user) == 0) {
+				@unlink($euryscoinstallpath . '\\users\\' . $user);
 			} else {
-				$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($corepath . '\\users\\' . $user, true)))));
+				$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($euryscoinstallpath . '\\users\\' . $user, true)))));
 				if (hash('sha512', $userxml->settings->username . 'Distributed') == $userxml->settings->userauth) {
 					$grouplist = explode(';', $grouplistcheck);
 					foreach ($grouplist as $group) {
 						if (hash('sha512', $userxml->settings->username . $group) == $userxml->settings->usertype) {
 							echo '<' . str_replace('.xml', '', $user) . '>';
 							echo '<file>' . $user . '</file>';
-							echo '<hash>' . hash_file('md2', $corepath . '\\users\\' . $user) . '</hash>';
+							echo '<hash>' . hash_file('md2', $euryscoinstallpath . '\\users\\' . $user) . '</hash>';
 							echo '</' . str_replace('.xml', '', $user) . '>' . "\n";
 						}
 					}

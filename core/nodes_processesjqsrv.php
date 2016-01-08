@@ -9,8 +9,9 @@ if (isset($_GET['node'])) {
 	exit;
 }
 
-include('/include/init.php');
+include(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_core.php');
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Operators' || $_SESSION['usertype'] == 'Users' || $_SESSION['usersett']['nodesprocesscontrol'] > 0) {  } else { exit; }
+if (!isset($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)])) { exit; } else { if ($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)] != substr(md5('$_GET' . $sessiontoken), 15, 25)) { exit; } }
 session_write_close();
 
 if (isset($_GET['idprocess'])) {
@@ -31,11 +32,11 @@ if (isset($_GET['pid'])) {
 
 $Name = '-';
 
-$db = new SQLite3(str_replace('\\core', '\\sqlite', $_SERVER['DOCUMENT_ROOT']) . '\\euryscoServer');
+$db = new SQLite3($euryscoinstallpath . '\\sqlite\\euryscoServer');
 $db->busyTimeout(30000);
 $db->query('PRAGMA page_size = 2048; PRAGMA cache_size = 4000; PRAGMA temp_store = 2; PRAGMA journal_mode = OFF; PRAGMA synchronous = 0;');
 
-$services = str_replace('\\core', '\\nodes', $_SERVER['DOCUMENT_ROOT']) . '\\' . $node . '\\services.xml.gz';
+$services = $euryscoinstallpath . '\\nodes\\' . $node . '\\services.xml.gz';
 if (file_exists($services)) {
 	$xml = simplexml_load_string($db->querySingle('SELECT xml FROM xmlServices WHERE node = "' . $node . '"'));
 	if (!is_object($xml)) {
@@ -60,7 +61,7 @@ if (file_exists($services)) {
 
 $ParentName = '-';
 
-$processes = str_replace('\\core', '\\nodes', $_SERVER['DOCUMENT_ROOT']) . '\\' . $node . '\\processes.xml.gz';
+$processes = $euryscoinstallpath . '\\nodes\\' . $node . '\\processes.xml.gz';
 if (file_exists($processes)) {
 	$xml = simplexml_load_string($db->querySingle('SELECT xml FROM xmlProcesses WHERE node = "' . $node . '"'));
 	if (!is_object($xml)) {

@@ -1,10 +1,10 @@
 <?php
 
-include('/include/init.php');
+include(str_replace('\\server', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_server.php');
 
 set_time_limit(60);
 
-$nodespath = str_replace('\\server', '\\nodes', $_SERVER['DOCUMENT_ROOT']);
+$nodespath = $euryscoinstallpath . '\\nodes';
 
 if (isset($_POST['computername'])) {
 	$computername = $_POST['computername'];

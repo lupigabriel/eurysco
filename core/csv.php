@@ -10,7 +10,7 @@ if (!isset($_GET['source'])) {
 	exit;
 }
 
-include('/include/init.php');
+include(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_core.php');
 
 if (!isset($_SESSION[$_GET['export']])) {
 	header('location: ' . $_SERVER['HTTP_REFERER']);

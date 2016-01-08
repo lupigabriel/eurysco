@@ -3,8 +3,10 @@
 if (!isset($_SERVER['HTTP_REFERER'])) { exit; }
 if (!strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/audit.php')) { exit; }
 
-include('/include/init.php');
+include(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_core.php');
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Auditors' || $_SESSION['usersett']['auditlog'] > 0) {  } else { exit; }
+
+if (!isset($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)])) { exit; } else { if ($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)] != substr(md5('$_GET' . $sessiontoken), 15, 25)) { exit; } }
 
 if (isset($_GET['orderby'])) {
 	$orderby = $_GET['orderby'];
@@ -19,13 +21,17 @@ if (isset($_GET['filter'])) {
 }
 
 if (isset($_GET['page'])) {
-	$pgkey = $_GET['page'];
+	if (is_numeric($_GET['page'])) {
+		$pgkey = $_GET['page'];
+	} else {
+		$pgkey = 0;
+	}
 } else {
 	$pgkey = 0;
 }
 
 if (isset($_GET["file"])) {
-	$name = $_GET["file"];
+	$name = $_GET['file'];
 } else {
 	$name = 'Audit Not Collected...';
 }
@@ -96,7 +102,7 @@ if (isset($_GET['srvrun'])) {
 	if ($orderby == 'description') { $obyAuditDesc = ' color:#8063C8;'; } else { $obyAuditDesc = ''; }
 	if ($orderby == 'exitcode') { $obyAuditExit = ' color:#8063C8;'; } else { $obyAuditExit = ''; }
 	$audittable = '<table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped"><tr><td width="10%"><a href="?orderby=date&filter=' . urlencode($filter) . $pause . '" style="font-size:12px; font-weight:bold;' . $obyAuditDate . '" title="Descending Order by Date">Date</a></td><td width="10%" align="center"><a href="?orderby=user&filter=' . urlencode($filter) . $pause . '" style="font-size:12px; font-weight:bold;' . $obyAuditUser . '" title="Ascending Order by User">User</a></td><td width="10%" align="center"><a href="?orderby=node&filter=' . urlencode($filter) . $pause . '" style="font-size:12px; font-weight:bold;' . $obyAuditNode . '" title="Ascending Order by Node">Node</a></td><td width="70%"><a href="?orderby=description&filter=' . urlencode($filter) . $pause . '" style="font-size:12px; font-weight:bold;' . $obyAuditDesc . '" title="Ascending Order by Description">Description</a></td></tr>';
-	$dbaudit = new SQLite3(str_replace('\\core', '\\sqlite', $_SERVER['DOCUMENT_ROOT']) . '\\euryscoAudit');
+	$dbaudit = new SQLite3($euryscoinstallpath . '\\sqlite\\euryscoAudit');
 	$dbaudit->busyTimeout(30000);
 	$dbaudit->query('PRAGMA page_size = 2048; PRAGMA cache_size = 4000; PRAGMA temp_store = 2; PRAGMA journal_mode = OFF; PRAGMA synchronous = 0;');
 	$auditlogs = $dbaudit->query('SELECT * FROM auditLog WHERE date LIKE "%' . $_GET["srvrun"] . '%"');
@@ -105,14 +111,14 @@ if (isset($_GET['srvrun'])) {
 	while ($auditlog = $auditlogs->fetchArray()) {
 		$checkfilter = 1;
 		if (substr($filter, 0, 1) != '-') {
-			if (preg_match_all('/' . str_replace('\\', '.', str_replace('/', '.', strtolower($filter))) . '/', strtolower('<Date>' . $auditlog['date'] . '</Date><User>' . $auditlog['user'] . '</User><Node>' . $auditlog['node'] . '</Node><Type>' . $auditlog['type'] . '</Type><Description>' . $auditlog['description'] . '</Description><Exitcode>' . $auditlog['exitcode'] . '</Exitcode>')) || strpos(strtolower('<Date>' . $auditlog['date'] . '</Date><User>' . $auditlog['user'] . '</User><Node>' . $auditlog['node'] . '</Node><Type>' . $auditlog['type'] . '</Type><Description>' . $auditlog['description'] . '</Description><Exitcode>' . $auditlog['exitcode'] . '</Exitcode>'), strtolower($filter)) > -1) {
+			if (preg_match_all('/' . str_replace('\\', '.', str_replace('/', '.', strtolower($filter))) . '/', strtolower('<Date>' . $auditlog['date'] . '</Date><User>' . $auditlog['user'] . '</User><Node>' . $auditlog['node'] . '</Node><Type>' . $auditlog['type'] . '</Type><Description>' . urldecode($auditlog['description']) . '</Description><Exitcode>' . $auditlog['exitcode'] . '</Exitcode>')) || strpos(strtolower('<Date>' . $auditlog['date'] . '</Date><User>' . $auditlog['user'] . '</User><Node>' . $auditlog['node'] . '</Node><Type>' . $auditlog['type'] . '</Type><Description>' . $auditlog['description'] . '</Description><Exitcode>' . $auditlog['exitcode'] . '</Exitcode>'), strtolower($filter)) > -1) {
 				$checkfilter = 0;
 			} else {
 				$checkfilter = 1;
 			}
 		} else {
 			$notfilter = substr($filter, 1);
-			if (!preg_match_all('/' . str_replace('\\', '.', str_replace('/', '.', strtolower($notfilter))) . '/', strtolower('<Date>' . $auditlog['date'] . '</Date><User>' . $auditlog['user'] . '</User><Node>' . $auditlog['node'] . '</Node><Type>' . $auditlog['type'] . '</Type><Description>' . $auditlog['description'] . '</Description><Exitcode>' . $auditlog['exitcode'] . '</Exitcode>')) && !strpos(strtolower('<Date>' . $auditlog['date'] . '</Date><User>' . $auditlog['user'] . '</User><Node>' . $auditlog['node'] . '</Node><Type>' . $auditlog['type'] . '</Type><Description>' . $auditlog['description'] . '</Description><Exitcode>' . $auditlog['exitcode'] . '</Exitcode>'), strtolower($notfilter))) {
+			if (!preg_match_all('/' . str_replace('\\', '.', str_replace('/', '.', strtolower($notfilter))) . '/', strtolower('<Date>' . $auditlog['date'] . '</Date><User>' . $auditlog['user'] . '</User><Node>' . $auditlog['node'] . '</Node><Type>' . $auditlog['type'] . '</Type><Description>' . urldecode($auditlog['description']) . '</Description><Exitcode>' . $auditlog['exitcode'] . '</Exitcode>')) && !strpos(strtolower('<Date>' . $auditlog['date'] . '</Date><User>' . $auditlog['user'] . '</User><Node>' . $auditlog['node'] . '</Node><Type>' . $auditlog['type'] . '</Type><Description>' . $auditlog['description'] . '</Description><Exitcode>' . $auditlog['exitcode'] . '</Exitcode>'), strtolower($notfilter))) {
 				$checkfilter = 0;
 			} else {
 				$checkfilter = 1;
@@ -138,7 +144,7 @@ if (isset($_GET['srvrun'])) {
 	}
 	$auditpagearray = array();
 	foreach ($auditarray as $auditrow) {
-		array_push($auditpagearray, '<tr class="rowselect" title="' . htmlentities($auditrow[7]) . '"><td style="font-size:12px;"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">' . $auditrow[1] . '</div></td><td style="font-size:12px;" align="center">' . $auditrow[2] . '</td><td style="font-size:12px;" align="center">' . $auditrow[3] . '</td><td style="font-size:12px;" title="' . $auditrow[4] . '">' . $auditrow[5] . '</td></tr>');
+		array_push($auditpagearray, '<tr class="rowselect" title="' . str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$auditrow[7], ENT_QUOTES, 'UTF-8')))) . '"><td style="font-size:12px;"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">' . str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$auditrow[1], ENT_QUOTES, 'UTF-8')))) . '</div></td><td style="font-size:12px;" align="center">' . str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$auditrow[2], ENT_QUOTES, 'UTF-8')))) . '</td><td style="font-size:12px;" align="center">' . str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$auditrow[3], ENT_QUOTES, 'UTF-8')))) . '</td><td style="font-size:12px;" title="' . str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$auditrow[4], ENT_QUOTES, 'UTF-8')))) . '">' . str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$auditrow[5], ENT_QUOTES, 'UTF-8')))) . '</td></tr>');
 	}
 	$auditpages = array_chunk($auditpagearray, 250);
 	if ($pgkey > count($auditpages) - 1) { $pgkey = count($auditpages) - 1; }

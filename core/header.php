@@ -2,7 +2,42 @@
 
 ini_set('display_errors', 0);
 
-include('/include/init.php');
+include(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_core.php');
+
+if (implode(array_keys($_POST)) != '') {
+	if (isset($_POST[substr(md5('$_POST' . $sessiontoken), 5, 15)])) {
+		if ($_POST[substr(md5('$_POST' . $sessiontoken), 5, 15)] != substr(md5('$_POST' . $sessiontoken), 15, 25)) {
+			foreach (array_keys($_POST) as $key) {
+				$_POST[$key] = null;
+				unset($_POST[$key]);
+			}
+			$_SESSION['token'] = md5(rand(1000000,9999999) . $envcomputername . $_SERVER['SCRIPT_NAME']);
+			header('location: ' . $_SERVER['REQUEST_URI']);
+			exit;
+		}
+	} else {
+		$_SESSION['token'] = md5(rand(1000000,9999999) . $envcomputername . $_SERVER['SCRIPT_NAME']);
+		header('location: ' . $_SERVER['REQUEST_URI']);
+		exit;
+	}
+	$_SESSION['tokenl'] = $_SESSION['token'];
+}
+if (implode(array_keys($_GET)) != '') {
+	if (isset($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)])) {
+		if ($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)] != substr(md5('$_GET' . $sessiontoken), 15, 25)) {
+			foreach (array_keys($_GET) as $key) {
+				$_GET[$key] = null;
+				unset($_GET[$key]);
+			}
+			$_SESSION['token'] = md5(rand(1000000,9999999) . $envcomputername . $_SERVER['SCRIPT_NAME']);
+			header('location: ' . $_SERVER['REQUEST_URI']);
+			exit;
+		}
+	}
+	$_SESSION['tokenl'] = $_SESSION['token'];
+}
+$_SESSION['token'] = md5(rand(1000000,9999999) . $envcomputername . $_SERVER['SCRIPT_NAME']);
+$sessiontoken = $_SESSION['token'];
 
 $eurysco_coresrv = 'euryscoCore';
 $eurysco_coreport = 0;
@@ -71,8 +106,6 @@ if ($_SERVER['SCRIPT_NAME'] == '/7zip.php' && $_SERVER['SERVER_PORT'] != $eurysc
 if ($_SERVER['SCRIPT_NAME'] == '/settings.php' && $_SERVER['SERVER_PORT'] != $eurysco_executorphpport && $eurysco_executorphpport != 0) { header('location: https://' . preg_replace('/:.*/', ':', $_SERVER['HTTP_HOST']) . $eurysco_executorport . $_SERVER['REQUEST_URI']); exit; }
 if ($_SERVER['SCRIPT_NAME'] == '/users.php' && $_SERVER['SERVER_PORT'] != $eurysco_executorphpport && $eurysco_executorphpport != 0) { header('location: https://' . preg_replace('/:.*/', ':', $_SERVER['HTTP_HOST']) . $eurysco_executorport . $_SERVER['REQUEST_URI']); exit; }
 if ($_SERVER['SCRIPT_NAME'] == '/audit.php' && $_SERVER['SERVER_PORT'] != $eurysco_executorphpport && $eurysco_executorphpport != 0) { header('location: https://' . preg_replace('/:.*/', ':', $_SERVER['HTTP_HOST']) . $eurysco_executorport . $_SERVER['REQUEST_URI']); exit; }
-
-
 
 $eurysco_core_status = 'Not Exist';
 $eurysco_executor_status = 'Not Exist';
@@ -155,8 +188,8 @@ if (file_exists($config_agentsrv) && $eurysco_agent_status != 'Not Exist') {
 		foreach($wmisclass as $obj) {
 			$agentprocst = $obj->Caption;
 		}
-		if (file_exists(str_replace('\\core', '\\agent\\temp\\agent.status', $_SERVER['DOCUMENT_ROOT'])) && $agentprocst == 'php_eurysco_agent.exe') {
-			$f = fopen(str_replace('\\core', '\\agent\\temp\\agent.status', $_SERVER['DOCUMENT_ROOT']), 'r');
+		if (file_exists($euryscoinstallpath . '\\agent\\temp\\agent.status') && $agentprocst == 'php_eurysco_agent.exe') {
+			$f = fopen($euryscoinstallpath . '\\agent\\temp\\agent.status', 'r');
 			$connexitcode = fgets($f);
 			fclose($f);
 			if (strpos($connexitcode, 'Connection Success') > 0) { $agentstatus = 'con'; $_SESSION['agentstatus'] = 'con'; }
@@ -172,7 +205,7 @@ if (file_exists($config_agentsrv) && $eurysco_agent_status != 'Not Exist') {
 
 if (isset($_GET['logout'])) {
 	$_SESSION['logoutstatus'] = 'logout';
-	header('location: https://' . $_SERVER['HTTP_HOST'] . '/' . str_replace('/', '', $_SERVER['PHP_SELF']));
+	header('location: /' . str_replace('/', '', $_SERVER['PHP_SELF']));
 }
 
 $sessiontimeoutsec = 900;
@@ -181,7 +214,7 @@ if (!isset($_SESSION['session_timeout'])) {
 } else {
 	if (strtotime(gmdate('Y-m-d H:i:s', time())) - strtotime($_SESSION['session_timeout']) > $sessiontimeoutsec) {
 		$_SESSION['logoutstatus'] = 'timeout';
-		header('location: https://' . $_SERVER['HTTP_HOST'] . '/' . str_replace('/', '', $_SERVER['PHP_SELF']));
+		header('location: /' . str_replace('/', '', $_SERVER['PHP_SELF']));
 		exit;
 	} else {
 		$_SESSION['session_timeout'] = gmdate('Y-m-d H:i:s', time());
@@ -229,7 +262,7 @@ if (!isset($_SESSION['session_timeout'])) {
 	}
 	</style>
 
-    <script type="text/javascript" src="/js/assets/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="/js/assets/jquery-2.1.4.min.js"></script>
 	<script type="text/javascript" src="/autosuggest/js/bsn.AutoSuggest_2.1.3.js" charset="utf-8"></script>
     <script type="text/javascript" src="/js/assets/jquery.mousewheel.min.js"></script>
     <script type="text/javascript" src="/js/assets/moment.js"></script>
@@ -249,7 +282,7 @@ if (!isset($_SESSION['session_timeout'])) {
 	$exppwdmessage = '';
 	if (isset($_POST['exppwduserpsw']) && isset($_POST['exppwduserpswc']) && isset($_POST['oldpwduserpsw'])) {
 	
-		$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $_SESSION['username'] . '.xml', true)))));
+		$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($euryscoinstallpath . '\\users\\' . $_SESSION['username'] . '.xml', true)))));
 		$exppwduserpsw = '';
 
 		if ($_POST['exppwduserpsw'] == '' || $_POST['exppwduserpswc'] == '' || $_POST['oldpwduserpsw'] == '') {
@@ -264,11 +297,11 @@ if (!isset($_SESSION['session_timeout'])) {
 					if (strlen($_POST['exppwduserpsw']) < 8) {
 						$exppwdmessage = '<tr><td align="center" colspan="2" style="background-color:#B91D47; color:#FFFFFF; font-size:12px;">password must be at least<br />8 characters</td></tr>';
 					} else {
-						if (!preg_match('/[\\\\\'\"\!\.\:\;\[\]\^\$\%\&\*\(\)\}\{\@\#\~\?\/\,\|\=\_\+\-]/', $_POST['exppwduserpsw']) || !preg_match('/[a-z]/', $_POST['exppwduserpsw']) || !preg_match('/[A-Z]/', $_POST['exppwduserpsw']) || !preg_match('/[0-9]/', $_POST['exppwduserpsw'])) {
-							$exppwdmessage = '<tr><td align="center" colspan="2" style="background-color:#B91D47; color:#FFFFFF; font-size:12px;">password must be contain<br />number <strong>0~9</strong>, lower <strong>a~z</strong>, upper <strong>A~Z</strong><br />and special characters<br /><strong>\\\'",.:;!?^$%&()[]{}@#~\/|=*+-_</strong></td></tr>';
+						if (!preg_match('/[\\\\\!\.\:\;\[\]\^\%\*\}\{\@\#\~\?\/\,\|\_\+\-]/', $_POST['exppwduserpsw']) || !preg_match('/[a-z]/', $_POST['exppwduserpsw']) || !preg_match('/[A-Z]/', $_POST['exppwduserpsw']) || !preg_match('/[0-9]/', $_POST['exppwduserpsw'])) {
+							$exppwdmessage = '<tr><td align="center" colspan="2" style="background-color:#B91D47; color:#FFFFFF; font-size:12px;">password must be contain<br />number <strong>0~9</strong>, lower <strong>a~z</strong>, upper <strong>A~Z</strong><br />and special characters<br /><strong>\\\,.:;!?^%[]{}@#~/|*+-_</strong></td></tr>';
 						} else {
-							if (preg_match('/[^a-zA-Z0-9\\\\\'\"\!\.\:\;\[\]\^\$\%\&\*\(\)\}\{\@\#\~\?\/\,\|\=\_\+\-]/', $_POST['exppwduserpsw'])) {
-								$exppwdmessage = '<tr><td align="center" colspan="2" style="background-color:#B91D47; color:#FFFFFF; font-size:12px;">special characters allowed<br /><strong>\\\'",.:;!?^$%&()[]{}@#~\/|=*+-_</strong></td></tr>';
+							if (preg_match('/[^a-zA-Z0-9\\\\\!\.\:\;\[\]\^\%\*\}\{\@\#\~\?\/\,\|\_\+\-]/', $_POST['exppwduserpsw'])) {
+								$exppwdmessage = '<tr><td align="center" colspan="2" style="background-color:#B91D47; color:#FFFFFF; font-size:12px;">special characters allowed<br /><strong>\\\,.:;!?^%[]{}@#~/|*+-_</strong></td></tr>';
 							} else {
 								$mcrykey = pack('H*', hash('sha256', hash('sha512', $_SESSION['username'] . $_SESSION['usertype'])));
 								$exppwduserpsw = base64_encode($iv . mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $mcrykey, md5($_SESSION['username'] . ':' . $realm . ':' . $_POST['exppwduserpsw']), MCRYPT_MODE_CBC, $iv));
@@ -357,11 +390,11 @@ if (!isset($_SESSION['session_timeout'])) {
 	
 	$passwordexpired = 0;
 	$exppwdtitle = '';
-	if (file_exists($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $_SESSION['username'] . '.xml')) {
-		$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $_SESSION['username'] . '.xml', true)))));
+	if (file_exists($euryscoinstallpath . '\\users\\' . $_SESSION['username'] . '.xml')) {
+		$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($euryscoinstallpath . '\\users\\' . $_SESSION['username'] . '.xml', true)))));
 		$usersexpiration = base64_decode(base64_decode(base64_decode(base64_decode(base64_decode($userxml->settings->expiration)))));
 		if ((strtotime(date('Y-m-d H:i:s', strtotime($usersexpiration . ' + ' . $_SESSION['usersett']['disable'] . ' days'))) - strtotime(date('Y-m-d H:i:s'))) < 0 && $userxml->settings->expiration != base64_encode(base64_encode(base64_encode(base64_encode(base64_encode('2000-01-01 00:00:00'))))) && $userxml->settings->usertype != hash('sha512', $userxml->settings->username . 'Administrators') && $userxml->settings->usertype != hash('sha512', $userxml->settings->username . 'Auditors') && $userxml->settings->usertype != hash('sha512', $userxml->settings->username . 'Operators') && $userxml->settings->usertype != hash('sha512', $userxml->settings->username . 'Users')) {
-			$_SESSION['logoutdsb'] = 'logoutdsb'; $_SESSION['logoutstatus'] = 'logout'; header('location: https://' . $_SERVER['HTTP_HOST'] . '/' . str_replace('/', '', $_SERVER['PHP_SELF'])); exit;
+			$_SESSION['logoutdsb'] = 'logoutdsb'; $_SESSION['logoutstatus'] = 'logout'; header('location: /' . str_replace('/', '', $_SERVER['PHP_SELF'])); exit;
 		}
 		if (isset($_POST['changepassword'])) {
 			$exppwdtitle = 'Password <strong>Change</strong>';
@@ -391,7 +424,7 @@ if (!isset($_SESSION['session_timeout'])) {
 		function exppwduser(){
 			$.Dialog({
 				'title'       : '<span style="font-size:16px;">&nbsp;<div class="icon-user" style="position:inherit;"></div>&nbsp; <?php echo $exppwdtitle; ?></span>',
-				'content'     : '<form id="exppwduserform" name="exppwduserform" method="post"><table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped"><tr><td style="font-size:12px;" align="center" colspan="2"><strong><?php echo $_SESSION['username']; ?></strong></td></tr><?php echo $exppwdmessage; ?><tr><?php if ($_SESSION['userauth'] == 'Distributed' && $agentstatus != 'con' && $serverstatus != 'run') { ?><tr><td align="center" colspan="2" style="background-color:#C97D15; color:#FFFFFF; font-size:12px;">if the agent is not connected<br />the password will not be synced</td></tr><?php } ?><td style="font-size:12px;">Old Password:</td><td style="font-size:12px;"><input type="password" id="oldpwduserpsw" name="oldpwduserpsw" placeholder="&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px; padding-left:4px; padding-right:4px; font-size:12px;"<?php echo $pswinputfields ?> value=""></td></tr><tr><td style="font-size:12px;">New Password:</td><td style="font-size:12px;"><input type="password" id="exppwduserpsw" name="exppwduserpsw" placeholder="&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px; padding-left:4px; padding-right:4px; font-size:12px;"<?php echo $pswinputfields ?> value=""></td></tr><tr><td style="font-size:12px;">Confirmation:</td><td style="font-size:12px;"><input type="password" id="exppwduserpswc" name="exppwduserpswc" placeholder="&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px; padding-left:4px; padding-right:4px; font-size:12px;"<?php echo $pswinputfields ?> value=""></td></tr><tr><td style="font-size:12px;">Type:</td><td style="font-size:12px;"><?php echo $_SESSION['usertype']; ?></td></tr></table><?php if (isset($_POST['changepassword'])) { echo '<input type="hidden" id="changepassword" name="changepassword" value="" />'; } ?></form>',
+				'content'     : '<form id="exppwduserform" name="exppwduserform" method="post"><table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped"><tr><td style="font-size:12px;" align="center" colspan="2"><strong><?php echo $_SESSION['username']; ?></strong></td></tr><?php echo $exppwdmessage; ?><tr><?php if ($_SESSION['userauth'] == 'Distributed' && $agentstatus != 'con' && $serverstatus != 'run') { ?><tr><td align="center" colspan="2" style="background-color:#C97D15; color:#FFFFFF; font-size:12px;">if the agent is not connected<br />the password will not be synced</td></tr><?php } ?><td style="font-size:12px;">Old Password:</td><td style="font-size:12px;"><input type="password" autocomplete="off" id="oldpwduserpsw" name="oldpwduserpsw" placeholder="&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px; padding-left:4px; padding-right:4px; font-size:12px;"<?php echo $pswinputfields ?> value=""></td></tr><tr><td style="font-size:12px;">New Password:</td><td style="font-size:12px;"><input type="password" autocomplete="off" id="exppwduserpsw" name="exppwduserpsw" placeholder="&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px; padding-left:4px; padding-right:4px; font-size:12px;"<?php echo $pswinputfields ?> value=""></td></tr><tr><td style="font-size:12px;">Confirmation:</td><td style="font-size:12px;"><input type="password" autocomplete="off" id="exppwduserpswc" name="exppwduserpswc" placeholder="&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px; padding-left:4px; padding-right:4px; font-size:12px;"<?php echo $pswinputfields ?> value=""></td></tr><tr><td style="font-size:12px;">Type:</td><td style="font-size:12px;"><?php echo $_SESSION['usertype']; ?></td></tr></table><?php if (isset($_POST['changepassword'])) { echo '<input type="hidden" id="changepassword" name="changepassword" value="" />'; } ?><input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" /></form>',
 				'draggable'   : true,
 				'overlay'     : true,
 				'closeButton' : false,
@@ -470,4 +503,4 @@ if (!isset($_SESSION['session_timeout'])) {
     <title>&nbsp;<?php echo $envcomputername; ?>&nbsp;|&nbsp;eurysco <?php include("version.phtml"); ?></title>
 </head>
 
-<body class="metrouicss" <?php if (isset($_POST['changepassword']) || $passwordexpired == 1) { echo 'onLoad="javascript:exppwduser();"'; } else { if (!isset($_SESSION['loginmessage']) && !isset($loginmessage) && $loginmessagesetting != '') { $_SESSION['loginmessage'] = ''; echo 'onLoad="javascript:loginmessage();"'; } } ?>>
+<body class="metrouicss" <?php if (isset($_POST['changepassword']) || $passwordexpired == 1) { echo 'onLoad="javascript:exppwduser();">'; include("navigation.php"); include("footer.php"); exit; } else { if (!isset($_SESSION['loginmessage']) && !isset($loginmessage) && $loginmessagesetting != '') { $_SESSION['loginmessage'] = ''; echo 'onLoad="javascript:loginmessage();"'; } else { if ($_SESSION['usersett']['loginredirect'] != '') { header('location: ' . $_SESSION['usersett']['loginredirect']); $_SESSION['usersett']['loginredirect'] = ''; exit; } } } ?>>

@@ -1,8 +1,12 @@
-<?php include('/include/init.php'); ?>
+<?php include(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_core.php'); ?>
 
 <?php if ($_SESSION['usertype'] == 'Administrators') {  } else { header('location: /'); exit; } ?>
 
 <?php
+
+if (!isset($_SESSION['phpliteadmincookie'])) {
+	$_SESSION['phpliteadmincookie'] = md5(rand(0, 1000000000));
+}
 
 $sessiontimeoutsec = 900;
 
@@ -11,7 +15,8 @@ if (!isset($_SESSION['session_timeout'])) {
 } else {
 	if (strtotime(gmdate('Y-m-d H:i:s', time())) - strtotime($_SESSION['session_timeout']) > $sessiontimeoutsec) {
 		$_SESSION['logoutstatus'] = 'timeout';
-		header('location: https://' . $_SERVER['HTTP_HOST'] . '/' . str_replace('/', '', $_SERVER['PHP_SELF']));
+		$_SESSION['phpliteadmincookie'] = md5(rand(0, 1000000000));
+		header('location: /' . str_replace('/', '', $_SERVER['PHP_SELF']));
 		exit;
 	} else {
 		$_SESSION['session_timeout'] = gmdate('Y-m-d H:i:s', time());
@@ -71,8 +76,8 @@ $name = '';
 //password to gain access
 $password = md5(rand(0, 1000000000));
 
-if (file_exists($_SERVER['DOCUMENT_ROOT'] . '\\users\\Administrator.xml')) {
-	$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\users\\Administrator.xml', true)))));
+if (file_exists($euryscoinstallpath . '\\users\\Administrator.xml')) {
+	$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($euryscoinstallpath . '\\users\\Administrator.xml', true)))));
 	$usersusername = $userxml->settings->username;
 	$userspassword = $userxml->settings->password;
 	$usersusertype = $userxml->settings->usertype;
@@ -80,7 +85,7 @@ if (file_exists($_SERVER['DOCUMENT_ROOT'] . '\\users\\Administrator.xml')) {
 	$password = trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($userspassword), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($userspassword), 0, $iv_size)));
 }
 //directory relative to this file to search for databases (if false, manually list databases in the $databases variable)
-$directory = str_replace('\\core', '\\sqlite', $_SERVER['DOCUMENT_ROOT']) . '\\';
+$directory = $euryscoinstallpath . '\\sqlite\\';
 
 //whether or not to scan the subdirectories of the above directory infinitely deep
 $subdirectories = false;
@@ -137,7 +142,7 @@ function leet_text($value)
 /* ---- Advanced options ---- */
 
 //changing the following variable allows multiple phpLiteAdmin installs to work under the same domain.
-$cookie_name = 'pla3412';
+$cookie_name = $_SESSION['phpliteadmincookie'];
 
 //whether or not to put the app in debug mode where errors are outputted
 $debug = false;

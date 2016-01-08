@@ -3,14 +3,15 @@
 if (!isset($_SERVER['HTTP_REFERER'])) { exit; }
 if (!strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/agent.php')) { exit; }
 
-include('/include/init.php');
+include(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_core.php');
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Operators' || $_SESSION['usersett']['agentconfig'] > 0) {  } else { exit; }
+
+if (!isset($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)])) { exit; } else { if ($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)] != substr(md5('$_GET' . $sessiontoken), 15, 25)) { exit; } }
 
 $eurysco_agentsrv = 'euryscoAgent';
 if (file_exists($config_agentsrv)) {
 	$xmlagent = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($config_agentsrv, true)))));
 }
-
 
 $eurysco_agent_status = 'Not Exist';
 $wmisclass = $wmi->ExecQuery("SELECT Name, State FROM Win32_Service WHERE Name LIKE '" . $eurysco_agentsrv . "'");
@@ -28,8 +29,8 @@ if (file_exists($config_agentsrv) && $eurysco_agent_status != 'Not Exist') {
 		foreach($wmisclass as $obj) {
 			$agentprocst = $obj->Caption;
 		}
-		if (file_exists(str_replace('\\core', '\\agent\\temp\\agent.status', $_SERVER['DOCUMENT_ROOT'])) && $agentprocst == 'php_eurysco_agent.exe') {
-			$f = fopen(str_replace('\\core', '\\agent\\temp\\agent.status', $_SERVER['DOCUMENT_ROOT']), 'r');
+		if (file_exists($euryscoinstallpath . '\\agent\\temp\\agent.status') && $agentprocst == 'php_eurysco_agent.exe') {
+			$f = fopen($euryscoinstallpath . '\\agent\\temp\\agent.status', 'r');
 			$connexitcode = fgets($f);
 			fclose($f);
 			if (strpos($connexitcode, 'Connection Success') > 0) { $agentstatus = 'con'; }

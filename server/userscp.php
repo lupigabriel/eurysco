@@ -1,6 +1,6 @@
 <?php
 
-include('/include/init.php');
+include(str_replace('\\server', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_server.php');
 
 if (!isset($_POST['usr'])) { exit; }
 if (!isset($_POST['pwd'])) { exit; }
@@ -23,10 +23,10 @@ if (isset($_POST['rpw'])) {
 set_time_limit(10);
 
 if (isset($_POST['lgn'])) {
-	if (!file_exists(str_replace('\\server', '\\core\\users', $_SERVER['DOCUMENT_ROOT']) . '\\' . base64_decode($_POST['usr']) . '.xml')) {
+	if (!file_exists($euryscoinstallpath . '\\users\\' . base64_decode($_POST['usr']) . '.xml')) {
 		exit;
 	} else {
-		$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents(str_replace('\\server', '\\core\\users', $_SERVER['DOCUMENT_ROOT']) . '\\' . base64_decode($_POST['usr']) . '.xml'), true))));
+		$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($euryscoinstallpath . '\\users\\' . base64_decode($_POST['usr']) . '.xml'), true))));
 		if ($userxml->settings->userauth == hash('sha512', base64_decode($_POST['usr']) . 'Distributed')) {
 			$usersusertype = $userxml->settings->usertype;
 			$iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
@@ -44,14 +44,14 @@ if (isset($_POST['lgn'])) {
 				if ($userxml->settings->passwlck == md5($userxml->settings->password . 2)) { $passwlck = md5($userxml->settings->password . 3); }
 				if (base64_decode($_POST['usr']) != 'Administrator') {
 					$xml = '<config>' . "\n" . '	<settings>' . "\n" . '		<username>' . $userxml->settings->username . '</username>' . "\n" . '		<usertype>' . $userxml->settings->usertype . '</usertype>' . "\n" . '		<userauth>' . $userxml->settings->userauth . '</userauth>' . "\n" . '		<password>' . $userxml->settings->password . '</password>' . "\n" . '		<passwchk>' . $userxml->settings->passwchk . '</passwchk>' . "\n" . '		<passwlck>' . $passwlck . '</passwlck>' . "\n" . '		<lckouttm>' . $lockedouttime . '</lckouttm>' . "\n" . '		<lckoutcm>' . $lockedoutcnam . '</lckoutcm>' . "\n" . '		<lckoutip>' . $lockedoutsrip . '</lckoutip>' . "\n" . '		<expiration>' . $userxml->settings->expiration . '</expiration>' . "\n" . '	</settings>' . "\n" . '</config>';
-					$writexml = fopen(str_replace('\\server', '\\core\\users', $_SERVER['DOCUMENT_ROOT']) . '\\' . base64_decode($_POST['usr']) . '.xml', 'w');
+					$writexml = fopen($euryscoinstallpath . '\\users\\' . base64_decode($_POST['usr']) . '.xml', 'w');
 					fwrite($writexml, base64_encode(base64_encode(base64_encode($xml))));
 					fclose($writexml);
 				}
 			} else {
 				if ($userxml->settings->passwlck != md5($userxml->settings->password)) {
 					$xml = '<config>' . "\n" . '	<settings>' . "\n" . '		<username>' . $userxml->settings->username . '</username>' . "\n" . '		<usertype>' . $userxml->settings->usertype . '</usertype>' . "\n" . '		<userauth>' . $userxml->settings->userauth . '</userauth>' . "\n" . '		<password>' . $userxml->settings->password . '</password>' . "\n" . '		<passwchk>' . $userxml->settings->passwchk . '</passwchk>' . "\n" . '		<passwlck>' . md5($userxml->settings->password) . '</passwlck>' . "\n" . '		<lckouttm>' . $lockedouttime . '</lckouttm>' . "\n" . '		<lckoutcm>' . $lockedoutcnam . '</lckoutcm>' . "\n" . '		<lckoutip>' . $lockedoutsrip . '</lckoutip>' . "\n" . '		<expiration>' . $userxml->settings->expiration . '</expiration>' . "\n" . '	</settings>' . "\n" . '</config>';
-					$writexml = fopen(str_replace('\\server', '\\core\\users', $_SERVER['DOCUMENT_ROOT']) . '\\' . base64_decode($_POST['usr']) . '.xml', 'w');
+					$writexml = fopen($euryscoinstallpath . '\\users\\' . base64_decode($_POST['usr']) . '.xml', 'w');
 					fwrite($writexml, base64_encode(base64_encode(base64_encode($xml))));
 					fclose($writexml);
 				}

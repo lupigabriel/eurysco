@@ -3,11 +3,13 @@
 if (!isset($_SERVER['HTTP_REFERER'])) { exit; }
 if (!strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/7zip.php')) { exit; }
 
-include('/include/init.php');
+include(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_core.php');
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filebrowser'] > 0) {  } else { exit; }
 
-if (isset($_GET["file"])) {
-	$name = $_GET["file"];
+if (!isset($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)])) { exit; } else { if ($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)] != substr(md5('$_GET' . $sessiontoken), 15, 25)) { exit; } }
+
+if (isset($_GET['file'])) {
+	$name = $_GET['file'];
 } else {
 	$name = 'Archive Not Found...';
 }
@@ -30,16 +32,20 @@ if (isset($_GET['extractpass'])) {
 	$extractpass = '';
 }
 
-if (isset($_SESSION['zipextractlast'])) {
-	$zipextractlast = $_SESSION['zipextractlast'];
-} else {
-	$zipextractlast = '';
-}
-
 if (isset($_SESSION['agentstatus'])) {
 	$agentstatus = $_SESSION['agentstatus'];
 } else {
 	$agentstatus = '';
+}
+
+if (isset($_GET['lock'])) {
+	$lock = $_GET['lock'];
+} else {
+	$lock = '';
+}
+
+if (!isset($_SESSION['7zip_' . $lock])) {
+	$_SESSION['7zip_' . $lock] = 0;
 }
 
 $zipinfotop = '';
@@ -86,11 +92,9 @@ if ($name != 'Archive Not Found...' && file_exists($name) && is_readable($name))
 
 }
 
-$zipinfotop = $zipinfotop . '<table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped">';
 $zipinfotop = $zipinfotop . '<tr><td width="30%" style="font-size:12px;"><a href="/explorer.php?path=' . urlencode($path) . '" title="Browse Folder"><div class="icon-folder" style="margin-top:2px;"></div></a>&nbsp;<strong>Archive Name:</strong></td><td width="70%" style="font-size:12px;"><strong>' . str_replace(' ', '&nbsp;', $filename) . '</strong>&nbsp;&nbsp;<a href="' . $_SESSION['zipextract'] . '&close" title="Close Archive"><div class="icon-cancel"></div></a></td></tr>';
 $zipinfotop = $zipinfotop . '<tr><td width="30%" style="font-size:12px;">File Size:</td><td width="70%" style="font-size:12px;">' . number_format($filesize, 0, ',', '.') . ' Byte</td></tr>';
 $zipinfotop = $zipinfotop . '<tr><td width="30%" style="font-size:12px;">Date Last Modified:</td><td width="70%" style="font-size:12px;">' . $filemtim . '</td></tr>';
-$zipinfotop = $zipinfotop . '</table>';
 
 $zipinfobottom = $zipinfobottom . '<table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped">';
 $zipinfobottom = $zipinfobottom . '<tr><td width="30%" style="font-size:12px;">Mime Symlink:</td><td width="70%" style="font-size:12px;">' . $filesyml . '</td></tr>';
@@ -108,28 +112,29 @@ $message = '';
 
 if ($name != 'Archive Not Found...' && file_exists($name) && is_readable($name)) {
 	
-	$tempzipt = $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . md5(session_id()) . '.7zt';
+	$tempzipt = $euryscoinstallpath . '\\temp\\core\\' . md5(session_id()) . '.7zt';
 	if ($_GET["extract"] == 0) {
 		session_write_close();
-		$zipexec = exec('7zip.exe l "' . $name . '">"' . $tempzipt . '"', $errorarray, $errorlevel);
+		$zipexec = exec('"' . $euryscoinstallpath . '\\ext\\7zip.exe" l "' . $name . '" -p' . $extractpass . '>"' . $tempzipt . '"', $errorarray, $errorlevel);
 		session_start();
-		if ($zipextractlast != $filename) {
-			if ($errorlevel == 0) {
-				$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     7zip extractor     listing archive "' . str_replace('\\\\', '\\', $name) . '" success';
-			} else {
-				$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     7zip extractor     listing archive "' . str_replace('\\\\', '\\', $name) . '" failed';
-			}
-			$_SESSION['zipextractlast'] = $filename;
+		if ($errorlevel == 0) {
+			if ($extractpass != '') { $_SESSION['7zip_' . $lock] = 0; }
+			$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     7zip extractor     listing archive "' . str_replace('\\\\', '\\', $name) . '" success';
+		} else {
+			if ($extractpass != '') { $_SESSION['7zip_' . $lock] = $_SESSION['7zip_' . $lock] + 1; }
+			$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     7zip extractor     listing archive "' . str_replace('\\\\', '\\', $name) . '" failed';
 		}
 	}
 	if ($_GET["extract"] == 1 && ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filebrowser'] > 1)) {
 		session_write_close();
-		$zipexec = exec('7zip.exe x "' . $name . '" -o"' . str_replace('\\\\', '\\', $path . '\\' . $extractfolder) . '" -y -p' . $extractpass . '>"' . $tempzipt . '"', $errorarray, $errorlevel);
+		$zipexec = exec('"' . $euryscoinstallpath . '\\ext\\7zip.exe" x "' . $name . '" -o"' . str_replace('\\\\', '\\', $path . '\\' . $extractfolder) . '" -y -p' . $extractpass . '>"' . $tempzipt . '"', $errorarray, $errorlevel);
 		session_start();
 		if ($errorlevel == 0) {
+			if ($extractpass != '') { $_SESSION['7zip_' . $lock] = 0; }
 			$message = '<blockquote style="font-size:12px; background-color:#0072C6; color:#FFFFFF; border-left-color:#324886;">extract archive <strong>' . str_replace(' ', '&nbsp;', $filename) . '</strong> in <strong>' . str_replace('\\\\', '\\', $path . '\\' . $extractfolder) . '</strong> success</blockquote><br />';
 			$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     7zip extractor     extract archive "' . str_replace('\\\\', '\\', $name) . '" in "' . str_replace('\\\\', '\\', $path . '\\' . $extractfolder) . '" success';
 		} else {
+			if ($extractpass != '') { $_SESSION['7zip_' . $lock] = $_SESSION['7zip_' . $lock] + 1; }
 			$message = '<blockquote style="font-size:12px; background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">extract archive <strong>' . str_replace(' ', '&nbsp;', $filename) . '</strong> in <strong>' . str_replace('\\\\', '\\', $path . '\\' . $extractfolder) . '</strong> failed</blockquote><br />';
 			$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     7zip extractor     extract archive "' . str_replace('\\\\', '\\', $name) . '" in "' . str_replace('\\\\', '\\', $path . '\\' . $extractfolder) . '" failed';
 		}
@@ -152,7 +157,7 @@ $zipinfotop = $zipinfotop . $message;
 
 include('/auditlog.php');
 
-echo json_encode(array('zipinfotop'=>utf8_encode($zipinfotop),'zipoutput'=>htmlspecialchars(utf8_encode($zipoutput), ENT_HTML401,'UTF-8', true),'zipinfobottom'=>utf8_encode($zipinfobottom)));
+echo json_encode(array('zipinfotop'=>utf8_encode($zipinfotop),'zipoutput'=>htmlspecialchars(utf8_encode($zipoutput), ENT_HTML401,'UTF-8', true),'zipinfobottom'=>utf8_encode($zipinfobottom),'ziplockstatus'=>$_SESSION['7zip_' . $lock]));
 
 flush();
 

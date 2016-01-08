@@ -69,6 +69,7 @@ unset($_SESSION['permpathcli']);
 unset($_SESSION['permkey']);
 unset($_SESSION['mapsharesetting']);
 unset($_SESSION['clpaths']);
+unset($_SESSION['token']);
 unset($_POST['shutdowntype']);
 unset($_POST['shutdowndate']);
 unset($_POST['shutdowntime']);

@@ -28,7 +28,11 @@ if (isset($_GET['executorport'])) {
 }
 
 if (isset($_GET['phptimeout'])) {
-	set_time_limit($_GET['phptimeout']);
+	if (is_numeric($_GET['phptimeout'])) {
+		set_time_limit($_GET['phptimeout']);
+	} else {
+		set_time_limit(120);
+	}
 } else {
 	set_time_limit(120);
 }
@@ -38,8 +42,10 @@ $time = explode(" ", $time);
 $time = $time[1] + $time[0];
 $start = $time;
 
-include('/include/init.php');
+include(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_core.php');
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Operators' || $_SESSION['usertype'] == 'Users' || $_SESSION['usersett']['nodesnetworkstats'] > 0) {  } else { exit; }
+
+if (!isset($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)])) { exit; } else { if ($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)] != substr(md5('$_GET' . $sessiontoken), 15, 25)) { exit; } }
 
 if (isset($_GET['orderby'])) {
 	$orderby = $_GET['orderby'];
@@ -54,7 +60,11 @@ if (isset($_GET['filter'])) {
 }
 
 if (isset($_GET['page'])) {
-	$pgkey = $_GET['page'];
+	if (is_numeric($_GET['page'])) {
+		$pgkey = $_GET['page'];
+	} else {
+		$pgkey = 0;
+	}
 } else {
 	$pgkey = 0;
 }
@@ -83,18 +93,18 @@ if ($orderby == 'ServiceName') { $obyServiceName = ' color:#8063C8;'; } else { $
 
 $netstattable = '<table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped"><tr><td width="5%" align="center"><a href="?orderby=Protocol&node=' . $node . '&domain=' . $domain . '&computerip=' . $computerip . '&executorport=' . $executorport . '&filter=' . urlencode($filter) . '" style="font-size:12px; font-weight:bold;' . $obyProtocol . '" title="Ascending Order by Type">Type</a></td><td width="20%" align="center"><a href="?orderby=LocalAddress&node=' . $node . '&domain=' . $domain . '&computerip=' . $computerip . '&executorport=' . $executorport . '&filter=' . urlencode($filter) . '" style="font-size:12px; font-weight:bold;' . $obyLocalAddress . '" title="Ascending Order by LocalAddress">Local Address</a></td><td width="20%" align="center"><a href="?orderby=ForeignAddress&node=' . $node . '&domain=' . $domain . '&computerip=' . $computerip . '&executorport=' . $executorport . '&filter=' . urlencode($filter) . '" style="font-size:12px; font-weight:bold;' . $obyForeignAddress . '" title="Ascending Order by ForeignAddress">Foreign Address</a></td><td width="10%" align="center"><a href="?orderby=State&node=' . $node . '&domain=' . $domain . '&computerip=' . $computerip . '&executorport=' . $executorport . '&filter=' . urlencode($filter) . '" style="font-size:12px; font-weight:bold;' . $obyState . '" title="Ascending Order by State">State</a></td><td width="5%" align="center"><a href="?orderby=PID&node=' . $node . '&domain=' . $domain . '&computerip=' . $computerip . '&executorport=' . $executorport . '&filter=' . urlencode($filter) . '" style="font-size:12px; font-weight:bold;' . $obyPID . '" title="Ascending Order by PID">PID</a></td><td width="20%" align="center"><a href="?orderby=ProcessName&node=' . $node . '&domain=' . $domain . '&computerip=' . $computerip . '&executorport=' . $executorport . '&filter=' . urlencode($filter) . '" style="font-size:12px; font-weight:bold;' . $obyProcessName . '" title="Ascending Order by Process Name">Process</a></td><td width="20%" align="center"><a href="?orderby=ServiceName&node=' . $node . '&domain=' . $domain . '&computerip=' . $computerip . '&executorport=' . $executorport . '&filter=' . urlencode($filter) . '" style="font-size:12px; font-weight:bold;' . $obyServiceName . '" title="Ascending Order by Service Name">Service</a></td></tr>';
 
-$db = new SQLite3(str_replace('\\core', '\\sqlite', $_SERVER['DOCUMENT_ROOT']) . '\\euryscoServer');
+$db = new SQLite3($euryscoinstallpath . '\\sqlite\\euryscoServer');
 $db->busyTimeout(5000);
 $db->query('PRAGMA page_size = 2048; PRAGMA cache_size = 4000; PRAGMA temp_store = 2; PRAGMA journal_mode = OFF; PRAGMA synchronous = 0;');
 
 $netstatrarray = array();
 $netstatcounter = 0;
 
-$nodepath = str_replace('\\core', '\\nodes', $_SERVER['DOCUMENT_ROOT']) . '\\' . $node . '\\';
+$nodepath = $euryscoinstallpath . '\\nodes\\' . $node . '\\';
 
 $lastupdate = 'N/A';
 if (!is_null($db->querySingle('SELECT node FROM xmlNetstat WHERE node = "' . $node . '"')) || file_exists($nodepath . 'netstat.xml.gz')) {
-	if (file_exists($nodepath . 'netstat.xml.gz')) { $lastupdate = date('d/m/Y H:i:s', filemtime(str_replace('\\core', '\\nodes', $_SERVER['DOCUMENT_ROOT']) . '\\' . $node . '\\netstat.xml.gz')); }
+	if (file_exists($nodepath . 'netstat.xml.gz')) { $lastupdate = date('d/m/Y H:i:s', filemtime($euryscoinstallpath . '\\nodes\\' . $node . '\\netstat.xml.gz')); }
 	$xml = simplexml_load_string($db->querySingle('SELECT xml FROM xmlNetstat WHERE node = "' . $node . '"'));
 	if (!is_object($xml)) {
 		$fp = gzopen($nodepath . 'netstat.xml.gz', 'rb');

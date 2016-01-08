@@ -3,10 +3,12 @@
 if (!isset($_SERVER['HTTP_REFERER'])) { exit; }
 if (!strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/shutdown.php')) { exit; }
 
-include('/include/init.php');
+include(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_core.php');
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['systemshutdown'] > 0) {  } else { exit; }
 
-$shutdown_xml = 'temp\\shutdown.xml';
+if (!isset($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)])) { exit; } else { if ($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)] != substr(md5('$_GET' . $sessiontoken), 15, 25)) { exit; } }
+
+$shutdown_xml = $euryscoinstallpath . '\\temp\\shutdown.xml';
 
 if (file_exists($shutdown_xml)) {
 	$xmlshutdown = simplexml_load_file($shutdown_xml);

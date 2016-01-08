@@ -24,7 +24,7 @@ foreach($netstats as $netstat) {
 	$netstatprerarray[$netstatprecounter][6] = '';
 	
 	if (preg_match('/:/', $netstat) && !preg_match('/\\\/', $netstat)) {
-		$netstatfl = split('  ', $netstat);
+		$netstatfl = explode('  ', $netstat);
 		$flcount = 1;
 		foreach($netstatfl as $netstatflc) {
 			if (trim($netstatflc) != '') {

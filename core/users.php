@@ -9,17 +9,21 @@
 
 <?php if ($passwordexpired == 0) { ?>
 
-<?php $grouplist = scandir($_SERVER['DOCUMENT_ROOT'] . '\\groups\\'); ?>
+<?php $grouplist = scandir($euryscoinstallpath . '\\groups\\'); ?>
 
 <?php
+
+$usermanagementf = strtolower(str_replace("\r\n", '|', '[|' . $_SESSION['usersett']['usermanagementf'] . '|]'));
+
 $message = '';
 				
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermanagement'] > 1) {
 				
-	if (isset($_POST['edituserfile']) && isset($_POST['editusername']) && isset($_POST['edituserpsw']) && isset($_POST['edituserpswc']) && isset($_POST['editusertype']) && isset($_POST['edituserauth']) && (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'])) > 0) {
+	if (isset($_POST['edituserfile']) && isset($_POST['editusername']) && isset($_POST['edituserpsw']) && isset($_POST['edituserpswc']) && isset($_POST['editusertype']) && isset($_POST['edituserauth']) && strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']) > 0 && isset($_POST[substr(md5('$_POST' . $_SESSION['tokenl']), 5, 15)])) {
+		$_SESSION['changegroup'] = '';
 		if (isset($_POST['deleteuserconf'])) {
-			@unlink($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $_POST['edituserfile']);
-			if (file_exists($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $_POST['edituserfile'])) {
+			@unlink($euryscoinstallpath . '\\users\\' . $_POST['edituserfile']);
+			if (file_exists($euryscoinstallpath . '\\users\\' . $_POST['edituserfile'])) {
 				$message = '<blockquote style="background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">user <strong>' . $_POST['editusername'] . '</strong> not deleted</blockquote><br />';
 				$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     user management     user "' . $_POST['editusername'] . '" not deleted';
 			} else {
@@ -27,7 +31,7 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 				$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     user management     user "' . $_POST['editusername'] . '" deleted';
 			}
 		} else {
-			$currentuserxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $_POST['edituserfile'], true)))));
+			$currentuserxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($euryscoinstallpath . '\\users\\' . $_POST['edituserfile'], true)))));
 			
 			$currentusertype = $currentuserxml->settings->usertype;
 			$editusertype = '';
@@ -62,14 +66,14 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 							$editusertype = '';
 							$edituserpsw = '';
 						} else {
-							if (!preg_match('/[\\\\\'\"\!\.\:\;\[\]\^\$\%\&\*\(\)\}\{\@\#\~\?\/\,\|\=\_\+\-]/', $_POST['edituserpsw']) || !preg_match('/[a-z]/', $_POST['edituserpsw']) || !preg_match('/[A-Z]/', $_POST['edituserpsw']) || !preg_match('/[0-9]/', $_POST['edituserpsw'])) {
-								$message = '<blockquote style="background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">password must be contain number <strong>0~9</strong>, lower <strong>a~z</strong>, upper <strong>A~Z</strong> and special characters <strong>\\\'",.:;!?^$%&()[]{}@#~\/|=*+-_</strong></blockquote><br />';
+							if (!preg_match('/[\\\\\!\.\:\;\[\]\^\%\*\}\{\@\#\~\?\/\,\|\_\+\-]/', $_POST['edituserpsw']) || !preg_match('/[a-z]/', $_POST['edituserpsw']) || !preg_match('/[A-Z]/', $_POST['edituserpsw']) || !preg_match('/[0-9]/', $_POST['edituserpsw'])) {
+								$message = '<blockquote style="background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">password must be contain number <strong>0~9</strong>, lower <strong>a~z</strong>, upper <strong>A~Z</strong> and special characters <strong>\\,.:;!?^%[]{}@#~/|*+-_</strong></blockquote><br />';
 								$edituserauth = '';
 								$editusertype = '';
 								$edituserpsw = '';
 							} else {
-								if (preg_match('/[^a-zA-Z0-9\\\\\'\"\!\.\:\;\[\]\^\$\%\&\*\(\)\}\{\@\#\~\?\/\,\|\=\_\+\-]/', $_POST['edituserpsw'])) {
-									$message = '<blockquote style="background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">special characters allowed <strong>\\\'",.:;!?^$%&()[]{}@#~\/|=*+-_</strong></blockquote><br />';
+								if (preg_match('/[^a-zA-Z0-9\\\\\!\.\:\;\[\]\^\%\*\}\{\@\#\~\?\/\,\|\_\+\-]/', $_POST['edituserpsw'])) {
+									$message = '<blockquote style="background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">special characters allowed <strong>\\,.:;!?^%[]{}@#~/|*+-_</strong></blockquote><br />';
 									$edituserauth = '';
 									$editusertype = '';
 									$edituserpsw = '';
@@ -81,9 +85,9 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 										$editusertype = '';
 										$edituserpsw = '';
 									} else {
-										if (file_exists($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $_POST['editusertype'] . '.xml')) {
+										if (file_exists($euryscoinstallpath . '\\groups\\' . $_POST['editusertype'] . '.xml')) {
 											$checkgroups = 1;
-											$checkgroupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $_POST['editusertype'] . '.xml', true)))));
+											$checkgroupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($euryscoinstallpath . '\\groups\\' . $_POST['editusertype'] . '.xml', true)))));
 											$mcrykey = pack('H*', hash('sha256', hash('sha512', $checkgroupsxml->settings->groupname)));
 											$checkgroupsarray = unserialize(trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($checkgroupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($checkgroupsxml->settings->groupsettings), 0, $iv_size))));
 											if ($checkgroupsarray['name'] == $_POST['editusertype']) { $checkgroups = 0; }
@@ -131,20 +135,16 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 					$edituserpsw = $currentuserxml->settings->password;
 				}
 				$xml = '<?xml version="1.0"?>' . "\n" . '<config>' . "\n" . '	<settings>' . "\n" . '		<username>' . $_POST['editusername'] . '</username>' . "\n" . '		<usertype>' . $editusertype . '</usertype>' . "\n" . '		<userauth>' . $edituserauth . '</userauth>' . "\n" . '		<password>' . $edituserpsw . '</password>' . "\n" . '		<passwchk>' . $passwchk . '</passwchk>' . "\n" . '		<passwlck>' . md5($edituserpsw) . '</passwlck>' . "\n" . '		<expiration>' . base64_encode(base64_encode(base64_encode(base64_encode(base64_encode('2000-01-01 00:00:00'))))) . '</expiration>' . "\n" . '	</settings>' . "\n" . '</config>';
-				$writexml = fopen($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $_POST['edituserfile'], 'w');
+				$writexml = fopen($euryscoinstallpath . '\\users\\' . $_POST['edituserfile'], 'w');
 				fwrite($writexml, base64_encode(base64_encode(base64_encode($xml))));
 				fclose($writexml);
-				if ($agentstatus == 'con' && $_POST['edituserauth'] == 'Distributed') { @copy($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $_POST['edituserfile'], str_replace('\\core', '\\agent\\users', $_SERVER['DOCUMENT_ROOT']) . '\\' . $_POST['edituserfile']); }
-			} else {
-				if ($checkgroups == 0) { $message = '<blockquote style="background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">password must be different than old password</blockquote><br />'; }
+				if ($agentstatus == 'con' && $_POST['edituserauth'] == 'Distributed') { @copy($euryscoinstallpath . '\\users\\' . $_POST['edituserfile'], $euryscoinstallpath . '\\agent\\users\\' . $_POST['edituserfile']); }
 			}
 		}
 		$message = $message . '<br />';
 	}
 
 }
-
-$newaccordionst = '';
 
 if (isset($_POST['newusertype'])) {
 	$newusertype = $_POST['newusertype'];
@@ -176,10 +176,13 @@ if (isset($_POST['newuserpswc'])) {
 	$newuserpswc = '';
 }
 
+$newaccordionst = '';
+
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermanagement'] > 1) {
 
-	if (isset($_POST['newaccount']) && (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'])) > 0) {
+	if (isset($_POST['newaccount']) && strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']) > 0 && isset($_POST[substr(md5('$_POST' . $_SESSION['tokenl']), 5, 15)])) {
 		$newaccordionst = ' class="active"';
+		$_SESSION['changegroup'] = '';
 		if ($newusertype == '' || $newusername == '' || $newuserpsw == '' || $newuserpswc == '') {
 			$message = '<blockquote style="background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">all fields must be completed</blockquote><br />';
 		} else {
@@ -189,7 +192,7 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 				if (strtolower($newusername) == 'administrator' && strtolower($newuserauth) == 'distributed') {
 					$message = '<blockquote style="background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">administrator must be local</blockquote><br />';
 				} else {
-					if (file_exists($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $newusername . '.xml')) {
+					if (file_exists($euryscoinstallpath . '\\users\\' . $newusername . '.xml')) {
 						$message = '<blockquote style="background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">username already exists</blockquote><br />';
 					} else {
 						if (strtolower($newusername) == strtolower($newuserpsw)) {
@@ -201,16 +204,16 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 								if (strlen($newuserpsw) < 8) {
 									$message = '<blockquote style="background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">password must be at least 8 characters</blockquote><br />';
 								} else {
-									if (!preg_match('/[\\\\\'\"\!\.\:\;\[\]\^\$\%\&\*\(\)\}\{\@\#\~\?\/\,\|\=\_\+\-]/', $newuserpsw) || !preg_match('/[a-z]/', $newuserpsw) || !preg_match('/[A-Z]/', $newuserpsw) || !preg_match('/[0-9]/', $newuserpsw)) {
-										$message = '<blockquote style="background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">password must be contain number <strong>0~9</strong>, lower <strong>a~z</strong>, upper <strong>A~Z</strong> and special characters <strong>\\\'",.:;!?^$%&()[]{}@#~\/|=*+-_</strong></blockquote><br />';
+									if (!preg_match('/[\\\\\!\.\:\;\[\]\^\%\*\}\{\@\#\~\?\/\,\|\_\+\-]/', $newuserpsw) || !preg_match('/[a-z]/', $newuserpsw) || !preg_match('/[A-Z]/', $newuserpsw) || !preg_match('/[0-9]/', $newuserpsw)) {
+										$message = '<blockquote style="background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">password must be contain number <strong>0~9</strong>, lower <strong>a~z</strong>, upper <strong>A~Z</strong> and special characters <strong>\\,.:;!?^%[]{}@#~/|*+-_</strong></blockquote><br />';
 									} else {
-										if (preg_match('/[^a-zA-Z0-9\\\\\'\"\!\.\:\;\[\]\^\$\%\&\*\(\)\}\{\@\#\~\?\/\,\|\=\_\+\-]/', $newuserpsw)) {
-											$message = '<blockquote style="background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">special characters allowed <strong>\\\'",.:;!?^$%&()[]{}@#~\/|=*+-_</strong></blockquote><br />';
+										if (preg_match('/[^a-zA-Z0-9\\\\\!\.\:\;\[\]\^\%\*\}\{\@\#\~\?\/\,\|\_\+\-]/', $newuserpsw)) {
+											$message = '<blockquote style="background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">special characters allowed <strong>\\,.:;!?^%[]{}@#~/|*+-_</strong></blockquote><br />';
 										} else {
 											$checkgroups = 0;
-											if (file_exists($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $newusertype . '.xml')) {
+											if (file_exists($euryscoinstallpath . '\\groups\\' . $newusertype . '.xml')) {
 												$checkgroups = 1;
-												$checkgroupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $newusertype . '.xml', true)))));
+												$checkgroupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($euryscoinstallpath . '\\groups\\' . $newusertype . '.xml', true)))));
 												$mcrykey = pack('H*', hash('sha256', hash('sha512', $checkgroupsxml->settings->groupname)));
 												$checkgroupsarray = unserialize(trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($checkgroupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($checkgroupsxml->settings->groupsettings), 0, $iv_size))));
 												if ($checkgroupsarray['name'] == $newusertype) { $checkgroups = 0; }
@@ -229,10 +232,10 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 												$passwcrypt = base64_encode($iv . mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $mcrykey, md5($newusername . ':' . $realm . ':' . $newuserpsw), MCRYPT_MODE_CBC, $iv));
 												$passwchk = base64_encode(md5(substr(hash('whirlpool', hash('sha256', hash('sha384', hash('sha512', $newusername . ':' . $realm . ':' . $newuserpsw)))), 0, -1)));
 												$xml = '<?xml version="1.0"?>' . "\n" . '<config>' . "\n" . '	<settings>' . "\n" . '		<username>' . $newusername . '</username>' . "\n" . '		<usertype>' . hash('sha512', $newusername . $newusertype) . '</usertype>' . "\n" . '		<userauth>' . hash('sha512', $newusername . $newuserauth) . '</userauth>' . "\n" . '		<password>' . $passwcrypt . '</password>' . "\n" . '		<passwchk>' . $passwchk . '</passwchk>' . "\n" . '		<passwlck>' . md5($passwcrypt) . '</passwlck>' . "\n" . '		<expiration>' . base64_encode(base64_encode(base64_encode(base64_encode(base64_encode('2000-01-01 00:00:00'))))) . '</expiration>' . "\n" . '	</settings>' . "\n" . '</config>';
-												$writexml = fopen($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $newusername . '.xml', 'w');
+												$writexml = fopen($euryscoinstallpath . '\\users\\' . $newusername . '.xml', 'w');
 												fwrite($writexml, base64_encode(base64_encode(base64_encode($xml))));
 												fclose($writexml);
-												if ($agentstatus == 'con' && strtolower($eurysco_serverconaddress) != strtolower('https://' . $envcomputername) && $newuserauth == 'Distributed') { @copy($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $newusername . '.xml', str_replace('\\core', '\\agent\\users', $_SERVER['DOCUMENT_ROOT']) . '\\' . $newusername . '.xml'); }
+												if ($agentstatus == 'con' && strtolower($eurysco_serverconaddress) != strtolower('https://' . $envcomputername) && $newuserauth == 'Distributed') { @copy($euryscoinstallpath . '\\users\\' . $newusername . '.xml', $euryscoinstallpath . '\\agent\\users\\' . $newusername . '.xml'); }
 												$message = '<blockquote style="background-color:#0072C6; color:#FFFFFF; border-left-color:#324886;">user <strong>' . $newusername . '</strong> created successfully</blockquote><br />';
 												$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     user management     user "' . $newusername . '" created successfully in "' . $newusertype . '" group with "' . $newuserauth . '" authentication';
 												$newusername = '';
@@ -311,6 +314,7 @@ if (isset($_POST['newgroupeventviewerf']) && !isset($_POST['editgroupcancel']) &
 if (isset($_POST['newgroupcommandlinef']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['commandlinef'] = $_POST['newgroupcommandlinef']; } else { $newgroup['commandlinef'] = ''; }
 if (isset($_POST['newgroupfilebrowserf']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['filebrowserf'] = $_POST['newgroupfilebrowserf']; } else { $newgroup['filebrowserf'] = ''; }
 if (isset($_POST['newgroupregeditf']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['regeditf'] = $_POST['newgroupregeditf']; } else { $newgroup['regeditf'] = ''; }
+if (isset($_POST['newgroupusermanagementf']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['usermanagementf'] = $_POST['newgroupusermanagementf']; } else { $newgroup['usermanagementf'] = ''; }
 if (isset($_POST['newgroupauth']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['auth'] = $_POST['newgroupauth']; } else { $newgroup['auth'] = 'Local'; }
 if (isset($_POST['newgrouppwdexp']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['pwdexp'] = $_POST['newgrouppwdexp']; } else { $newgroup['pwdexp'] = 1; }
 if (isset($_POST['newgroupdisable']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['disable'] = $_POST['newgroupdisable']; } else { $newgroup['disable'] = 7; }
@@ -333,6 +337,7 @@ if (!isset($_POST['newgroupsasunday']) && !isset($_POST['newgroupsamonday']) && 
 	if (isset($_POST['newgroupsafriday']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['safriday'] = $_POST['newgroupsafriday']; } else { $newgroup['safriday'] = ''; }
 	if (isset($_POST['newgroupsasaturday']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['sasaturday'] = $_POST['newgroupsasaturday']; } else { $newgroup['sasaturday'] = ''; }
 }
+if (isset($_POST['newgrouploginredirect']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['loginredirect'] = $_POST['newgrouploginredirect']; } else { $newgroup['loginredirect'] = ''; }
 if (isset($_POST['newgroupbadaut']) && !isset($_POST['editgroupcancel']) && !isset($_POST['deletegroup'])) { $newgroup['badaut'] = $_POST['newgroupbadaut']; } else { $newgroup['badaut'] = 0; }
 
 if (!isset($_SESSION['changegroup'])) {
@@ -345,21 +350,24 @@ if (isset($_GET['changegroup'])) {
 
 if (isset($_POST['editgroupcancel'])) {
 	$_SESSION['changegroup'] = '';
+	header('location: /' . str_replace('/', '', $_SERVER['PHP_SELF']));
 }
 
 if ($_SESSION['changegroup'] != '' && !isset($_POST['newgroupname'])) {
-	$mcrykey = pack('H*', hash('sha256', hash('sha512', $_SESSION['changegroup'])));
-	$groupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $_SESSION['changegroup'] . '.xml', true)))));
-	$newgroup = unserialize(trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($groupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($groupsxml->settings->groupsettings), 0, $iv_size))));
-	$newaccordiongst = ' class="active"';
+	if (file_exists($euryscoinstallpath . '\\groups\\' . $_SESSION['changegroup'] . '.xml')) {
+		$mcrykey = pack('H*', hash('sha256', hash('sha512', $_SESSION['changegroup'])));
+		$groupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($euryscoinstallpath . '\\groups\\' . $_SESSION['changegroup'] . '.xml', true)))));
+		$newgroup = unserialize(trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($groupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($groupsxml->settings->groupsettings), 0, $iv_size))));
+		$newaccordiongst = ' class="active"';
+	}
 }
-
 
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermanagement'] > 1) {
 
-	if (isset($_POST['newgroupname']) && !isset($_POST['editgroupcancel']) && (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'])) > 0) {
+	if (isset($_POST['newgroupname']) && !isset($_POST['editgroupcancel']) && strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']) > 0 && isset($_POST[substr(md5('$_POST' . $_SESSION['tokenl']), 5, 15)])) {
+		$newaccordionst = '';
 		if (isset($_POST['deletegroup'])) {
-			@unlink($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $_SESSION['changegroup'] . '.xml');
+			@unlink($euryscoinstallpath . '\\groups\\' . $_SESSION['changegroup'] . '.xml');
 			$message = '<blockquote style="background-color:#0072C6; color:#FFFFFF; border-left-color:#324886;">group <strong>' . $_SESSION['changegroup'] . '</strong> deleted</blockquote><br />';
 			$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     user management     group "' . $_SESSION['changegroup'] . '" deleted';
 			$_SESSION['changegroup'] = '';
@@ -368,20 +376,20 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 			if ($newgroup['name'] == '') {
 				$message = '<blockquote style="background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">all fields must be completed</blockquote><br />';
 			} else {
-				if (strtolower($newgroup['name']) == 'administrators' || strtolower($newgroup['name']) == 'operators' || strtolower($newgroup['name']) == 'users' || strtolower($newgroup['name']) == 'auditors' || strtolower($newgroup['name']) == 'currupted' || (isset($_POST['addgroup']) && file_exists($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $newgroup['name'] . '.xml')) || (isset($_POST['editgroup']) && $_SESSION['changegroup'] != $newgroup['name'] && file_exists($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $newgroup['name'] . '.xml'))) {
+				if (strtolower($newgroup['name']) == 'administrators' || strtolower($newgroup['name']) == 'operators' || strtolower($newgroup['name']) == 'users' || strtolower($newgroup['name']) == 'auditors' || strtolower($newgroup['name']) == 'currupted' || (isset($_POST['addgroup']) && file_exists($euryscoinstallpath . '\\groups\\' . $newgroup['name'] . '.xml')) || (isset($_POST['editgroup']) && $_SESSION['changegroup'] != $newgroup['name'] && file_exists($euryscoinstallpath . '\\groups\\' . $newgroup['name'] . '.xml'))) {
 					$message = '<blockquote style="background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">groupname already used</blockquote><br />';
 				} else {
 					if (preg_match('/[^a-zA-Z0-9 ]/', $newgroup['name'])) {
 						$message = '<blockquote style="background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">special characters are not allowed except spaces</blockquote><br />';
 					} else {
-						if (file_exists($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $_SESSION['changegroup'] . '.xml')) { @unlink($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $_SESSION['changegroup'] . '.xml'); }
+						if (file_exists($euryscoinstallpath . '\\groups\\' . $_SESSION['changegroup'] . '.xml')) { @unlink($euryscoinstallpath . '\\groups\\' . $_SESSION['changegroup'] . '.xml'); }
 						$mcrykey = pack('H*', hash('sha256', hash('sha512', $newgroup['name'])));
 						$newgroupxml = base64_encode($iv . mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $mcrykey, serialize($newgroup), MCRYPT_MODE_CBC, $iv));
 						$xml = '<?xml version="1.0"?>' . "\n" . '<config>' . "\n" . '	<settings>' . "\n" . '		<groupname>' . $newgroup['name'] . '</groupname>' . "\n" . '		<groupauth>' . hash('sha512', $newgroup['name'] . $newgroup['auth']) . '</groupauth>' . "\n" . '		<groupsettings>' . $newgroupxml . '</groupsettings>' . "\n" . '	</settings>' . "\n" . '</config>';
-						$writexml = fopen($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $newgroup['name'] . '.xml', 'w');
+						$writexml = fopen($euryscoinstallpath . '\\groups\\' . $newgroup['name'] . '.xml', 'w');
 						fwrite($writexml, base64_encode(base64_encode(base64_encode($xml))));
 						fclose($writexml);
-						if ($agentstatus == 'con' && strtolower($eurysco_serverconaddress) != strtolower('https://' . $envcomputername) && $newgroup['auth'] == 'Distributed') { @copy($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $newgroup['name'] . '.xml', str_replace('\\core', '\\agent\\groups', $_SERVER['DOCUMENT_ROOT']) . '\\' . $newgroup['name'] . '.xml'); }
+						if ($agentstatus == 'con' && strtolower($eurysco_serverconaddress) != strtolower('https://' . $envcomputername) && $newgroup['auth'] == 'Distributed') { @copy($euryscoinstallpath . '\\groups\\' . $newgroup['name'] . '.xml', $euryscoinstallpath . '\\agent\\groups\\' . $newgroup['name'] . '.xml'); }
 						if (isset($_POST['addgroup'])) { $msgconf = 'created'; } else { $msgconf = 'saved'; }
 						$message = '<blockquote style="background-color:#0072C6; color:#FFFFFF; border-left-color:#324886;">group <strong>' . $newgroup['name'] . '</strong> ' . $msgconf . ' successfully</blockquote><br />';
 						$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     user management     group "' . $newgroup['name'] . '" ' . $msgconf . ' successfully';
@@ -437,6 +445,7 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 						$newgroup['commandlinef'] = '';
 						$newgroup['filebrowserf'] = '';
 						$newgroup['regeditf'] = '';
+						$newgroup['usermanagementf'] = '';
 						$newgroup['auth'] = 'Local';
 						$newgroup['pwdexp'] = 1;
 						$newgroup['disable'] = 7;
@@ -449,6 +458,7 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 						$newgroup['sathursday'] = 'on';
 						$newgroup['safriday'] = 'on';
 						$newgroup['sasaturday'] = 'on';
+						$newgroup['loginredirect'] = '';
 						$newgroup['badaut'] = 0;
 					}
 				}
@@ -461,7 +471,7 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 
 ?>
 
-<?php $grouplist = scandir($_SERVER['DOCUMENT_ROOT'] . '\\groups\\'); ?>
+<?php $grouplist = scandir($euryscoinstallpath . '\\groups\\'); ?>
 
 <script type="text/javascript">
 	function changeuser(UserFile,UserName,UserType,UserAuth){
@@ -484,7 +494,7 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 		if (UserType == 'Auditors') { SelectedAuditors = ' selected="selected"'; }
 		if (UserType == 'Operators') { SelectedOperators = ' selected="selected"'; }
 		if (UserType == 'Users') { SelectedUsers = ' selected="selected"'; }
-		<?php foreach ($grouplist as $group) { if (pathinfo($group)['extension'] == 'xml' && filesize($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group) > 0) { $group = str_replace('.xml', '', $group); ?>
+		<?php foreach ($grouplist as $group) { if (pathinfo($group)['extension'] == 'xml' && filesize($euryscoinstallpath . '\\groups\\' . $group) > 0) { $group = str_replace('.xml', '', $group); ?>
 		if (UserType == '<?php echo $group; ?>') { Selected<?php echo str_replace(' ', '_', $group); ?> = ' selected="selected"'; } else { Selected<?php echo str_replace(' ', '_', $group); ?> = ''; }
 		<?php } } ?>
 		if (UserAuth == 'Local') { SelectedLocal = ' selected="selected"'; }
@@ -492,9 +502,10 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 		if (UserName == 'Administrator') { StarInforLock = '* '; UserStatusMsg = '<br /><i>* change allowed for password only</i>'; FieldReadOnly = ' disabled="disabled"'; FieldHdFields = '<input type="hidden" id="editusertype" name="editusertype" value="Administrators" /><input type="hidden" id="edituserauth" name="edituserauth" value="Local" />'; AdminLockIcon = '&nbsp;&nbsp;<div class="icon-locked-2" style="font-size:12px; color:#cdab16;" title="Protected"></div>'; }
 		if (UserAuth == 'Local' && CheckServConn == 'Connected' && UserName != 'Administrator') { StarInforLoca = '* '; UserStatusMsg = '<br /><i>* change allowed from server only</i>'; FieldROnlLoca = ' disabled="disabled"'; }
 		if (UserAuth == 'Distributed' && CheckServConn == 'Connected') { StarInforDist = '* '; UserStatusMsg = '<br /><i>* change allowed from server only</i>'; FieldReadOnly = ' disabled="disabled"'; FieldHdFields = '<input type="hidden" id="editusertype" name="editusertype" value="' + UserType + '" /><input type="hidden" id="edituserauth" name="edituserauth" value="' + UserAuth + '" />'; }
+		<?php if ($_SESSION['usersett']['usermanagement'] < 3) { ?>FieldReadOnly = ' disabled="disabled"'; FieldHdFields = '<input type="hidden" id="editusertype" name="editusertype" value="' + UserType + '" /><input type="hidden" id="edituserauth" name="edituserauth" value="' + UserAuth + '" />';<?php } ?>
 		$.Dialog({
 			'title'       : '<span style="font-size:16px;">&nbsp;<div class="icon-user" style="position:inherit;"></div>&nbsp; <strong>Change</strong> User Information</span>',
-			'content'     : '<form id="changeuserform" name="changeuserform" method="post" action="users.php"><table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped"><tr><td style="font-size:12px;" align="center" colspan="2"><strong>' + UserName + '</strong>' + AdminLockIcon + UserStatusMsg + '</td></tr><tr><td style="font-size:12px;">' + StarInforLock + 'Password:</td><td style="font-size:12px;"><input type="password" id="edituserpsw" name="edituserpsw" placeholder="&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px; padding-left:4px; padding-right:4px; font-size:12px;" value=""></td></tr><tr><td style="font-size:12px;">' + StarInforLock + 'Confirmation:</td><td style="font-size:12px;"><input type="password" id="edituserpswc" name="edituserpswc" placeholder="&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px; padding-left:4px; padding-right:4px; font-size:12px;" value=""></td></tr><tr><td style="font-size:12px;">' + StarInforDist + 'Type:</td><td style="font-size:12px;"><select id="editusertype" name="editusertype" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa;"><option value="Administrators"' + SelectedAdministrators + FieldReadOnly + '>&nbsp;Administrators&nbsp;&nbsp;</option><option value="Auditors"' + SelectedAuditors + FieldReadOnly + '>&nbsp;Auditors&nbsp;&nbsp;</option><option value="Operators"' + SelectedOperators + FieldReadOnly + '>&nbsp;Operators&nbsp;&nbsp;</option><option value="Users"' + SelectedUsers + FieldReadOnly + '>&nbsp;Users&nbsp;&nbsp;</option><?php foreach ($grouplist as $group) { if (pathinfo($group)['extension'] == 'xml' && filesize($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group) > 0) { $group = str_replace('.xml', '', $group); ?><option value="<?php echo $group; ?>"' + Selected<?php echo str_replace(' ', '_', $group); ?> + FieldReadOnly + '>&nbsp;<?php echo str_replace(' ', '&nbsp;', $group); ?>&nbsp;&nbsp;</option><?php } } ?></select></td></tr><tr><td style="font-size:12px;">' + StarInforLoca + StarInforDist + 'Authentication:</td><td style="font-size:12px;"><select id="edituserauth" name="edituserauth" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa;"><option value="Local"' + SelectedLocal + FieldReadOnly + '>&nbsp;Local&nbsp;&nbsp;</option><option value="Distributed"' + SelectedDistr + FieldROnlLoca + FieldReadOnly + '>&nbsp;Distributed&nbsp;&nbsp;</option></select></td></tr></table><input type="checkbox" id="deleteuserconf" name="deleteuserconf" ' + FieldReadOnly + ' /><span class="helper" style="font-size:12px;">&nbsp;&nbsp;' + StarInforDist + 'Delete This User</span><input type="hidden" id="edituserfile" name="edituserfile" value="' + UserFile + '" /><input type="hidden" id="editusername" name="editusername" value="' + UserName + '" />' + FieldHdFields + '</form>',
+			'content'     : '<form id="changeuserform" name="changeuserform" method="post" action="users.php"><table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped"><tr><td style="font-size:12px;" align="center" colspan="2"><strong>' + UserName + '</strong>' + AdminLockIcon + UserStatusMsg + '</td></tr><tr><td style="font-size:12px;">' + StarInforLock + 'Password:</td><td style="font-size:12px;"><input type="password" autocomplete="off" id="edituserpsw" name="edituserpsw" placeholder="&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px; padding-left:4px; padding-right:4px; font-size:12px;" value=""></td></tr><tr><td style="font-size:12px;">' + StarInforLock + 'Confirmation:</td><td style="font-size:12px;"><input type="password" autocomplete="off" id="edituserpswc" name="edituserpswc" placeholder="&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px; padding-left:4px; padding-right:4px; font-size:12px;" value=""></td></tr><tr><td style="font-size:12px;">' + StarInforDist + 'Type:</td><td style="font-size:12px;"><select id="editusertype" name="editusertype" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa;"><?php if ($_SESSION['usersett']['usermanagement'] > 4 || $usermanagementf == '[||]' || strpos($usermanagementf, '|administrators|') > 0) { ?><option value="Administrators"' + SelectedAdministrators + FieldReadOnly + '>&nbsp;Administrators&nbsp;&nbsp;</option><?php } ?><?php if ($_SESSION['usersett']['usermanagement'] > 4 || $usermanagementf == '[||]' || strpos($usermanagementf, '|auditors|') > 0) { ?><option value="Auditors"' + SelectedAuditors + FieldReadOnly + '>&nbsp;Auditors&nbsp;&nbsp;</option><?php } ?><?php if ($_SESSION['usersett']['usermanagement'] > 4 || $usermanagementf == '[||]' || strpos($usermanagementf, '|operators|') > 0) { ?><option value="Operators"' + SelectedOperators + FieldReadOnly + '>&nbsp;Operators&nbsp;&nbsp;</option><?php } ?><?php if ($_SESSION['usersett']['usermanagement'] > 4 || $usermanagementf == '[||]' || strpos($usermanagementf, '|users|') > 0) { ?><option value="Users"' + SelectedUsers + FieldReadOnly + '>&nbsp;Users&nbsp;&nbsp;</option><?php } ?><?php foreach ($grouplist as $group) { if (pathinfo($group)['extension'] == 'xml' && filesize($euryscoinstallpath . '\\groups\\' . $group) > 0) { $group = str_replace('.xml', '', $group); ?><?php if ($_SESSION['usersett']['usermanagement'] > 4 || $usermanagementf == '[||]' || strpos($usermanagementf, '|' . strtolower($group) . '|') > 0) { ?><option value="<?php echo $group; ?>"' + Selected<?php echo str_replace(' ', '_', $group); ?> + FieldReadOnly + '>&nbsp;<?php echo str_replace(' ', '&nbsp;', $group); ?>&nbsp;&nbsp;</option><?php } } } ?></select></td></tr><tr><td style="font-size:12px;">' + StarInforLoca + StarInforDist + 'Authentication:</td><td style="font-size:12px;"><select id="edituserauth" name="edituserauth" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa;"><option value="Local"' + SelectedLocal + FieldReadOnly + '>&nbsp;Local&nbsp;&nbsp;</option><option value="Distributed"' + SelectedDistr + FieldROnlLoca + FieldReadOnly + '>&nbsp;Distributed&nbsp;&nbsp;</option></select></td></tr></table><input type="checkbox" id="deleteuserconf" name="deleteuserconf" ' + FieldReadOnly + ' /><span class="helper" style="font-size:12px;">&nbsp;&nbsp;' + StarInforDist + 'Delete This User</span><input type="hidden" id="edituserfile" name="edituserfile" value="' + UserFile + '" /><input type="hidden" id="editusername" name="editusername" value="' + UserName + '" />' + FieldHdFields + '<input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" /></form>',
 			'draggable'   : true,
 			'overlay'     : true,
 			'closeButton' : false,
@@ -523,7 +534,7 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 <div class="page secondary">
 	<div class="page-header">
 		<div class="page-header-content">
-			<h1>User<small>management</small></h1>
+			<h1>Access<small>settings</small></h1>
 			<a href="<?php echo $_SERVER['SCRIPT_NAME']; ?>" class="eurysco-users-button big page-back"></a>
 		</div>
 	</div>
@@ -541,13 +552,13 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 					
 					<?php echo $message; ?>
 					
-					<?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermanagement'] > 1) { ?>
+					<?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermanagement'] > 2) { ?>
 					<h2><img src="/img/uss.png" width="32" height="32" title="Users" />&nbsp;Users:</h2>
 					<ul class="accordion" data-role="accordion">
 						<li<?php echo $newaccordionst; ?>>
 							<a href="#" style="font-size:16px; color:#000;">Add New:</a>
 							<div>
-		                   	<form method="post" action="users.php">
+		                   	<form id="newuser" name="newuser" method="post" action="users.php">
 								<div class="input-control text">
 			                       	<h3><img src="/img/ussa.png" width="20" height="20" title="Username" />&nbsp;Username:</h3>
 									<input type="text" id="newusername" name="newusername" placeholder="Username" value="<?php echo $newusername; ?>" />
@@ -555,24 +566,24 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 								</div>
 								<div class="input-control text">
 			                       	<h3><div class="icon-key" style="font-size:17px; color:#b5b5b5" title="Password"></div>&nbsp;Password:</h3>
-									<input type="password" id="newuserpsw" name="newuserpsw" placeholder="Password" value="<?php echo $newuserpsw; ?>" />
+									<input type="password" autocomplete="off" id="newuserpsw" name="newuserpsw" placeholder="Password" value="<?php echo $newuserpsw; ?>" />
 									<button class="btn-clear"></button>
 								</div>
 								<div class="input-control text">
 			                       	<h3><div class="icon-key" style="font-size:17px; color:#b5b5b5" title="Password Confirm"></div>&nbsp;Password Confirm:</h3>
-									<input type="password" id="newuserpswc" name="newuserpswc" placeholder="Password Confirm" value="<?php echo $newuserpswc; ?>" />
+									<input type="password" autocomplete="off" id="newuserpswc" name="newuserpswc" placeholder="Password Confirm" value="<?php echo $newuserpswc; ?>" />
 									<button class="btn-clear"></button>
 								</div>
 								<div class="input-control select">
 			                       	<h3><img src="/img/adma.png" width="20" height="20" title="Type" />&nbsp;Type:</h3>
 									<select id="newusertype" name="newusertype">
 										<option value=""></option>
-										<option value="Administrators" <?php if ($newusertype == 'Administrators') { echo 'selected'; } ?>>Administrators</option>
-										<option value="Auditors" <?php if ($newusertype == 'Auditors') { echo 'selected'; } ?>>Auditors</option>
-										<option value="Operators" <?php if ($newusertype == 'Operators') { echo 'selected'; } ?>>Operators</option>
-										<option value="Users" <?php if ($newusertype == 'Users') { echo 'selected'; } ?>>Users</option>
-										<?php foreach ($grouplist as $group) { if (pathinfo($group)['extension'] == 'xml' && filesize($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group) > 0) { $group = str_replace('.xml', '', $group); ?>
-										<option value="<?php echo $group; ?>" <?php if ($newusertype == $group) { echo 'selected'; } ?>><?php echo $group; ?></option>
+										<?php if ($_SESSION['usersett']['usermanagement'] > 4 || $usermanagementf == '[||]' || strpos($usermanagementf, '|administrators|') > 0) { ?><option value="Administrators" <?php if ($newusertype == 'Administrators') { echo 'selected'; } ?>>Administrators</option><?php } ?>
+										<?php if ($_SESSION['usersett']['usermanagement'] > 4 || $usermanagementf == '[||]' || strpos($usermanagementf, '|auditors|') > 0) { ?><option value="Auditors" <?php if ($newusertype == 'Auditors') { echo 'selected'; } ?>>Auditors</option><?php } ?>
+										<?php if ($_SESSION['usersett']['usermanagement'] > 4 || $usermanagementf == '[||]' || strpos($usermanagementf, '|operators|') > 0) { ?><option value="Operators" <?php if ($newusertype == 'Operators') { echo 'selected'; } ?>>Operators</option><?php } ?>
+										<?php if ($_SESSION['usersett']['usermanagement'] > 4 || $usermanagementf == '[||]' || strpos($usermanagementf, '|users|') > 0) { ?><option value="Users" <?php if ($newusertype == 'Users') { echo 'selected'; } ?>>Users</option><?php } ?>
+										<?php foreach ($grouplist as $group) { if (pathinfo($group)['extension'] == 'xml' && filesize($euryscoinstallpath . '\\groups\\' . $group) > 0) { $group = str_replace('.xml', '', $group); ?>
+										<?php if ($_SESSION['usersett']['usermanagement'] > 4 || $usermanagementf == '[||]' || strpos($usermanagementf, '|' . strtolower($group) . '|') > 0) { ?><option value="<?php echo $group; ?>" <?php if ($newusertype == $group) { echo 'selected'; } ?>><?php echo $group; ?></option><?php } ?>
 										<?php } } ?>
 									</select>
 								</div>
@@ -588,14 +599,17 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 									</select>
 								</div>
 								<br />
-				                    <input type="hidden" id="newaccount" name="newaccount" />
-									<input type="submit" id="adduser" name="adduser" style="background-color:#0072C6;" value="Add"/>
+								<input type="hidden" id="newaccount" name="newaccount" />
+								<input type="submit" id="adduser" name="adduser" style="background-color:#0072C6;" value="Add"/>
+								<input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" />
 							</form>
 							</div>
 						</li>
 					</ul>
 					<br />
 					<?php } ?>
+					<?php if ($_SESSION['changegroup'] == '' && $_SESSION['usersett']['usermanagement'] < 5) { ?>
+					<?php } else { ?>
 					<h2><img src="/img/adm.png" width="32" height="32" title="Groups" />&nbsp;Groups:</h2>
 					<?php if ($agentstatus == 'con' && strtolower($eurysco_serverconaddress) != strtolower('https://' . $envcomputername)) { ?>
 					<div style="font-size:12px;">* distributed group management allowed from server only</div>
@@ -607,10 +621,10 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 						<li<?php echo $newaccordiongst; ?>>
 							<a href="#" style="font-size:16px; color:#000;"><?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermanagement'] > 1) { ?><?php if ($_SESSION['changegroup'] == '') { echo 'Add New:'; } else { echo 'Edit ' . $_SESSION['changegroup'] . ':'; } ?><?php } else { ?>Info:<?php } ?></a>
 							<div>
-		                   	<form method="post" action="users.php"<?php if ($agentstatus == 'con' && strtolower($eurysco_serverconaddress) != strtolower('https://' . $envcomputername) && $_SESSION['changegroup'] != '' && $newgroup['auth'] == 'Distributed') { echo ' disabled="disabled"'; } ?>>
+		                   	<form id="newgroup" name="newgroup" method="post"<?php if ($agentstatus == 'con' && strtolower($eurysco_serverconaddress) != strtolower('https://' . $envcomputername) && $_SESSION['changegroup'] != '' && $newgroup['auth'] == 'Distributed') { echo ' disabled="disabled"'; } ?>>
 								<div class="input-control text">
 			                       	<h3><img src="/img/adma.png" width="20" height="20" title="Groupname" />&nbsp;Groupname:</h3>
-									<input type="text" id="newgroupname" name="newgroupname" placeholder="Groupname" value="<?php echo $newgroup['name']; ?>" />
+									<input type="text" id="newgroupname" name="newgroupname" placeholder="Groupname" value="<?php echo $newgroup['name']; ?>" <?php if ($_SESSION['changegroup'] != '' && ($_SESSION['usersett']['usermanagement'] < 5 || $_SESSION['usertype'] == $newgroup['name'])) { echo ' readonly="readonly"'; } ?>/>
 									<button class="btn-clear"></button>
 								</div>
 								<br />
@@ -906,7 +920,7 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 									</table>
 									<table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped">
 										<tr>
-											<td width="50%" style="font-size:13px;">Change Settings:</td>
+											<td width="50%" style="font-size:13px;">General Settings:</td>
 											<td width="50%">
 												<select id="newgroupchangesettings" name="newgroupchangesettings" style="font-family:'Segoe UI Light','Open Sans',Verdana,Arial,Helvetica,sans-serif; font-size:12px; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:100%;">
 													<option value="0" title="Operators, Users, Auditors" <?php if ($newgroup['changesettings'] == 0) { echo 'selected'; } ?>>Denied</option>
@@ -915,12 +929,15 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 											</td>
 										</tr>
 										<tr>
-											<td style="font-size:13px;">User Management:</td>
+											<td style="font-size:13px;">Access Settings:</td>
 											<td>
 												<select id="newgroupusermanagement" name="newgroupusermanagement" style="font-family:'Segoe UI Light','Open Sans',Verdana,Arial,Helvetica,sans-serif; font-size:12px; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:100%;">
 													<option value="0" title="Operators, Users, Auditors" <?php if ($newgroup['usermanagement'] == 0) { echo 'selected'; } ?>>Denied</option>
 													<option value="1" title="Auditors" <?php if ($newgroup['usermanagement'] == 1) { echo 'selected'; } ?>>Read Only</option>
-													<option value="2" title="Administrators" <?php if ($newgroup['usermanagement'] == 2) { echo 'selected'; } ?>>Full Control</option>
+													<option value="2" title="" <?php if ($newgroup['usermanagement'] == 2) { echo 'selected'; } ?>>User Unlock</option>
+													<option value="3" title="" <?php if ($newgroup['usermanagement'] == 3) { echo 'selected'; } ?>>User Management</option>
+													<option value="4" title="" <?php if ($newgroup['usermanagement'] == 4) { echo 'selected'; } ?>>Group Management</option>
+													<option value="5" title="Administrators" <?php if ($newgroup['usermanagement'] == 5) { echo 'selected'; } ?>>Full Control</option>
 												</select>
 											</td>
 										</tr>
@@ -936,7 +953,7 @@ if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermana
 									</table>
 								</div>
 								<div class="input-control select">
-									<h3><div class="icon-search" style="font-size:17px; color:#b5b5b5" title="Pre-Filter"></div>&nbsp;Pre-Filter:</h3>
+									<h3><div class="icon-search" style="font-size:17px; color:#b5b5b5" title="Pre-Filter"></div>&nbsp;Forced Filters:</h3>
 									<?php if ($serverstatus == 'run' || $newgroup['auth'] == 'Distributed') { ?>
 									<table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped">
 										<tr title="<?php echo 'Valid Raw Data Example for Login Limitation:' . "\n\n" . '<computername>computer name</computername>' . "\n" . '<osname>operating system name</osname>' . "\n" . '<osversion>operating system version</osversion>' . "\n" . '<osservicepack>operating system service pack</osservicepack>' . "\n" . '<osserialnumber>operating system serial number</osserialnumber>' . "\n" . '<manufacturer>computer manufacturer</manufacturer>' . "\n" . '<model>computer model</model>' . "\n" . '<domain>computer domain</domain>'; ?>">
@@ -1073,10 +1090,27 @@ hkey_local_machine\software...
 hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','Open Sans',Verdana,Arial,Helvetica,sans-serif; font-size:12px; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:100%; height:55px; padding-left:5px; padding-right:5px;"><?php echo $newgroup['regeditf']; ?></textarea>
 											</td>
 										</tr>
+										<?php if ($newgroup['usermanagement'] > 4) { ?>
+											<input type="hidden" id="newgroupusermanagementf" name="newgroupusermanagementf" value="<?php echo $newgroup['usermanagementf']; ?>" />
+										<?php } ?>
+										<tr>
+											<td style="font-size:13px;">Access Settings:</td>
+											<td>
+												<textarea id="newgroupusermanagementf" name="newgroupusermanagementf" placeholder="Groupname...
+Groupname...
+Groupname..." wrap="off" style="font-family:'Segoe UI Light','Open Sans',Verdana,Arial,Helvetica,sans-serif; font-size:12px; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:100%; height:55px; padding-left:5px; padding-right:5px;"<?php if ($newgroup['usermanagement'] > 4) { ?> readonly="readonly"<?php } ?>><?php echo $newgroup['usermanagementf']; ?></textarea>
+											</td>
+										</tr>
 									</table>
 								</div>
+								<div class="input-control text">
+			                       	<h3><div class="icon-redo" style="font-size:17px; color:#b5b5b5" title="Bad Authentications Block Removal"></div>&nbsp;Login Redirect:</h3>
+									<input type="text" id="newgrouploginredirect" name="newgrouploginredirect" placeholder="https://landing.page" value="<?php echo $newgroup['loginredirect']; ?>" />
+									<button class="btn-clear"></button>
+								</div>
+								<br />
 								<div class="input-control select">
-			                       	<h3><div class="icon-blocked" style="font-size:17px; color:#b5b5b5" title="Bad Authentications Block Removal"></div>&nbsp;Bad Authentications Block Removal:</h3>
+			                       	<h3><div class="icon-blocked" style="font-size:17px; color:#b5b5b5" title="Bad Authentications Block Removal"></div>&nbsp;Bad Auth Block Removal:</h3>
 									<select id="newgroupbadaut" name="newgroupbadaut">
 										<option value="0" <?php if ($newgroup['badaut'] == '0') { echo 'selected'; } ?>>Denied</option>
 										<option value="1" <?php if ($newgroup['badaut'] == '1') { echo 'selected'; } ?>>Client Only</option>
@@ -1180,9 +1214,9 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 										<option value="90" <?php if ($newgroup['disable'] == '90') { echo 'selected'; } ?>>90</option>
 									</select>
 								</div>
+								<br />
+								<br />
 								<?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermanagement'] > 1) { ?>
-								<br />
-								<br />
 								<?php } ?>
 			                    <input type="hidden" id="newgroup" name="newgroup" />
 								<?php if ($_SESSION['changegroup'] == '') { ?>
@@ -1190,12 +1224,14 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 								<input type="submit" id="addgroup" name="addgroup" style="background-color:#0072C6;" value="Add"/>
 								<?php } ?>
 								<?php } else { ?>
-								<?php if ($agentstatus == 'con' && strtolower($eurysco_serverconaddress) != strtolower('https://' . $envcomputername) && $newgroup['auth'] == 'Distributed') { ?><?php } else { ?><input type="checkbox" id="deletegroup" name="deletegroup" /><span class="helper" style="font-size:13px;">&nbsp;Delete This Group</span><br /><br /><?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermanagement'] > 1) { ?><?php if ($_SESSION['username'] != 'Administrator' && $newgroup['name'] == 'eurysco Services') {  } else { ?><input type="submit" id="editgroup" name="editgroup" style="background-color:#0072C6;" value="Edit"/> <?php } ?><?php } ?><?php } ?><input type="submit" id="editgroupcancel" name="editgroupcancel" style="background-color:#888888;" value="Cancel" <?php if ($agentstatus == 'con' && strtolower($eurysco_serverconaddress) != strtolower('https://' . $envcomputername) && $newgroup['auth'] == 'Distributed') { ?>onclick="document.forms['editgroupcancel'].submit();" <?php } ?>/>
+								<?php if ($agentstatus == 'con' && strtolower($eurysco_serverconaddress) != strtolower('https://' . $envcomputername) && $newgroup['auth'] == 'Distributed' || $_SESSION['usersett']['usermanagement'] < 4 || $_SESSION['usertype'] == $newgroup['name']) { ?><?php } else { ?><?php if ($_SESSION['changegroup'] != '' && $_SESSION['usersett']['usermanagement'] < 5) { ?><?php } else { ?><input type="checkbox" id="deletegroup" name="deletegroup" /><span class="helper" style="font-size:13px;">&nbsp;Delete This Group</span><br /><br /><?php } ?><?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermanagement'] > 1) { ?><?php if ($_SESSION['username'] != 'Administrator' && $newgroup['name'] == 'eurysco Services') {  } else { ?><input type="submit" id="editgroup" name="editgroup" style="background-color:#0072C6;" value="Edit"/> <?php } ?><?php } ?><?php } ?><input type="submit" id="editgroupcancel" name="editgroupcancel" style="background-color:#888888;" value="Cancel" <?php if ($agentstatus == 'con' && strtolower($eurysco_serverconaddress) != strtolower('https://' . $envcomputername) && $newgroup['auth'] == 'Distributed') { ?>onclick="document.forms['editgroupcancel'].submit();" <?php } ?>/>
 								<?php } ?>
+								<input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" />
 							</form>
 							<?php if ($agentstatus == 'con' && strtolower($eurysco_serverconaddress) != strtolower('https://' . $envcomputername) && $newgroup['auth'] == 'Distributed') { ?>
-							<form id="editgroupcancel" name="editgroupcancel" method="post" action="users.php">
+							<form id="editgroupcancel" name="editgroupcancel" method="post">
 								<input type="hidden" id="editgroupcancel" name="editgroupcancel" value="Cancel" />
+								<input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" />
 							</form>
 							<?php } ?>
 							</div>
@@ -1204,6 +1240,7 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 					<br />
 					<br />
 					<br />
+					<?php } ?>
 					<?php
 
 					$usersadministratorsarray = array();
@@ -1212,23 +1249,23 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 					$usersusersarray = array();
 					$userscurruptedarray = array();
 					foreach ($grouplist as $group) {
-						if (pathinfo($group)['extension'] == 'xml' && filesize($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group) > 0) {
+						if (pathinfo($group)['extension'] == 'xml' && filesize($euryscoinstallpath . '\\groups\\' . $group) > 0) {
 							$group = str_replace('.xml', '', $group);
 							$groupnamearray = 'users' . strtolower($group) . 'array';
 							$$groupnamearray = array();
 							$groupnamesetti_disable = 'users' . strtolower($group) . 'setti_disable';
 							$groupnamesetti = array();
 							$mcrykey = pack('H*', hash('sha256', hash('sha512', $group)));
-							$groupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group . '.xml', true)))));
+							$groupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($euryscoinstallpath . '\\groups\\' . $group . '.xml', true)))));
 							$groupnamesetti = unserialize(trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($groupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($groupsxml->settings->groupsettings), 0, $iv_size))));
 							$$groupnamesetti_disable = $groupnamesetti['disable'];
 						}
 					}
 					
-					$userlist = scandir($_SERVER['DOCUMENT_ROOT'] . '\\users\\');
+					$userlist = scandir($euryscoinstallpath . '\\users\\');
 					foreach ($userlist as $user) {
-						if (pathinfo($user)['extension'] == 'xml' && filesize($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $user) > 0) {
-							$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $user, true)))));
+						if (pathinfo($user)['extension'] == 'xml' && filesize($euryscoinstallpath . '\\users\\' . $user) > 0) {
+							$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($euryscoinstallpath . '\\users\\' . $user, true)))));
 
 							$usertypeintegrity = 0;
 							$usertype = 'Currupted';
@@ -1287,7 +1324,7 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 							}
 
 							foreach ($grouplist as $group) {
-								if (pathinfo($group)['extension'] == 'xml' && filesize($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group) > 0) {
+								if (pathinfo($group)['extension'] == 'xml' && filesize($euryscoinstallpath . '\\groups\\' . $group) > 0) {
 									$group = str_replace('.xml', '', $group);
 									if (hash('sha512', $userxml->settings->username . $group) == $userxml->settings->usertype) {
 										$groupnamesetti_disable = 'users' . strtolower($group) . 'setti_disable';
@@ -1315,7 +1352,7 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 							if ($usertype == 'Operators') { array_push($usersoperatorsarray, '<blockquote>' . $userintegritymsg . $userrow); }
 							if ($usertype == 'Users') { array_push($usersusersarray, '<blockquote>' . $userintegritymsg . $userrow); }
 							foreach ($grouplist as $group) {
-								if (pathinfo($group)['extension'] == 'xml' && filesize($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group) > 0) {
+								if (pathinfo($group)['extension'] == 'xml' && filesize($euryscoinstallpath . '\\groups\\' . $group) > 0) {
 									$group = str_replace('.xml', '', $group);
 									$groupnamearray = 'users' . strtolower($group) . 'array';
 									if ($usertype == $group) { array_push($$groupnamearray, '<blockquote>' . $userintegritymsg . $userrow); }
@@ -1324,7 +1361,7 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 							if ($usertype == 'Currupted') { array_push($userscurruptedarray, '<blockquote>' . $userintegritymsg . $userrow); }
 
 						}
-						if (filesize($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $user) == 0) { @unlink($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $user); }
+						if (filesize($euryscoinstallpath . '\\users\\' . $user) == 0) { @unlink($euryscoinstallpath . '\\users\\' . $user); }
 					}
 					
 					sort($usersadministratorsarray);
@@ -1333,7 +1370,7 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 					sort($usersusersarray);
 					sort($userscurruptedarray);
 					foreach ($grouplist as $group) {
-						if (pathinfo($group)['extension'] == 'xml' && filesize($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group) > 0) {
+						if (pathinfo($group)['extension'] == 'xml' && filesize($euryscoinstallpath . '\\groups\\' . $group) > 0) {
 							$group = str_replace('.xml', '', $group);
 							$groupnamearray = 'users' . strtolower($group) . 'array';
 							sort($$groupnamearray);
@@ -1342,7 +1379,7 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 					
 					?>
                     
-					<?php if (count($usersadministratorsarray) > 0) { ?>
+					<?php if ($_SESSION['usersett']['usermanagement'] > 4 || $usermanagementf == '[||]' || strpos($usermanagementf, '|administrators|') > 0) { if (count($usersadministratorsarray) > 0) { ?>
              	       <h3><img src="/img/adml.png" width="26" height="26" />&nbsp;Administrators:</h3>
 						<?php
 						foreach($usersadministratorsarray as $usersadmin) {
@@ -1350,9 +1387,9 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 						}						
 						?>
 						<br />
-                    <?php } ?>
+                    <?php } } ?>
                     
-					<?php if (count($usersauditorsarray) > 0) { ?>
+					<?php if ($_SESSION['usersett']['usermanagement'] > 4 || $usermanagementf == '[||]' || strpos($usermanagementf, '|auditors|') > 0) { if (count($usersauditorsarray) > 0) { ?>
 						<h3><img src="/img/adml.png" width="26" height="26" />&nbsp;Auditors:</h3>
 						<?php
 						foreach($usersauditorsarray as $usersaudit) {
@@ -1360,9 +1397,9 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 						}						
 						?>
 						<br />
-                    <?php } ?>
+                    <?php } } ?>
                     
-					<?php if (count($usersoperatorsarray) > 0) { ?>
+					<?php if ($_SESSION['usersett']['usermanagement'] > 4 || $usermanagementf == '[||]' || strpos($usermanagementf, '|operators|') > 0) { if (count($usersoperatorsarray) > 0) { ?>
 						<h3><img src="/img/adml.png" width="26" height="26" />&nbsp;Operators:</h3>
 						<?php
 						foreach($usersoperatorsarray as $usersopera) {
@@ -1370,9 +1407,9 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 						}						
 						?>
 						<br />
-                    <?php } ?>
+                    <?php } } ?>
                     
-					<?php if (count($usersusersarray) > 0) { ?>
+					<?php if ($_SESSION['usersett']['usermanagement'] > 4 || $usermanagementf == '[||]' || strpos($usermanagementf, '|users|') > 0) { if (count($usersusersarray) > 0) { ?>
 						<h3><img src="/img/adml.png" width="26" height="26" />&nbsp;Users:</h3>
 						<?php
 						foreach($usersusersarray as $usersusers) {
@@ -1380,9 +1417,9 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 						}						
 						?>
 						<br />
-                    <?php } ?>
+                    <?php } } ?>
                     
-					<?php foreach ($grouplist as $group) { if (pathinfo($group)['extension'] == 'xml' && filesize($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group) > 0) { $group = str_replace('.xml', '', $group); $groupnamearray = 'users' . strtolower($group) . 'array'; $groupnameusers = 'users' . strtolower($group); $mcrykey = pack('H*', hash('sha256', hash('sha512', $group))); $groupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group . '.xml', true))))); $groupname = unserialize(trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($groupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($groupsxml->settings->groupsettings), 0, $iv_size)))); ?>
+					<?php foreach ($grouplist as $group) { if ($_SESSION['usersett']['usermanagement'] > 4 || $usermanagementf == '[||]' || strpos($usermanagementf, '|' . strtolower(str_replace('.xml', '', $group)) . '|') > 0) { if (pathinfo($group)['extension'] == 'xml' && filesize($euryscoinstallpath . '\\groups\\' . $group) > 0) { $group = str_replace('.xml', '', $group); $groupnamearray = 'users' . strtolower($group) . 'array'; $groupnameusers = 'users' . strtolower($group); $mcrykey = pack('H*', hash('sha256', hash('sha512', $group))); $groupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($euryscoinstallpath . '\\groups\\' . $group . '.xml', true))))); $groupname = unserialize(trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($groupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($groupsxml->settings->groupsettings), 0, $iv_size)))); ?>
 						<h3><a href="?changegroup=<?php echo $group; ?>" title="Change: <?php echo $groupname['auth']; ?> Group"><img src="/img/<?php if ($groupname['auth'] == 'Local') { echo 'admle'; } else { echo 'admled'; } ?>.png" width="26" height="26" /></a>&nbsp;<?php echo $group; ?>:<?php if ($groupname['sastarttime'] != $groupname['sastoptime'] || $groupname['sasunday'] != 'on' || $groupname['samonday'] != 'on' || $groupname['satuesday'] != 'on' || $groupname['sawednesday'] != 'on' || $groupname['sathursday'] != 'on' || $groupname['safriday'] != 'on' || $groupname['sasaturday'] != 'on') { if ($groupname['sa' . strtolower(date('l'))] == 'on' && ($groupname['sastarttime'] == $groupname['sastoptime'] || (date('His', strtotime($groupname['sastarttime'])) < date('His', strtotime($groupname['sastoptime'])) && date('His', strtotime($groupname['sastarttime'])) <= date('His') && date('His') < date('His', strtotime($groupname['sastoptime']))) || (date('His', strtotime($groupname['sastarttime'])) > date('His', strtotime($groupname['sastoptime'])) && (date('His', strtotime($groupname['sastarttime'])) <= date('His') || date('His') < date('His', strtotime($groupname['sastoptime'])))))) { echo '&nbsp;&nbsp;<div class="icon-history" style="font-size:17px; color:#b5b5b5" title="Access Time Limits: Login Allowed"></div>'; } else { echo '&nbsp;&nbsp;<div class="icon-history" style="font-size:17px; color:#993300;" title="Access Time Limits: Login Denied"></div>'; } } ?></h3>
 						<?php if ($_SESSION['username'] != 'Administrator' && $group == 'eurysco Services') { ?><div style="font-size:12px;">* only administrator can manage this group</div><?php } ?>
 						<?php
@@ -1391,7 +1428,7 @@ hkey_users\s-1-5-20\system..." wrap="off" style="font-family:'Segoe UI Light','O
 						}						
 						?>
 						<br />
-                    <?php } } ?>
+                    <?php } } } ?>
                     
 					<?php if (count($userscurruptedarray) > 0) { ?>
 						<h3 style="color:#933000;">Currupted:</h3>

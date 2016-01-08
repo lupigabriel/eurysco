@@ -3,8 +3,9 @@
 if (!isset($_SERVER['HTTP_REFERER'])) { exit; }
 if (!strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/explorer.php')) { exit; }
 
-include('/include/init.php');
+include(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_core.php');
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filebrowser'] > 0) {  } else { exit; }
+if (!isset($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)])) { exit; } else { if ($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)] != substr(md5('$_GET' . $sessiontoken), 15, 25)) { exit; } }
 session_write_close();
 
 if (isset($_GET['pathfile'])) {
@@ -13,13 +14,21 @@ if (isset($_GET['pathfile'])) {
 	$pathfile = 'C:\\';
 }
 
-$finfo_mime_type = finfo_open(FILEINFO_MIME_TYPE);
-$finfo_symlink = finfo_open(FILEINFO_SYMLINK);
-$finfo_mime_encoding = finfo_open(FILEINFO_MIME_ENCODING);
+$filemity_title = '-';
+$filesyml_title = '-';
+$filemien_title = '-';
 
-$filemity_title = finfo_file($finfo_mime_type, $pathfile);
-$filesyml_title = finfo_file($finfo_symlink, $pathfile);
-$filemien_title = finfo_file($finfo_mime_encoding, $pathfile);
+if (file_exists($pathfile)) {
+
+	$finfo_mime_type = finfo_open(FILEINFO_MIME_TYPE);
+	$finfo_symlink = finfo_open(FILEINFO_SYMLINK);
+	$finfo_mime_encoding = finfo_open(FILEINFO_MIME_ENCODING);
+
+	$filemity_title = finfo_file($finfo_mime_type, $pathfile);
+	$filesyml_title = finfo_file($finfo_symlink, $pathfile);
+	$filemien_title = finfo_file($finfo_mime_encoding, $pathfile);
+
+}
 
 $filemity_name = strtolower($filemity_title);
 $filesyml_name = strtolower($filesyml_title);

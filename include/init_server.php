@@ -15,7 +15,9 @@ if (isset($_ENV["COMPUTERNAME"])) {
 	$envcomputername = strtolower($_ENV["COMPUTERNAME"]);
 }
 
-$config_settings = 'conf\\config_settings.xml';
+$euryscoinstallpath = str_replace('\\server', '', $_SERVER['DOCUMENT_ROOT']);
+
+$config_settings = str_replace('\\server', '\\conf', $_SERVER['DOCUMENT_ROOT']) . '\\config_settings.xml';
 if (file_exists($config_settings)) {
 	$xmlserver = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($config_settings, true)))));
 	date_default_timezone_set($xmlserver->settings->timezonesetting);
@@ -29,18 +31,31 @@ if (file_exists($config_settings)) {
 
 require_once '/auth.php';
 
+if (implode(array_keys($_POST)) != '') {
+	foreach (array_keys($_POST) as $key) { 
+		if (!is_null($_POST[$key]) && !is_string($_POST[$key]) && !is_numeric($_POST[$key])) {
+			exit;
+		} else {
+			if (is_string($_POST[$key])) {
+				if ($key != '') { $_POST[$key] = htmlspecialchars((string)$_POST[$key], ENT_QUOTES, 'UTF-8'); }
+			}
+		}
+	}
+}
+
 header('Content-Type: text/html; charset=utf-8');
+header('X-Frame-Options: SAMEORIGIN');
 
 if (extension_loaded('zlib')) { ob_start('ob_gzhandler'); }
 
-$config_server = 'conf\\config_server.xml';
+$config_server = str_replace('\\server', '\\conf', $_SERVER['DOCUMENT_ROOT']) . '\\config_server.xml';
 
 if (file_exists($config_settings)) {
 	$xmlserver = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($config_settings, true)))));
 	$timezonesetting = $xmlserver->settings->timezonesetting;
 }
 
-$config_coresrv = 'conf\\config_core.xml';
+$config_coresrv = str_replace('\\server', '\\conf', $_SERVER['DOCUMENT_ROOT']) . '\\config_core.xml';
 if (file_exists($config_coresrv)) {
 	$xmlcore = simplexml_load_file($config_coresrv);
 	$eurysco_coreport = $xmlcore->settings->corelisteningport;

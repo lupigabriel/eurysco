@@ -4,7 +4,11 @@ if (!isset($_SERVER['HTTP_REFERER'])) { exit; }
 if (!strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/explorer.php')) { exit; }
 
 if (isset($_GET['phptimeout'])) {
-	set_time_limit($_GET['phptimeout']);
+	if (is_numeric($_GET['phptimeout'])) {
+		set_time_limit($_GET['phptimeout']);
+	} else {
+		set_time_limit(120);
+	}
 } else {
 	set_time_limit(120);
 }
@@ -14,8 +18,10 @@ $time = explode(" ", $time);
 $time = $time[1] + $time[0];
 $start = $time;
 
-include('/include/init.php');
+include(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_core.php');
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filebrowser'] > 0) {  } else { exit; }
+
+if (!isset($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)])) { exit; } else { if ($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)] != substr(md5('$_GET' . $sessiontoken), 15, 25)) { exit; } }
 
 if (isset($_GET['path'])) {
 	$path = $_GET['path'];
@@ -36,7 +42,11 @@ if (isset($_GET['orderby'])) {
 }
 
 if (isset($_GET['page'])) {
-	$pgkey = $_GET['page'];
+	if (is_numeric($_GET['page'])) {
+		$pgkey = $_GET['page'];
+	} else {
+		$pgkey = 0;
+	}
 } else {
 	$pgkey = 0;
 }
@@ -127,7 +137,7 @@ foreach ($allfiles as $name) {
 		if (is_file($name)) {
 			$filesize = filesize($name);
 			if ($filesize < 0) {
-				$filesize = exec('explorerfs.cmd "' . $name . '"', $errorarray, $errorlevel);
+				$filesize = exec($euryscoinstallpath . '\\ext\\explorerfs.cmd "' . $name . '"', $errorarray, $errorlevel);
 				if ($errorlevel != 0) {
 					$filesize = '0';
 				}
@@ -180,7 +190,7 @@ $zipicon = '';
 foreach ($explorerarray as $explorerrow) {
 	if (is_dir($path . '\\' . $explorerrow[2] . '\\')) {
 		$objtype = 'Directory';
-		if (!preg_match('/^[a-zA-Z0-9 !\$%{}()=;_\'+,\.\-\[\]@#~]*$/', $explorerrow[2]) || strpos('|' . str_replace('\\\\', '\\', $path . '\\' . $explorerrow[2]), str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT'])) > 0) {
+		if (!preg_match('/^[a-zA-Z0-9 !\$%{}()=;_\'+,\.\-\[\]@#~]*$/', $explorerrow[2]) || strpos('|' . str_replace('\\\\', '\\', $path . '\\' . $explorerrow[2]), $euryscoinstallpath) > 0) {
 			$objnameawd = '<a>';
 		} else {
 			$objnameawd = '<a href="?orderby=' . $orderby . '&path=' . urlencode($path . '\\' . $explorerrow[2] . '\\') . '&lastpath=' . urlencode($path) . '&lastfilter=' . urlencode($filter) . '" title="Open: ' . $explorerrow[2] . '">';
@@ -189,7 +199,7 @@ foreach ($explorerarray as $explorerrow) {
 		if ($explorerrow[2] == '..') { $expicon = '<a href="?orderby=' . $orderby . '&path=' . urlencode(implode("\\", explode('\\', substr(str_replace('\\\\', '\\', $path), 0, -1), -1)) . '\\') . '&lastpath=' . urlencode($path) . '"><div class="icon-reply" style="margin-top:1px;"></div></a>'; }
 	} else {
 		$objtype = 'File';
-		$downloadfile = 'download.php?download=' . urlencode($explorerrow[2]) . '&path=' . urlencode($path);
+		$downloadfile = 'download.php?' . substr(md5('$_GET' . $sessiontoken), 5, 15) . '=' . substr(md5('$_GET' . $sessiontoken), 15, 25) . '&download=' . urlencode($explorerrow[2]) . '&path=' . urlencode($path);
 		$tailfile = 'tail.php?file=' . urlencode(str_replace('\\\\', '\\', $path . '\\' . $explorerrow[2])) . '&download=' . urlencode($explorerrow[2]) . '&path=' . urlencode($path);
 		$zipfile = '7zip.php?file=' . urlencode(str_replace('\\\\', '\\', $path . '\\' . $explorerrow[2])) . '&download=' . urlencode($explorerrow[2]) . '&path=' . urlencode($path) . '&name=' . urlencode($explorerrow[2]);
 		if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filetransfer'] > 1) { $expdwn = '<a href="' . $downloadfile . '" title="Download: ' . $explorerrow[2] . '">'; } else { $expdwn = '<a title="' . $explorerrow[2] . '">'; }
@@ -217,7 +227,7 @@ foreach ($explorerarray as $explorerrow) {
 	if (strlen($explorerrow[2]) > 25) { $LongName = substr($explorerrow[2], 0, 25) . '&nbsp;[...]'; } else { $LongName = $explorerrow[2]; }
 	if (strlen($explorerrow[5]) > 6) { $ElementExt = substr($explorerrow[5], 0, 6) . '&nbsp;[...]'; } else { $ElementExt = $explorerrow[5]; }
 	$pathfilejs = str_replace('\\', '\\\\', str_replace('\\\\', '\\', $path . '\\' . $explorerrow[2]));
-	if (!preg_match('/^[a-zA-Z0-9 !\$%{}()=;_\'+,\.\-\[\]@#~]*$/', $explorerrow[2]) || strpos('|' . str_replace('\\\\', '\\', $path . '\\' . $explorerrow[2]), str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT'])) > 0) {
+	if (!preg_match('/^[a-zA-Z0-9 !\$%{}()=;_\'+,\.\-\[\]@#~]*$/', $explorerrow[2]) || strpos('|' . str_replace('\\\\', '\\', $path . '\\' . $explorerrow[2]), $euryscoinstallpath) > 0) {
 		$objnameawd = '';
 	} else {
 		$objnameawd = '<a href=\'javascript:exploreract("' . str_replace(' ', '&nbsp;', str_replace('\'', '%27', $explorerrow[2])) . '","' . $explorerrow[3] . '","' . $explorerrow[6] . '","' . $explorerrow[7] . '","' . $explorerrow[8] . '","' . str_replace('\'', '%27', $pathfilejs) . '","' . str_replace('\'', '%27', str_replace(' ', '&nbsp;', $DetailName)) . '","' . str_replace('\'', '%27', $LongName) . '","' . str_replace('\'', '%27', $explorerrow[2]) . '","' . rawurlencode(str_replace('\'', '%27', $explorerrow[2])) . '","' . $objtype . '");\'><img src="/images/enter24-black.png" width="16" height="16" border="0" title="Info:&nbsp;' . $explorerrow[2] . '"></a>';

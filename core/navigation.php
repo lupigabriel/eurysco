@@ -31,7 +31,7 @@
 <?php
 
 if (isset($_POST['stopservice']) || isset($_POST['deleteconfiguration'])) {
-	include('/include/unset.php');
+	include($euryscoinstallpath . '\\include\\unset.php');
 }
 
 ?>
@@ -120,8 +120,8 @@ if (isset($_POST['stopservice']) || isset($_POST['deleteconfiguration'])) {
 			</li>
 			<li data-role="dropdown"><a href="#"><div class="icon-locked-2"></div>admin&nbsp;</a>
 				<ul class="dropdown-menu">
-					<li<?php if (strpos(strtolower('/' . $_SERVER['REQUEST_URI']), '/settings.php') > 0) { echo $navselected; } ?>><?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['changesettings'] > 0) { ?><a href="<?php echo $executorlink; ?>/settings.php"><div class="icon-list"></div>Change Settings</a><?php } else { ?><a style="color:#999999;"><div class="icon-list" style="color:#999999;"></div>Change Settings</a><?php } ?></li>
-					<li<?php if (strpos(strtolower('/' . $_SERVER['REQUEST_URI']), '/users.php') > 0) { echo $navselected; } ?>><?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermanagement'] > 0) { ?><a href="<?php echo $executorlink; ?>/users.php"><div class="icon-user"></div>User Management</a><?php } else { ?><a style="color:#999999;"><div class="icon-user" style="color:#999999;"></div>User Management</a><?php } ?></li>
+					<li<?php if (strpos(strtolower('/' . $_SERVER['REQUEST_URI']), '/settings.php') > 0) { echo $navselected; } ?>><?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['changesettings'] > 0) { ?><a href="<?php echo $executorlink; ?>/settings.php"><div class="icon-list"></div>General Settings</a><?php } else { ?><a style="color:#999999;"><div class="icon-list" style="color:#999999;"></div>Change Settings</a><?php } ?></li>
+					<li<?php if (strpos(strtolower('/' . $_SERVER['REQUEST_URI']), '/users.php') > 0) { echo $navselected; } ?>><?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['usermanagement'] > 0) { ?><a href="<?php echo $executorlink; ?>/users.php"><div class="icon-user"></div>Access Settings</a><?php } else { ?><a style="color:#999999;"><div class="icon-user" style="color:#999999;"></div>User Management</a><?php } ?></li>
                     <li class="divider"></li>
 					<li<?php if (strpos(strtolower('/' . $_SERVER['REQUEST_URI']), '/audit.php') > 0) { echo $navselected; } ?>><?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Auditors' || $_SESSION['usersett']['auditlog'] > 0) { ?><a href="<?php echo $executorlink; ?>/audit.php"><div class="icon-diary"></div>Audit Log</a><?php } else { ?><a style="color:#999999;"><div class="icon-diary" style="color:#999999;"></div>Audit Log</a><?php } ?></li>
 				</ul>
@@ -129,7 +129,7 @@ if (isset($_POST['stopservice']) || isset($_POST['deleteconfiguration'])) {
             <?php } ?>
 			<li class="place-right"><a href="javascript:confirmlogout()"><div class="icon-exit"></div>logout</a></li><li class="place-right"><a href="javascript:;" onclick="document.getElementById('changepasswordform').submit();" title="Change Password: <?php echo $_SESSION['username']; ?>"><div class="icon-key"></div><?php if (strlen(strtolower($_SESSION['username'])) > $usernamelen) { echo substr(strtolower($_SESSION['username']), 0, $usernamelen) . '&nbsp;[...]'; } else { echo strtolower($_SESSION['username']); } ?></a></li>
 		</ul>
-
+		
 	</div>
 </div>
 <?php if (count($badaut) > 22) { ?>
@@ -138,9 +138,10 @@ if (isset($_POST['stopservice']) || isset($_POST['deleteconfiguration'])) {
 if (isset($_GET['clearbadauthagent'])) {
 	foreach($badaut as $badautip)
 	if($badautip != '.' && $badautip != '..') {
-		unlink($_SERVER['DOCUMENT_ROOT'] . '\\badaut\\' . $badautip);
+		unlink($euryscoinstallpath . '\\badaut\\core\\' . $badautip);
 	}
 	header('location: ' . $_SERVER['PHP_SELF']);
+	exit;
 }
 ?>
 <br /><blockquote style="font-size:12px; background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;"><strong>warning!</strong> exceeded limit of 20 failed authentications... <a href="javascript:;" onClick="document.getElementById('badauthagent').submit();" style="font-size:12px; color:#FFFFFF;"><strong>click here</strong></a> to reset the counter and allow remote connections to the <strong>client</strong></blockquote>
@@ -149,18 +150,20 @@ if (isset($_GET['clearbadauthagent'])) {
 <?php } ?>
 <form id="badauthagent" name="badauthagent" method="get">
 	<input type="hidden" id="clearbadauthagent" name="clearbadauthagent" value="clear" />
+	<input type="hidden" id="<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_GET' . $sessiontoken), 15, 25); ?>" />
 </form>
 <?php } ?>
 <?php if ($serverstatus == 'run') { ?>
-<?php $badauts = scandir(str_replace('\\core', '\\server', $_SERVER['DOCUMENT_ROOT']) . '\\badaut\\'); if (count($badauts) > 22) { ?>
+<?php $badauts = scandir($euryscoinstallpath . '\\badaut\\server\\'); if (count($badauts) > 22) { ?>
 <?php if ($_SESSION['usertype'] == 'Administrators' ||  $_SESSION['usersett']['badaut'] > 1) { ?>
 <?php
 if (isset($_GET['clearbadauthserver'])) {
 	foreach($badauts as $badautsip)
 	if($badautsip != '.' && $badautsip != '..') {
-		unlink(str_replace('\\core', '\\server', $_SERVER['DOCUMENT_ROOT']) . '\\badaut\\' . $badautsip);
+		unlink($euryscoinstallpath . '\\badaut\\server\\' . $badautsip);
 	}
 	header('location: ' . $_SERVER['PHP_SELF']);
+	exit;
 }
 ?>
 <br /><blockquote style="font-size:12px; background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;"><strong>warning!</strong> exceeded limit of 20 failed authentications... <a href="javascript:;" onClick="document.getElementById('badauthserver').submit();" style="font-size:12px; color:#FFFFFF;"><strong>click here</strong></a> to reset the counter and allow remote connections to the <strong>server</strong></blockquote>
@@ -169,11 +172,13 @@ if (isset($_GET['clearbadauthserver'])) {
 <?php } ?>
 <form id="badauthserver" name="badauthserver" method="get">
 	<input type="hidden" id="clearbadauthserver" name="clearbadauthserver" value="clear" />
+	<input type="hidden" id="<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_GET' . $sessiontoken), 15, 25); ?>" />
 </form>
 <?php } ?>
 <?php } ?>
 </div>
 <form id="changepasswordform" name="changepasswordform" method="post">
 	<input type="hidden" id="changepassword" name="changepassword" value="" />
+	<input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" />
 </form>
 <?php if ($passwordexpired == 1) { echo '<p style="height:320px;">&nbsp;</p>'; } ?>

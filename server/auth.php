@@ -1,8 +1,8 @@
 <?php
 
-if ($_SERVER['SCRIPT_NAME'] == '/index.php') { echo '<euryscoServer>' . "\n"; }
+if ($_SERVER['SCRIPT_NAME'] == '/index.php' || $_SERVER['SCRIPT_NAME'] == '/connect.php') { echo '<euryscoServer>' . "\n"; }
 
-$badaut = scandir($_SERVER['DOCUMENT_ROOT'] . '\\badaut\\');
+$badaut = scandir($euryscoinstallpath . '\\badaut\\server\\');
 if (count($badaut) > 22 && $_SERVER['HTTP_X_FORWARDED_FOR'] != '127.0.0.1' && $_SERVER['HTTP_X_FORWARDED_FOR'] != '::1') {
 	if ($_SERVER['SCRIPT_NAME'] == '/index.php') {
 		echo '<connectionstatus>eurysco Server &#x25cf; ' . strtolower($envcomputername) . ' &#x25cf; Forbidden Authentication</connectionstatus>' . "\n";
@@ -15,8 +15,8 @@ $realm = '';
 $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
 $iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);
 
-if (file_exists('conf\\config_server.xml')) {
-	$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents('conf\\config_server.xml', true)))));
+if (file_exists($euryscoinstallpath . '\\conf\\config_server.xml')) {
+	$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($euryscoinstallpath . '\\conf\\config_server.xml', true)))));
 	$usersusername = $userxml->settings->username;
 	$usersusertype = $userxml->settings->usertype;
 	$userspassword = $userxml->settings->password;
@@ -26,7 +26,7 @@ if (file_exists('conf\\config_server.xml')) {
 if (empty($_SERVER['PHP_AUTH_DIGEST'])) {
 	header('HTTP/1.1 401 Unauthorized');
 	header('WWW-Authenticate: Digest realm="' . $realm . '",qop="auth",nonce="' . hash('whirlpool', uniqid()) . '",opaque="' . hash('sha512', $realm) . '"');
-	if ($_SERVER['SCRIPT_NAME'] == '/index.php') {
+	if ($_SERVER['SCRIPT_NAME'] == '/index.php' || $_SERVER['SCRIPT_NAME'] == '/connect.php') {
 		echo '<connectionstatus>eurysco Server &#x25cf; ' . strtolower($envcomputername) . ' &#x25cf; Authentication Required</connectionstatus>' . "\n";
 		echo '</euryscoServer>';
 	}
@@ -36,7 +36,7 @@ if (empty($_SERVER['PHP_AUTH_DIGEST'])) {
 if (!($data = http_digest_parse($_SERVER['PHP_AUTH_DIGEST'])) || !isset($users[$data['username']])) {
 	header('HTTP/1.1 401 Unauthorized');
 	header('WWW-Authenticate: Digest realm="' . $realm . '",qop="auth",nonce="' . hash('whirlpool', uniqid()) . '",opaque="' . hash('sha512', $realm) . '"');
-	if ($_SERVER['SCRIPT_NAME'] == '/index.php') {
+	if ($_SERVER['SCRIPT_NAME'] == '/index.php' || $_SERVER['SCRIPT_NAME'] == '/connect.php') {
 		echo '<connectionstatus>eurysco Server &#x25cf; ' . strtolower($envcomputername) . ' &#x25cf; Authentication Error</connectionstatus>' . "\n";
 		echo '</euryscoServer>';
 	}
@@ -52,7 +52,7 @@ $valid_response = md5($A1 . ':' . $data['nonce'] . ':' . $data['nc'] . ':' . $da
 if ($data['response'] != $valid_response) {
 	header('HTTP/1.1 401 Unauthorized');
 	header('WWW-Authenticate: Digest realm="' . $realm . '",qop="auth",nonce="' . hash('whirlpool', uniqid()) . '",opaque="' . hash('sha512', $realm) . '"');
-	if ($_SERVER['SCRIPT_NAME'] == '/index.php') {
+	if ($_SERVER['SCRIPT_NAME'] == '/index.php' || $_SERVER['SCRIPT_NAME'] == '/connect.php') {
 		echo '<connectionstatus>eurysco Server &#x25cf; ' . strtolower($envcomputername) . ' &#x25cf; Authentication Error</connectionstatus>' . "\n";
 		echo '</euryscoServer>';
 	}
@@ -76,20 +76,20 @@ function http_digest_parse($txt) {
 }
 
 function failBlk () {
-	$fp = fopen($_SERVER['DOCUMENT_ROOT'] . '\\badaut\\' . md5($_SERVER['HTTP_X_FORWARDED_FOR']) . '.txt', 'w');
+	$fp = fopen(str_replace('\\server', '', $_SERVER['DOCUMENT_ROOT']) . '\\badaut\\server\\' . md5($_SERVER['HTTP_X_FORWARDED_FOR']) . '.txt', 'w');
 	fwrite($fp, 'UTC ' . date('Y-m-d H:i:s', time()) . ' - IP: ' . $_SERVER['HTTP_X_FORWARDED_FOR'] . PHP_EOL);
 	fclose($fp);
 }
 
 $badautipdc = strtotime(date('Y-m-d H:i:s', time()));
-$badaut = scandir($_SERVER['DOCUMENT_ROOT'] . '\\badaut\\');				
+$badaut = scandir($euryscoinstallpath . '\\badaut\\server\\');				
 foreach($badaut as $badautip)
 if($badautip != '.' && $badautip != '..') {
-	if ((($badautipdc - (strtotime(date('Y-m-d H:i:s', filemtime($_SERVER['DOCUMENT_ROOT'] . '\\badaut\\' . $badautip))))) / 60 / 60) > 24) {
-		unlink($_SERVER['DOCUMENT_ROOT'] . '\\badaut\\' . $badautip);
+	if ((($badautipdc - (strtotime(date('Y-m-d H:i:s', filemtime($euryscoinstallpath . '\\badaut\\server\\' . $badautip))))) / 60 / 60) > 24) {
+		unlink($euryscoinstallpath . '\\badaut\\server\\' . $badautip);
 	}
 }
 
-if ($_SERVER['SCRIPT_NAME'] == '/index.php') { echo '<connectionstatus>eurysco Server &#x25cf; ' . strtolower($envcomputername) . ' &#x25cf; Connection Successful</connectionstatus>'; }
+if ($_SERVER['SCRIPT_NAME'] == '/index.php' || $_SERVER['SCRIPT_NAME'] == '/connect.php') { echo '<connectionstatus>eurysco Server &#x25cf; ' . strtolower($envcomputername) . ' &#x25cf; Connection Successful</connectionstatus>'; }
 
 ?>

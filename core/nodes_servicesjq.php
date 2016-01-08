@@ -28,7 +28,11 @@ if (isset($_GET['executorport'])) {
 }
 
 if (isset($_GET['phptimeout'])) {
-	set_time_limit($_GET['phptimeout']);
+	if (is_numeric($_GET['phptimeout'])) {
+		set_time_limit($_GET['phptimeout']);
+	} else {
+		set_time_limit(120);
+	}
 } else {
 	set_time_limit(120);
 }
@@ -38,8 +42,10 @@ $time = explode(" ", $time);
 $time = $time[1] + $time[0];
 $start = $time;
 
-include('/include/init.php');
+include(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_core.php');
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Operators' || $_SESSION['usertype'] == 'Users' || $_SESSION['usersett']['nodesservicecontrol'] > 0) {  } else { exit; }
+
+if (!isset($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)])) { exit; } else { if ($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)] != substr(md5('$_GET' . $sessiontoken), 15, 25)) { exit; } }
 
 if (isset($_GET['orderby'])) {
 	$orderby = $_GET['orderby'];
@@ -60,13 +66,21 @@ if (isset($_GET['cid'])) {
 }
 
 if (isset($_GET['message'])) {
-	$message = $_GET['message'];
+	if ($_GET['message'] != '') {
+		$message = '<blockquote style="font-size:12px; background-color:#0072C6; color:#FFFFFF; border-left-color:#324886;">' . str_replace('&lt;/strong&gt;', '</strong>', str_replace('&lt;strong&gt;', '<strong>', urldecode($_GET['message']))) . '</blockquote><br />';
+	} else {
+		$message = '';
+	}
 } else {
 	$message = '';
 }
 
 if (isset($_GET['page'])) {
-	$pgkey = $_GET['page'];
+	if (is_numeric($_GET['page'])) {
+		$pgkey = $_GET['page'];
+	} else {
+		$pgkey = 0;
+	}
 } else {
 	$pgkey = 0;
 }
@@ -85,17 +99,15 @@ if ($orderby == 'ExitCode') { $obyExitCode = ' color:#8063C8;'; } else { $obyExi
 
 $servicetable = '<table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped"><tr><td width="1%" style="font-size:12px; font-weight:bold;" align="center"></td><td width="6%" align="center"><a href="?orderby=ProcessId&node=' . $node . '&domain=' . $domain . '&computerip=' . $computerip . '&executorport=' . $executorport . '&filter=' . urlencode($filter) . '" style="font-size:12px; font-weight:bold;' . $obyProcessId . '" title="Ascending Order by PID">PID</a></td><td width="60%"><a href="?orderby=DisplayName&node=' . $node . '&domain=' . $domain . '&computerip=' . $computerip . '&executorport=' . $executorport . '&filter=' . urlencode($filter) . '" style="font-size:12px; font-weight:bold;' . $obyDisplayName . '" title="Ascending Order by Display Name">Display Name</a></td><td width="12%" align="center"><a href="?orderby=State&node=' . $node . '&domain=' . $domain . '&computerip=' . $computerip . '&executorport=' . $executorport . '&filter=' . urlencode($filter) . '" style="font-size:12px; font-weight:bold;' . $obyState . '" title="Ascending Order by State">State</a></td><td width="12%" align="center"><a href="?orderby=StartMode&node=' . $node . '&domain=' . $domain . '&computerip=' . $computerip . '&executorport=' . $executorport . '&filter=' . urlencode($filter) . '" style="font-size:12px; font-weight:bold; white-space:nowrap; table-layout:fixed; overflow:hidden;' . $obyStartMode . '" title="Ascending Order by Start Mode">Start Mode</a></td><td align="center"><a href="?orderby=ExitCode&node=' . $node . '&domain=' . $domain . '&computerip=' . $computerip . '&executorport=' . $executorport . '&filter=' . urlencode($filter) . '" style="font-size:12px; font-weight:bold; white-space:nowrap; table-layout:fixed; overflow:hidden;' . $obyExitCode . '" title="Ascending Order by Exit Code">Exit Code</a></td></tr>';
 
-$db = new SQLite3(str_replace('\\core', '\\sqlite', $_SERVER['DOCUMENT_ROOT']) . '\\euryscoServer');
+$db = new SQLite3($euryscoinstallpath . '\\sqlite\\euryscoServer');
 $db->busyTimeout(5000);
 $db->query('PRAGMA page_size = 2048; PRAGMA cache_size = 4000; PRAGMA temp_store = 2; PRAGMA journal_mode = OFF; PRAGMA synchronous = 0;');
 
 if ($cid != '') {
-	$dbaudit = new SQLite3(str_replace('\\core', '\\sqlite', $_SERVER['DOCUMENT_ROOT']) . '\\euryscoAudit');
+	$dbaudit = new SQLite3($euryscoinstallpath . '\\sqlite\\euryscoAudit');
 	$dbaudit->busyTimeout(30000);
 	$dbaudit->query('PRAGMA page_size = 2048; PRAGMA cache_size = 4000; PRAGMA temp_store = 2; PRAGMA journal_mode = OFF; PRAGMA synchronous = 0;');
-	$audittot = $dbaudit->querySingle('SELECT COUNT(id) FROM auditLog');
-	if ($audittot > 500) { $audittot = $audittot - 500; } else { $audittot = 0; }
-	$allaudit = $dbaudit->query('SELECT description, exitcode FROM auditLog WHERE cid = "' . $cid . '" LIMIT 500 OFFSET ' . $audittot);
+	$allaudit = $dbaudit->query('SELECT description, exitcode FROM auditLog WHERE cid = "' . $cid . '"');
 	while ($auditrow = $allaudit->fetchArray()) {
 		if ($auditrow['exitcode'] == 0) {
 			$message = '<blockquote style="font-size:12px; background-color:#603CBA; color:#FFFFFF; border-left-color:#482E8C;">' . urldecode($auditrow['description']) . '</blockquote><br />';
@@ -113,11 +125,11 @@ if ($cid != '') {
 $servicearray = array();
 $servicecounter = 0;
 
-$nodepath = str_replace('\\core', '\\nodes', $_SERVER['DOCUMENT_ROOT']) . '\\' . $node . '\\';
+$nodepath = $euryscoinstallpath . '\\nodes\\' . $node . '\\';
 
 $lastupdate = 'N/A';
 if (!is_null($db->querySingle('SELECT node FROM xmlServices WHERE node = "' . $node . '"')) || file_exists($nodepath . 'services.xml.gz')) {
-	if (file_exists($nodepath . 'services.xml.gz')) { $lastupdate = date('d/m/Y H:i:s', filemtime(str_replace('\\core', '\\nodes', $_SERVER['DOCUMENT_ROOT']) . '\\' . $node . '\\services.xml.gz')); }
+	if (file_exists($nodepath . 'services.xml.gz')) { $lastupdate = date('d/m/Y H:i:s', filemtime($euryscoinstallpath . '\\nodes\\' . $node . '\\services.xml.gz')); }
 	$xml = simplexml_load_string($db->querySingle('SELECT xml FROM xmlServices WHERE node = "' . $node . '"'));
 	if (!is_object($xml)) {
 		$fp = gzopen($nodepath . 'services.xml.gz', 'rb');

@@ -3,7 +3,9 @@
 if (!isset($_SERVER['HTTP_REFERER'])) { exit; }
 if (!strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/explorer.php') && !strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/registry.php') && !strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/tail.php') && !strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/7zip.php') && !strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/audit.php') && !strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/nodes_eventviewer.php') && !strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/nodes_inventory.php') && !strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/nodes_nagios.php') && !strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/nodes_netstat.php') && !strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/nodes_processes.php') && !strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/nodes_programs.php') && !strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/nodes_scheduler.php') && !strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/nodes_services.php') && !strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/nodes.php')) { exit; }
 
-include('/include/init.php');
+include(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_core.php');
+
+if (!isset($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)])) { exit; } else { if ($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)] != substr(md5('$_GET' . $sessiontoken), 15, 25)) { exit; } }
 
 if (isset($_SESSION['agentstatus'])) {
 	$agentstatus = $_SESSION['agentstatus'];

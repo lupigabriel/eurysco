@@ -33,13 +33,13 @@ if ($audit != '') {
 		}
 	}
 	if ($auditresponse == 'local') {
-		$fp = fopen($_SERVER['DOCUMENT_ROOT'] . '\\audit\\audit-' . date('Ym') . '_' . date('M-Y') . '.log', 'a');
+		$fp = fopen($euryscoinstallpath . '\\audit\\audit-' . date('Ym') . '_' . date('M-Y') . '.log', 'a');
 		fwrite($fp, $audit . "\r\n");
 		fclose($fp);
 		$auditsec = explode('     ', $audit);
 		if (isset($_SESSION['serverstatus'])) {
 			if ($_SESSION['serverstatus'] == 'run') {
-				$dbaudit = new SQLite3(str_replace('\\core', '\\sqlite', $_SERVER['DOCUMENT_ROOT']) . '\\euryscoAudit');
+				$dbaudit = new SQLite3($euryscoinstallpath . '\\sqlite\\euryscoAudit');
 				$dbaudit->busyTimeout(30000);
 				$dbaudit->query('PRAGMA page_size = 2048; PRAGMA cache_size = 4000; PRAGMA temp_store = 2; PRAGMA journal_mode = OFF; PRAGMA synchronous = 0;');
 				$dbaudit->query('INSERT INTO auditLog (date, user, node, type, description) VALUES ("' . trim($auditsec[0]) . '", "' . trim($auditsec[1]) . '", "' . trim($auditsec[2]) . '", "' . trim($auditsec[3]) . '", "' . urlencode(trim($auditsec[4])) . '")');
@@ -53,7 +53,7 @@ if ($audit != '') {
 
 
 foreach (get_defined_vars() as $key=>$val) {
-	if ($key != '_GET' && $key != '_POST' && $key != '_COOKIE' && $key != '_FILES' && $key != '_SERVER' && $key != '_SESSION' && $key != '_ENV' && $key != 'serverstatus' && $key != 'zipinfotop' && $key != 'zipoutput' && $key != 'zipinfobottom') {
+	if ($key != '_GET' && $key != '_POST' && $key != '_COOKIE' && $key != '_FILES' && $key != '_SERVER' && $key != '_SESSION' && $key != '_ENV' && $key != 'serverstatus' && $key != 'zipinfotop' && $key != 'zipoutput' && $key != 'zipinfobottom' && $key != 'lock') {
 		$$key = null;
 		unset($$key);
 	}

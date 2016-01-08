@@ -4,17 +4,41 @@ if (!isset($_SERVER['HTTP_REFERER'])) { exit; }
 if (!strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/index.php') && !strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'])) { exit; }
 
 if (isset($_GET['phptimeout'])) {
-	set_time_limit($_GET['phptimeout']);
+	if (is_numeric($_GET['phptimeout'])) {
+		set_time_limit($_GET['phptimeout']);
+	} else {
+		set_time_limit(120);
+	}
 } else {
 	set_time_limit(120);
+}
+
+include(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_core.php');
+
+if (!isset($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)])) { exit; } else { if ($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)] != substr(md5('$_GET' . $sessiontoken), 15, 25)) { exit; } }
+
+if (isset($_GET['manufacturer'])) {
+	$cs_manufacturer = $_GET['manufacturer'];
+} else {
+	$cs_manufacturer = '';
+}
+
+if (isset($_GET['model'])) {
+	$cs_model = $_GET['model'];
+} else {
+	$cs_model = '';
+}
+
+if (isset($_GET['domain'])) {
+	$cs_domain = $_GET['domain'];
+} else {
+	$cs_domain = '';
 }
 
 $time = microtime();
 $time = explode(" ", $time);
 $time = $time[1] + $time[0];
 $start = $time;
-
-include('/include/init.php');
 
 $systemi = '';
 
@@ -100,9 +124,9 @@ foreach($wmisclass as $obj) {
 	$firstsi = $firstsi . '<tr class="rowselect"><td width="30%" style="font-size:12px;">OS Service Pack:</td><td width="70%" style="font-size:12px;">' . $osservp . '</td></tr>';
 	if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Operators' || $_SESSION['usertype'] == 'Users' || $_SESSION['usersett']['systeminfo'] > 0) {
 	$firstsi = $firstsi . '<tr class="rowselect"><td width="30%" style="font-size:12px;">OS Serial Number:</td><td width="70%" style="font-size:12px;">' . $ossernm . '</td></tr>';
-	$firstsi = $firstsi . '<tr class="rowselect"><td width="30%" style="font-size:12px;">Manufacturer:</td><td width="70%" style="font-size:12px;">' . $_GET['manufacturer'] . '</td></tr>';
-	$firstsi = $firstsi . '<tr class="rowselect"><td width="30%" style="font-size:12px;">Model:</td><td width="70%" style="font-size:12px;">' . $_GET['model'] . '</td></tr>';
-	$firstsi = $firstsi . '<tr class="rowselect"><td width="30%" style="font-size:12px;">Domain:</td><td width="70%" style="font-size:12px;">' . $_GET['domain'] . '</td></tr>';
+	$firstsi = $firstsi . '<tr class="rowselect"><td width="30%" style="font-size:12px;">Manufacturer:</td><td width="70%" style="font-size:12px;">' . $cs_manufacturer . '</td></tr>';
+	$firstsi = $firstsi . '<tr class="rowselect"><td width="30%" style="font-size:12px;">Model:</td><td width="70%" style="font-size:12px;">' . $cs_model . '</td></tr>';
+	$firstsi = $firstsi . '<tr class="rowselect"><td width="30%" style="font-size:12px;">Domain:</td><td width="70%" style="font-size:12px;">' . $cs_domain . '</td></tr>';
 	$firstsi = $firstsi . '<tr class="rowselect"><td width="30%" style="font-size:12px;">Total Processes:</td><td width="70%" style="font-size:12px;">' . $ostotpr . '</td></tr>';
 	}
 	$firstsi = $firstsi . '<tr class="rowselect"><td width="30%" style="font-size:12px;">Local Date Time:</td><td width="70%" style="font-size:12px;">' . $oscurtm = substr($oscurtm, 6, 2) . '/' . substr($oscurtm, 4, 2) . '/' . substr($oscurtm, 0, 4) . ' ' . substr($oscurtm, 8, 2) . ':' . substr($oscurtm, 10, 2) . ':' . substr($oscurtm, 12, 2) . '</td></tr>';

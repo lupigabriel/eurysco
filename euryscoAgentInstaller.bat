@@ -8,6 +8,13 @@ ver.exe | find " 5."
 if %errorlevel% equ 0 set osarc=x86&set osold="_xp2k3"
 if %errorlevel% neq 0 set osold=""
 
+set clr=0
+if exist "%cd%\php_%osarc%%osold:~1,-1%" if not exist "%cd%\php" ren "%cd%\php_%osarc%%osold:~1,-1%" "php" & set clr=1
+if exist "%cd%\php_x64" rd "%cd%\php_x64" /s /q
+if exist "%cd%\php_x86" rd "%cd%\php_x86" /s /q
+if exist "%cd%\php_x86_xp2k3" rd "%cd%\php_x86_xp2k3" /s /q
+if %clr% equ 1 cscript.exe "euryscoclr.vbs"
+
 set servicename_last="eurysco"
 set servicename="euryscoAgent"
 set servicestart="auto"
@@ -38,12 +45,10 @@ echo $serverconnectionport_xml = '%serverport:~1,-1%';>>"%cd%\agent\conf\agent.i
 echo $serverconnectionpassword = %serverpassword:~1,-1%;>>"%cd%\agent\conf\agent.install.php"
 type "%cd%\agent\agent.install">>"%cd%\agent\conf\agent.install.php"
 type "%cd%\agent\agent.initbot">>"%cd%\agent\conf\agent.install.php"
-"%cd%\php_%osarc%%osold:~1,-1%\php.exe" -c "%cd%\php_%osarc%%osold:~1,-1%\php.ini" "%cd%\agent\conf\agent.install.php"
+"%cd%\php\php.exe" -c "%cd%\php\php.ini" "%cd%\agent\conf\agent.install.php"
 
-copy "%cd%\agent\conf\config_agent.xml" "%cd%\%relpath:~1,-1%\conf\config_agent.xml" /y
-copy "%cd%\%relpath:~1,-1%\conf\config_core.xml" "%cd%\agent\conf\config_core.xml" /y
-copy "%cd%\%relpath:~1,-1%\conf\config_executor.xml" "%cd%\agent\conf\config_executor.xml" /y
-copy "%cd%\%relpath:~1,-1%\conf\config_settings.xml" "%cd%\agent\conf\config_settings.xml" /y
+copy "%cd%\agent\conf\config_agent.xml" "%cd%\conf\config_agent.xml" /y
+del "%cd%\agent\conf\config_agent.xml" /f /q
 del "%cd%\agent\temp\agent.status" /f /q
 type "%cd%\agent\agent.inittop">"%cd%\agent\conf\agent.init.php"
 echo session_save_path('%cd%\agent\temp'); session_start(); $_SESSION['agentpath'] = '%cd%\agent'; include($_SESSION['agentpath'] . '\\' . 'agent.php'); session_write_close();>>"%cd%\agent\conf\agent.init.php"
@@ -55,13 +60,16 @@ sc.exe delete "%servicename_last:~1,-1%"
 reg.exe delete "HKLM\SYSTEM\CurrentControlSet\services\%servicename_last:~1,-1%" /f
 
 sc.exe create "%servicename:~1,-1%" start= "%servicestart:~1,-1%" binPath= "%cd%\euryscosrv.exe" obj= "%serviceuser:~1,-1%" DisplayName= "%servicedisplay:~1,-1%"
-reg.exe add "HKLM\SYSTEM\CurrentControlSet\services\%servicename:~1,-1%\Parameters" /v "Application" /t REG_SZ /d "\"%cd%\php_%osarc%%osold:~1,-1%\php_%phpexe:~1,-1%.exe\" -c \"%cd%\php_%osarc%%osold:~1,-1%\php.ini\" \"%cd%\agent\conf\agent.init.php\"" /f
-if %errorlevel% neq 0 cscript.exe "%cd%\euryscosrv.vbs" %servicename:~1,-1% "@%cd%\php_%osarc%%osold:~1,-1%\php_%phpexe:~1,-1%.exe@ -c @%cd%\php_%osarc%%osold:~1,-1%\php.ini@ @%cd%\agent\conf\agent.init.php@"
+reg.exe add "HKLM\SYSTEM\CurrentControlSet\services\%servicename:~1,-1%\Parameters" /v "Application" /t REG_SZ /d "\"%cd%\php\php_%phpexe:~1,-1%.exe\" -c \"%cd%\php\php.ini\" \"%cd%\agent\conf\agent.init.php\"" /f
+if %errorlevel% neq 0 cscript.exe "%cd%\euryscosrv.vbs" %servicename:~1,-1% "@%cd%\php\php_%phpexe:~1,-1%.exe@ -c @%cd%\php\php.ini@ @%cd%\agent\conf\agent.init.php@"
 
-if not exist "%cd%\php_%osarc%%osold:~1,-1%\php.ini" if exist "%cd%\php.default_%osarc%%osold:~1,-1%" copy "%cd%\php.default_%osarc%%osold:~1,-1%" "%cd%\php_%osarc%%osold:~1,-1%\php.ini" /y
-type "%cd%\php_%osarc%%osold:~1,-1%\php.ini" | find /i "error_log = " | find /i "logs\php_errors.log"
-if %errorlevel% neq 0 echo error_log = "%cd%\php_%osarc%%osold:~1,-1%\logs\php_errors.log">>"%cd%\php_%osarc%%osold:~1,-1%\php.ini"
-if not exist "%cd%\php_%osarc%%osold:~1,-1%\php_%phpexe:~1,-1%.exe" if exist "%cd%\php_%osarc%%osold:~1,-1%\php.exe" copy "%cd%\php_%osarc%%osold:~1,-1%\php.exe" "%cd%\php_%osarc%%osold:~1,-1%\php_%phpexe:~1,-1%.exe" /y
+if not exist "%cd%\php\php.ini" if exist "%cd%\php.default_%osarc%%osold:~1,-1%" copy "%cd%\php.default_%osarc%%osold:~1,-1%" "%cd%\php\php.ini" /y
+type "%cd%\php\php.ini" | find /i "error_log = " | find /i "logs\php_errors.log"
+if %errorlevel% neq 0 echo error_log = "%cd%\php\logs\php_errors.log">>"%cd%\php\php.ini"
+type "%cd%\php\php.ini" | find /i "upload_tmp_dir = " | find /i "temp"
+if %errorlevel% neq 0 echo upload_tmp_dir = "%cd%\php\temp">>"%cd%\php\php.ini"
+if not exist "%cd%\php\php_%phpexe:~1,-1%.exe" if exist "%cd%\php\php.exe" copy "%cd%\php\php.exe" "%cd%\php\php_%phpexe:~1,-1%.exe" /y
+
 net.exe start "%servicename:~1,-1%"
 
 exit 0

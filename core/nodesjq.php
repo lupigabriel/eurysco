@@ -4,7 +4,11 @@ if (!isset($_SERVER['HTTP_REFERER'])) { exit; }
 if (!strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/nodes.php')) { exit; }
 
 if (isset($_GET['phptimeout'])) {
-	set_time_limit($_GET['phptimeout']);
+	if (is_numeric($_GET['phptimeout'])) {
+		set_time_limit($_GET['phptimeout']);
+	} else {
+		set_time_limit(120);
+	}
 } else {
 	set_time_limit(120);
 }
@@ -14,10 +18,12 @@ $time = explode(" ", $time);
 $time = $time[1] + $time[0];
 $start = $time;
 
-include('/include/init.php');
+include(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_core.php');
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Operators' || $_SESSION['usertype'] == 'Users' || $_SESSION['usersett']['nodesstatus'] > 0) {  } else { exit; }
 
-$deploysettingspath = str_replace('\\core', '\\server\\settings\\' . md5($_SESSION['username']) . '.xml', $_SERVER['DOCUMENT_ROOT']);
+if (!isset($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)])) { exit; } else { if ($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)] != substr(md5('$_GET' . $sessiontoken), 15, 25)) { exit; } }
+
+$deploysettingspath = $euryscoinstallpath . '\\server\\settings\\' . md5($_SESSION['username']) . '.xml';
 if (file_exists($deploysettingspath)) {
 	$deploysettings = '<blockquote style="font-size:12px; background-color:#603CBA; color:#FFFFFF; border-left-color:#482E8C;"><strong>New Settings</strong> changed <strong>' . date ('d/m/Y H:i:s', filemtime($deploysettingspath)) . '</strong> are ready to deploy on the following nodes&nbsp;&nbsp;<a href=\'javascript:confirmdeploy("' . date ('d/m/Y H:i:s', filemtime($deploysettingspath)) . '");\' style="font-size:12px; color:#FFFFFF;" title="Confirm Deploy"><div class="icon-reply-2"></div></a>&nbsp;<a href=\'javascript:removedeploy("' . date ('d/m/Y H:i:s', filemtime($deploysettingspath)) . '");\' style="font-size:12px; color:#FFFFFF;" title="Cancel Deploy"><div class="icon-cancel"></div></a></blockquote><br />';
 } else {
@@ -50,11 +56,11 @@ if (!isset($_SESSION['csv_nodes'])) {
 	$_SESSION['csv_nodes'] = '';
 }
 
-$db = new SQLite3(str_replace('\\core', '\\sqlite', $_SERVER['DOCUMENT_ROOT']) . '\\euryscoServer');
+$db = new SQLite3($euryscoinstallpath . '\\sqlite\\euryscoServer');
 $db->busyTimeout(30000);
 $db->query('PRAGMA page_size = 2048; PRAGMA cache_size = 4000; PRAGMA temp_store = 2; PRAGMA journal_mode = OFF; PRAGMA synchronous = 0;');
 
-$dbaudit = new SQLite3(str_replace('\\core', '\\sqlite', $_SERVER['DOCUMENT_ROOT']) . '\\euryscoAudit');
+$dbaudit = new SQLite3($euryscoinstallpath . '\\sqlite\\euryscoAudit');
 $dbaudit->busyTimeout(30000);
 $dbaudit->query('PRAGMA page_size = 2048; PRAGMA cache_size = 4000; PRAGMA temp_store = 2; PRAGMA journal_mode = OFF; PRAGMA synchronous = 0;');
 
@@ -135,7 +141,11 @@ if ($find != '' && !strpos($findtype, '_metering') && $_SESSION['sessionfindres'
 }
 
 if (isset($_GET['page'])) {
-	$pgkey = $_GET['page'];
+	if (is_numeric($_GET['page'])) {
+		$pgkey = $_GET['page'];
+	} else {
+		$pgkey = 0;
+	}
 } else {
 	$pgkey = 0;
 }
@@ -178,7 +188,7 @@ $message = '';
 $lastcomtimeout = 150;
 
 if ($_SESSION['cmdnodescurr'] != $_SESSION['cmdnodeslast']) {
-	$exectimeout = 600000;
+	$exectimeout = $_SESSION['cltimeout'];
 	$lastcomtimeout = $exectimeout + 90000;
 	$_SESSION['cmdnodescid'] = md5(date('r') . $_SESSION['username'] . $_SESSION['cmdnodes']);
 	$cmdexecoutput = $_SESSION['cmdnodes'];
@@ -207,14 +217,13 @@ if ($_SESSION['cmdnodes'] != '' && $_SESSION['cmdnodescid'] != '') {
 		}
 	}
 }
-$cmdnodesex = ':&nbsp;' . $cmdnodesex;
-$cmdnodesok = ':&nbsp;' . $cmdnodesok;
-$cmdnodesko = ':&nbsp;' . $cmdnodesko;
+$cmdnodesex = '&nbsp;All&nbsp;Nodes:&nbsp;' . $cmdnodesex . '&nbsp;&nbsp;';
+$cmdnodesok = '&nbsp;Success:&nbsp;' . $cmdnodesok . '&nbsp;&nbsp;';
+$cmdnodesko = '&nbsp;Error:&nbsp;' . $cmdnodesko . '&nbsp;&nbsp;';
 $cmdfilter = $cmdnodeslex;
-if ($_SESSION['cmdfilter'] == 'all') { $cmdfilter_all = ' selected="selected"'; $cmdfilter = $cmdnodeslex; } else { $cmdfilter_all = ''; }
-if ($_SESSION['cmdfilter'] == 'success') { $cmdfilter_success = ' selected="selected"'; $cmdfilter = $cmdnodeslok; } else { $cmdfilter_success = ''; }
-if ($_SESSION['cmdfilter'] == 'error') { $cmdfilter_error = ' selected="selected"'; $cmdfilter = $cmdnodeslko; } else { $cmdfilter_error = ''; }
-$cmdresult = '<form id="cmdfilterform" name="cmdfilterform" method="get"><select id="cmdfilter" name="cmdfilter" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border:0px; background-color:transparent;" onchange="this.form.submit();"><option value="all"' . $cmdfilter_all . '>&nbsp;All&nbsp;Nodes' . $cmdnodesex . '&nbsp;&nbsp;</option><option value="success"' . $cmdfilter_success . '>&nbsp;Success' . $cmdnodesok . '&nbsp;&nbsp;</option><option value="error"' . $cmdfilter_error . '>&nbsp;Error' . $cmdnodesko . '&nbsp;&nbsp;</option></select>&nbsp;&nbsp;&nbsp;<i>' . $_SESSION['cmdnodes'] . '</i>&nbsp;&nbsp;<a href="?orderby=' . $orderby . '&cmdnodesclear" style="font-size:12px;" title="Clear Command"><div class="icon-cancel"></div></a><input type="hidden" id="orderby" name="orderby" value="' . $orderby . '" /><input type="hidden" id="find" name="find" value="' . $find . '" /><input type="hidden" id="findtype" name="findtype" value="' . $findtype . '" /></form>';
+if ($_SESSION['cmdfilter'] == 'all') { $cmdfilter = $cmdnodeslex; }
+if ($_SESSION['cmdfilter'] == 'success') { $cmdfilter = $cmdnodeslok; }
+if ($_SESSION['cmdfilter'] == 'error') { $cmdfilter = $cmdnodeslko; }
 
 $checkclearnode = 0;
 $checkfindincr = 0;
@@ -226,7 +235,7 @@ if (($_SESSION['sessionfindoffs'] == 0 && $_SESSION['sessionfindtotn'] == 0) || 
 	$allnodes = $db->query('SELECT * FROM nodesStatus' . $findsql);
 
 	while ($noderow = $allnodes->fetchArray()) {
-		$pathname = str_replace('\\core', '\\nodes', $_SERVER['DOCUMENT_ROOT']) . '\\' . $noderow['node'];
+		$pathname = $euryscoinstallpath . '\\nodes\\' . $noderow['node'];
 		$datarow = strtolower('<agentversion>' . $noderow['agentversion'] . '</agentversion><refreshrate>' . $noderow['refreshrate'] . '</refreshrate><computername>' . $noderow['computername'] . '</computername><coreport>' . $noderow['coreport'] . '</coreport><executorport>' . $noderow['executorport'] . '</executorport><lastcom>' . $noderow['lastcom'] . '</lastcom><computerip>' . $noderow['computerip'] . '</computerip><cpuusage>' . $noderow['cpuusage'] . '</cpuusage><cpumanufacturer>' . $noderow['cpumanufacturer'] . '</cpumanufacturer><cpumodel>' . $noderow['cpumodel'] . '</cpumodel><cpucurrentclock>' . $noderow['cpucurrentclock'] . '</cpucurrentclock><cpumaxclock>' . $noderow['cpumaxclock'] . '</cpumaxclock><cpuarchitecture>' . $noderow['cpuarchitecture'] . '</cpuarchitecture><cpucores>' . $noderow['cpucores'] . '</cpucores><cputhreads>' . $noderow['cputhreads'] . '</cputhreads><cpusockettype>' . $noderow['cpusockettype'] . '</cpusockettype><osname>' . $noderow['osname'] . '</osname><osversion>' . $noderow['osversion'] . '</osversion><osservicepack>' . $noderow['osservicepack'] . '</osservicepack><osserialnumber>' . $noderow['osserialnumber'] . '</osserialnumber><manufacturer>' . $noderow['manufacturer'] . '</manufacturer><model>' . $noderow['model'] . '</model><domain>' . $noderow['domain'] . '</domain><totalprocesses>' . $noderow['totalprocesses'] . '</totalprocesses><localdatetime>' . $noderow['localdatetime'] . '</localdatetime><lastbootuptime>' . $noderow['lastbootuptime'] . '</lastbootuptime><uptime>' . $noderow['uptime'] . '</uptime><memoryusage>' . $noderow['memoryusage'] . '</memoryusage><totalmemory>' . $noderow['totalmemory'] . '</totalmemory><usedmemory>' . $noderow['usedmemory'] . '</usedmemory><freememory>' . $noderow['freememory'] . '</freememory><sysdiskuspc>' . $noderow['sysdiskuspc'] . '</sysdiskuspc><sysdiskfree>' . $noderow['sysdiskfree'] . '</sysdiskfree><sysdisksize>' . $noderow['sysdisksize'] . '</sysdisksize><sysdiskused>' . $noderow['sysdiskused'] . '</sysdiskused><sysdisktype>' . $noderow['sysdisktype'] . '</sysdisktype><services_total>' . $noderow['services_total'] . '</services_total><services_running>' . $noderow['services_running'] . '</services_running><services_error>' . $noderow['services_error'] . '</services_error><scheduler_total>' . $noderow['scheduler_total'] . '</scheduler_total><scheduler_error>' . $noderow['scheduler_error'] . '</scheduler_error><events_warning>' . $noderow['events_warning'] . '</events_warning><events_error>' . $noderow['events_error'] . '</events_error><nagios_status>' . $noderow['nagios_status'] . '</nagios_status><nagiostotalcount>' . $noderow['nagiostotalcount'] . '</nagiostotalcount><nagiosnormacount>' . $noderow['nagiosnormacount'] . '</nagiosnormacount><nagioswarnicount>' . $noderow['nagioswarnicount'] . '</nagioswarnicount><nagioscriticount>' . $noderow['nagioscriticount'] . '</nagioscriticount><nagiosunknocount>' . $noderow['nagiosunknocount'] . '</nagiosunknocount><netstatestcount>' . $noderow['netstatestcount'] . '</netstatestcount><netstatliscount>' . $noderow['netstatliscount'] . '</netstatliscount><netstattimcount>' . $noderow['netstattimcount'] . '</netstattimcount><netstatclocount>' . $noderow['netstatclocount'] . '</netstatclocount><netstat_status>' . $noderow['netstat_status'] . '</netstat_status><inventory_status>' . $noderow['inventory_status'] . '</inventory_status><programs_status>' . $noderow['programs_status'] . '</programs_status>');
 		$prefilter = $_SESSION['usersett']['nodesstatusf'];
 		$checkprefilter = 1;
@@ -248,7 +257,7 @@ if (($_SESSION['sessionfindoffs'] == 0 && $_SESSION['sessionfindtotn'] == 0) || 
 			$_SESSION['nodelist'] = $_SESSION['nodelist'] . '#' . $noderow['computername'] . '#';
 			$checkfind = 0;
 			$resultsoutarr = '';
-			if ($findtype != '' && !strpos($findtype, '_metering') && $_SESSION['sessionfindres'] == '') {
+			if ($findtype != '' && !strpos($findtype, '_metering') && $_SESSION['sessionfindres'] == '' && array_key_exists ('xml', $noderow)) {
 				$readft = strtolower(urldecode($noderow['xml']));
 				if (substr($find, 0, 1) != '-') {
 					if (preg_match_all('/' . str_replace('\\', '.', str_replace('/', '.', strtolower($find))) . '/', strtolower($readft), $resultsoutarr, PREG_PATTERN_ORDER) || strpos(strtolower($readft), strtolower($find)) > -1) {
@@ -298,8 +307,8 @@ if (($_SESSION['sessionfindoffs'] == 0 && $_SESSION['sessionfindtotn'] == 0) || 
 				}
 			}
 			if ($find != '' && $findtype != '' && !strpos($findtype, '_metering') && $_SESSION['sessionfindres'] == '') { $_SESSION['sessionfindresnodes'] = $_SESSION['sessionfindresnodes'] . '#' . $noderow['computername'] . '#'; }
-			if ($_SESSION['cmdnodescurr'] != $_SESSION['cmdnodeslast'] && ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['nodesstatus'] > 2)) {
-				$mcrykeycmd = pack('H*', hash('sha256', md5(strtolower($noderow['node']))));
+			if ($_SESSION['cmdnodescurr'] != $_SESSION['cmdnodeslast'] && file_exists($euryscoinstallpath . '\\nodes\\' . strtolower($noderow['node']) . '\\agent.key') && ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['nodesstatus'] > 2)) {
+				$mcrykeycmd = pack('H*', hash('sha256', fgets(fopen($euryscoinstallpath . '\\nodes\\' . strtolower($noderow['node']) . '\\agent.key', 'r'))));
 				$xml = '<exec>' . "\n";
 				$xml = $xml . '	<auditok>' . base64_encode(base64_encode(base64_encode(base64_encode(base64_encode(base64_encode('     ' . $_SESSION['username'] . '     ' . $noderow['computername'] . '     nodes control     command "' . $cmdexecoutput . '" executed (command sent from server "' . $envcomputername . '")')))))) . '</auditok>' . "\n";
 				$xml = $xml . '	<auditko>' . base64_encode(base64_encode(base64_encode(base64_encode(base64_encode(base64_encode('     ' . $_SESSION['username'] . '     ' . $noderow['computername'] . '     nodes control     command "' . $cmdexecoutput . '" not executed (command sent from server "' . $envcomputername . '")')))))) . '</auditko>' . "\n";
@@ -311,12 +320,12 @@ if (($_SESSION['sessionfindoffs'] == 0 && $_SESSION['sessionfindtotn'] == 0) || 
 				$fp = fopen($pathname . '\\' . date('YmdHis') . md5($cmdexecoutput . 'nodes') . '.exec', 'w');
 				fwrite($fp, $xml);
 				fclose($fp);
-				$fp = fopen($pathname . '\\' . 'exec.on', 'w');
+				$fp = fopen($pathname . '\\exec.on', 'w');
 				fclose($fp);
 				$cmdnodeslist = $cmdnodeslist . $noderow['node'] . ' ';
 			}
-			if (isset($_SESSION['agentrefresh']) && ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Operators' || $_SESSION['usersett']['nodesstatus'] > 1)) {
-				$mcrykeycmd = pack('H*', hash('sha256', md5(strtolower($noderow['node']))));
+			if (isset($_SESSION['agentrefresh']) && file_exists($euryscoinstallpath . '\\nodes\\' . strtolower($noderow['node']) . '\\agent.key') && ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Operators' || $_SESSION['usersett']['nodesstatus'] > 1)) {
+				$mcrykeycmd = pack('H*', hash('sha256', fgets(fopen($euryscoinstallpath . '\\nodes\\' . strtolower($noderow['node']) . '\\agent.key', 'r'))));
 				$cid = '';
 				$exectimeout = 10000;
 				$agentrefreshexecoutput = 'taskkill.exe /f /im "eurysco.agent.exec.timeout.exe" /t & taskkill.exe /f /im "php_eurysco_core.exe" /t & taskkill.exe /f /im "httpd_eurysco_core.exe" /t & taskkill.exe /f /im "php_eurysco_executor.exe" /t & taskkill.exe /f /im "httpd_eurysco_executor.exe" /t & sc.exe stop "euryscoAgent" &  sc.exe stop "euryscoCore" &  sc.exe stop "euryscoCoreSSL" &  sc.exe stop "euryscoExecutor" &  sc.exe stop "euryscoExecutorSSL" &  sc.exe start "euryscoAgent" &  sc.exe start "euryscoCore" &  sc.exe start "euryscoCoreSSL" &  sc.exe start "euryscoExecutor" &  sc.exe start "euryscoExecutorSSL"';
@@ -331,7 +340,7 @@ if (($_SESSION['sessionfindoffs'] == 0 && $_SESSION['sessionfindtotn'] == 0) || 
 				$fp = fopen($pathname . '\\' . date('YmdHis') . md5(strtolower($_SESSION['agentrefresh']) . 'agent') . '.exec', 'w');
 				fwrite($fp, $xml);
 				fclose($fp);
-				$fp = fopen($pathname . '\\' . 'exec.on', 'w');
+				$fp = fopen($pathname . '\\exec.on', 'w');
 				fclose($fp);
 			}
 			if ((strtotime(date('Y-m-d H:i:s')) - strtotime($noderow['lastcom'])) < $lastcomtimeout) {
@@ -599,7 +608,7 @@ if ($orderby == 'computerip') { $obycomputerip = ' color:#8063C8;'; } else { $ob
 if ($orderby == 'matches') { $obymatches = ' color:#8063C8;'; } else { $obymatches = ''; }
 if ($orderby == 'results') { $obyresults = ' color:#8063C8;'; } else { $obyresults = ''; }
 
-if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Operators' || $_SESSION['usersett']['nodesstatus'] > 1) { $resetallnodes = '<form id="agentrefreshform" name="agentrefreshform" method="post"><a href="javascript:resetallagent();" title="Restart Current Agents" style="font-size:13px; font-weight:bold; white-space:nowrap; table-layout:fixed; overflow:hidden; color:#8063C8;">&nbsp;<div class="icon-loop"></div></a><input type="hidden" id="agentrefresh" name="agentrefresh" value="" /></form>'; } else { $resetallnodes = ''; }
+if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Operators' || $_SESSION['usersett']['nodesstatus'] > 1) { $resetallnodes = '<a href="javascript:resetallagent();" title="Restart Current Agents" style="font-size:13px; font-weight:bold; white-space:nowrap; table-layout:fixed; overflow:hidden; color:#8063C8;">&nbsp;<div class="icon-loop"></div></a>'; } else { $resetallnodes = ''; }
 if ($results == 0) {
 	$nodetable = '<table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped"><tr><td width="5%" style="font-size:12px;" align="center">' . $resetallnodes . '</td><td><a href="?orderby=computername&find=' . urlencode($find) . '&findtype=' . $findtype . '&results=' . $results . '" style="font-size:12px; font-weight:bold; white-space:nowrap; table-layout:fixed; overflow:hidden;' . $obycomputername . '" title="Ascending Order by Name">Name</a></td><td width="5%" align="center"><a href="?orderby=cpuusage&find=' . urlencode($find) . '&findtype=' . $findtype . '&results=' . $results . '" style="font-size:12px; font-weight:bold; white-space:nowrap; table-layout:fixed; overflow:hidden;' . $obycpuusage . '" title="Descending Order by CPU Usage">CPU</a></td><td width="5%" align="center"><a href="?orderby=memoryusage&find=' . urlencode($find) . '&findtype=' . $findtype . '&results=' . $results . '" style="font-size:12px; font-weight:bold; white-space:nowrap; table-layout:fixed; overflow:hidden;' . $obymemoryusage . '" title="Descending Order by RAM Usage">RAM</a></td><td width="5%" align="right"><a href="?orderby=sysdiskuspc&find=' . urlencode($find) . '&findtype=' . $findtype . '&results=' . $results . '" style="font-size:12px; font-weight:bold; white-space:nowrap; table-layout:fixed; overflow:hidden;' . $obysysdiskuspc . '" title="Descending Order by System Disk">&nbsp;<div class="icon-pie"></div></a></td><td width="5%" align="center"><a href="?orderby=totalprocesses&find=' . urlencode($find) . '&findtype=' . $findtype . '&results=' . $results . '" style="font-size:12px; font-weight:bold; white-space:nowrap; table-layout:fixed; overflow:hidden;' . $obytotalprocesses . '" title="Descending Order by Processes">&nbsp;<div class="icon-bars"></div></a></td><td width="5%" align="center"><a href="?orderby=services_running&find=' . urlencode($find) . '&findtype=' . $findtype . '&results=' . $results . '" style="font-size:12px; font-weight:bold; white-space:nowrap; table-layout:fixed; overflow:hidden;' . $obyservices_running . '" title="Descending Order by Services">&nbsp;<div class="icon-cog"></div></a></td><td width="5%" align="center"><a href="?orderby=scheduler_total&find=' . urlencode($find) . '&findtype=' . $findtype . '&results=' . $results . '" style="font-size:12px; font-weight:bold; white-space:nowrap; table-layout:fixed; overflow:hidden;' . $obyscheduler_total . '" title="Descending Order by Scheduler">&nbsp;<div class="icon-calendar"></div></a></td><td width="5%" align="center"><a href="?orderby=events_error&find=' . urlencode($find) . '&findtype=' . $findtype . '&results=' . $results . '" style="font-size:12px; font-weight:bold; white-space:nowrap; table-layout:fixed; overflow:hidden;' . $obyevents_error . '" title="Descending Order by Events">&nbsp;<div class="icon-book"></div></a></td><td width="10%" align="center"><a href="?orderby=uptime&find=' . urlencode($find) . '&findtype=' . $findtype . '&results=' . $results . '" style="font-size:12px; font-weight:bold; white-space:nowrap; table-layout:fixed; overflow:hidden;' . $obyuptime . '" title="Descending Order by Uptime">Uptime</a></td><td align="center" width="10%"><a href="?orderby=computerip&find=' . urlencode($find) . '&findtype=' . $findtype . '&results=' . $results . '" style="font-size:12px; font-weight:bold; white-space:nowrap; table-layout:fixed; overflow:hidden;' . $obycomputerip . '" title="Ascending Order by IP Adress">IP Adress</a></td></tr>';
 	$noresultc = 11;
@@ -653,7 +662,7 @@ $finish = $time;
 $totaltime = number_format(($finish - $start), 3, ',', '.') . ' sec';
 if ($checkfindincr == 1 && number_format(($finish - $start), 0, ',', '.') < number_format(($nodesstatusrrsetting / 4), 0, ',', '.')) { $_SESSION['sessionfindincr'] = $_SESSION['sessionfindincr'] * 2; }
 
-echo json_encode(array('nodetable'=>utf8_encode($nodetable),'totalelement'=>$totalelement,'totaltime'=>$totaltime,'deploysettings'=>$deploysettings,'csvexport'=>$csvexport,'filterprogress'=>$filterprogress,'cmdresult'=>$cmdresult));
+echo json_encode(array('nodetable'=>utf8_encode($nodetable),'totalelement'=>$totalelement,'totaltime'=>$totaltime,'deploysettings'=>$deploysettings,'csvexport'=>$csvexport,'filterprogress'=>$filterprogress,'cmdnodesex'=>$cmdnodesex,'cmdnodesok'=>$cmdnodesok,'cmdnodesko'=>$cmdnodesko));
 
 include('/auditlog.php');
 

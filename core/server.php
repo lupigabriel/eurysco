@@ -162,7 +162,7 @@ foreach($wmios as $os) {
 							}
 						}
 						
-						if (isset($_POST['submitform']) && (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'])) > 0) {
+						if (isset($_POST['submitform']) && strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']) > 0 && isset($_POST[substr(md5('$_POST' . $_SESSION['tokenl']), 5, 15)])) {
 							$serverservicename_last = '';
 							if (isset($xmlserver) == 1) { $serverservicename_last = $xmlserver->settings->serverservicename; }
 							if (isset($_POST['startservice'])) {
@@ -196,12 +196,12 @@ foreach($wmios as $os) {
 								exec('net.exe stop ' . $serverservicename_last, $errorarray, $errorlevel);
 								if ($errorlevel == 0 || $errorlevel == 2) { exec('sc.exe delete ' . $serverservicename_last, $errorarray, $errorlevel); }
 								if ($errorlevel == 0 && $errorlevelssl == 0) {
-									@unlink($_SERVER['DOCUMENT_ROOT'] . '\\' . $config_server);
-									@unlink(str_replace('\\core', '\\cert\\eurysco_server.crt', $_SERVER['DOCUMENT_ROOT']));
-									@unlink(str_replace('\\core', '\\cert\\eurysco_server.key', $_SERVER['DOCUMENT_ROOT']));
-									@unlink(str_replace('\\core', '\\cert\\eurysco_server.csr', $_SERVER['DOCUMENT_ROOT']));
-									@unlink(str_replace('\\core', '\\cert\\eurysco_server.req', $_SERVER['DOCUMENT_ROOT']));
-									@unlink(str_replace('\\core', '\\sqlite\\euryscoServer', $_SERVER['DOCUMENT_ROOT']));
+									@unlink($config_server);
+									@unlink($euryscoinstallpath . '\\cert\\eurysco_server.crt');
+									@unlink($euryscoinstallpath . '\\cert\\eurysco_server.key');
+									@unlink($euryscoinstallpath . '\\cert\\eurysco_server.csr');
+									@unlink($euryscoinstallpath . '\\cert\\eurysco_server.req');
+									@unlink($euryscoinstallpath . '\\sqlite\\euryscoServer');
 								}
 								session_start();
 								if ($errorlevel == 0 && $errorlevelssl == 0) {
@@ -213,10 +213,10 @@ foreach($wmios as $os) {
 							if (isset($_POST['editcreateservice']) && !isset($_POST['deleteconfiguration'])) {
 								if (isset($_POST['servertrustedcertificate'])) {
 									if (!preg_match_all('/eurysco .* SSL Trusted Certificate/', $_POST['servertrustedcertificate'])) {
-										$fp = @fopen(str_replace('\\core', '\\cert\\eurysco_server.crt', $_SERVER['DOCUMENT_ROOT']), 'w');
+										$fp = @fopen($euryscoinstallpath . '\\cert\\eurysco_server.crt', 'w');
 										@fwrite($fp, $_POST['servertrustedcertificate']);
 										@fclose($fp);
-										@unlink(str_replace('\\core', '\\cert\\eurysco_server.csr', $_SERVER['DOCUMENT_ROOT']));
+										@unlink($euryscoinstallpath . '\\cert\\eurysco_server.csr');
 									}
 								}
 								if (is_null($serverservicename_last) || $serverservicename_last == '') { $serverservicename_last = 'eurysco_NULL_'; }
@@ -229,7 +229,7 @@ foreach($wmios as $os) {
 								fwrite($writexml, base64_encode(base64_encode(base64_encode($xml))));
 								fclose($writexml);
 								session_write_close();
-								exec('set sslprotocol=' . $sslprotocolversion_xml . ' & "' . str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\euryscosrv.bat" "' . $serverservicename_last . '" "' . $serverservicename_xml . '" "' . $serverservicestartuptype_xml . '" "' . $serverservicelogonas_xml . '" "' . $serverservicedisplayname_xml . '" "' . $serverlisteningport_xml . '" "' . $serverphpport_xml . '" "eurysco_server" "server"', $errorarray, $errorlevel);
+								exec('set sslprotocol=' . $sslprotocolversion_xml . ' & "' . $euryscoinstallpath . '\\euryscosrv.bat" "' . $serverservicename_last . '" "' . $serverservicename_xml . '" "' . $serverservicestartuptype_xml . '" "' . $serverservicelogonas_xml . '" "' . $serverservicedisplayname_xml . '" "' . $serverlisteningport_xml . '" "' . $serverphpport_xml . '" "eurysco_server" "server"', $errorarray, $errorlevel);
 								session_start();
 								if ($errorlevel == 0) {
 			                    	$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     server config     eurysco server configuration edited';
@@ -237,13 +237,14 @@ foreach($wmios as $os) {
 									$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     server config     eurysco server configuration not edited';
 								}
 							}
-							header('location: https://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
+							header('location: ' . $_SERVER['PHP_SELF']);
+							exit;
 						}
 						
 						?>
 
                         <?php $span = '6'; ?>
-						<?php include('/include/server_status_' . $serverstatus . '.php'); ?>
+						<?php include($euryscoinstallpath . '\\include\\server_status_' . $serverstatus . '.php'); ?>
                         <p>&nbsp;</p>
                     	<form method="post">
 						<div class="input-control text">
@@ -280,20 +281,20 @@ foreach($wmios as $os) {
 							<button class="btn-clear"></button>
 							<textarea wrap="off" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:12px; height:100px; font-weight:normal;" disabled="disabled"><?php
 							
-							if (file_exists(str_replace('\\core', '\\cert\\eurysco_server.csr', $_SERVER['DOCUMENT_ROOT']))) {
+							if (file_exists($euryscoinstallpath . '\\cert\\eurysco_server.csr')) {
 								echo 'eurysco Server SSL Self-Signed Certificate Information' . "\n\n";
 							} else {
 								echo 'eurysco Server SSL Trusted Certificate Information' . "\n\n";
 							}
 							
-							if (file_exists(str_replace('\\core', '\\cert\\eurysco_server.crt', $_SERVER['DOCUMENT_ROOT']))) {
+							if (file_exists($euryscoinstallpath . '\\cert\\eurysco_server.crt')) {
 								
-								$data = openssl_x509_parse(file_get_contents(str_replace('\\core', '\\cert\\eurysco_server.crt', $_SERVER['DOCUMENT_ROOT'])));
+								$data = openssl_x509_parse(file_get_contents($euryscoinstallpath . '\\cert\\eurysco_server.crt'));
 
 								$validFrom = date('d/m/Y H:i:s', $data['validFrom_time_t']);
 								$validTo = date('d/m/Y H:i:s', $data['validTo_time_t']);
 								
-								$fp = fopen(str_replace('\\core', '\\cert\\eurysco_server.crt', $_SERVER['DOCUMENT_ROOT']), 'r'); 
+								$fp = fopen($euryscoinstallpath . '\\cert\\eurysco_server.crt', 'r'); 
 								$cert = fread($fp, 8192); 
 								fclose($fp); 
 
@@ -312,7 +313,7 @@ foreach($wmios as $os) {
 							
 							?></textarea>
 						</div>
-						<?php $name = str_replace('\\core', '\\cert\\eurysco_server.csr', $_SERVER['DOCUMENT_ROOT']); if (file_exists($name) && is_readable($name)) { ?>
+						<?php $name = $euryscoinstallpath . '\\cert\\eurysco_server.csr'; if (file_exists($name) && is_readable($name)) { ?>
 						<div class="input-control text">
                         	<h3>Server SSL Certificate Request:</h3>
 							<textarea wrap="off" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:10px; height:100px; font-weight:normal;" readonly="readonly"><?php
@@ -341,7 +342,7 @@ eurysco Server SSL Trusted Certificate ( Base 64 Encoded )
 						<div class="input-control text">
                         	<h3>Server SSL Trusted Certificate:</h3>
 							<textarea wrap="off" style="width:100%; font-family:'Lucida Console', Monaco, monospace; font-size:10px; height:100px; font-weight:normal;" disabled="disabled"><?php
-								$name = str_replace('\\core', '\\cert\\eurysco_server.crt', $_SERVER['DOCUMENT_ROOT']);
+								$name = $euryscoinstallpath . '\\cert\\eurysco_server.crt';
 								$csroutput = 'Trusted Certificate Not Found...';
 								if (file_exists($name) && is_readable($name)) {
 									$filearr = file($name);
@@ -370,7 +371,7 @@ eurysco Server SSL Trusted Certificate ( Base 64 Encoded )
 							<input type="text" value="change password is allowed only for local connection" maxlength="30" disabled="disabled" />
 							<button class="btn-clear"></button>
 							<?php } else { ?>
-							<input type="password" id="serverpassword" name="serverpassword" placeholder="<?php echo $serverpassword_ph; ?>" value="<?php echo $serverpassword; ?>" maxlength="30" />
+							<input type="password" autocomplete="off" id="serverpassword" name="serverpassword" placeholder="<?php echo $serverpassword_ph; ?>" value="<?php echo $serverpassword; ?>" maxlength="30" />
 							<button class="btn-clear"></button>
 							<?php } ?>
 						</div>
@@ -384,7 +385,8 @@ eurysco Server SSL Trusted Certificate ( Base 64 Encoded )
 	                        <input type="submit" id="editcreateservice" name="editcreateservice" value="<?php if ($serverstatus != 'cfg') { echo 'Edit Server'; } else { echo 'Create Server'; } ?>" style="background-color:#636363;" />
                             <?php if ($serverstatus == 'run') { echo '<input type="submit" id="stopservice" name="stopservice" class="bg-color-red" value="Stop Server Service"/>'; } ?>
                             <?php if ($serverstatus == 'nrn') { echo '<input type="submit" id="startservice" name="startservice" class="bg-color-purple" value="Start Server Service"/>'; } ?>
-                        </form>
+							<input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" />
+						</form>
 					</div>
 				</div>
 			</div>

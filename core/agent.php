@@ -154,12 +154,12 @@
 							}
 						}
 						
-						if (isset($_POST['submitform']) && (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'])) > 0) {
+						if (isset($_POST['submitform']) && strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']) > 0 && isset($_POST[substr(md5('$_POST' . $_SESSION['tokenl']), 5, 15)])) {
 							$agentservicename_last = '';
 							if (isset($xmlagent) == 1) { $agentservicename_last = $xmlagent->settings->agentservicename; }
 							if (isset($_POST['startservice'])) {
 								session_write_close();
-								$agentstatusfile = str_replace('\\core', '\\agent\\temp\\agent.status', $_SERVER['DOCUMENT_ROOT']);
+								$agentstatusfile = $euryscoinstallpath . '\\agent\\temp\\agent.status';
 								if (file_exists($agentstatusfile)) @unlink($agentstatusfile);
 								exec('net.exe start ' . $agentservicename_last, $errorarray, $errorlevel);
 								session_start();
@@ -179,7 +179,7 @@
 								} else {
 									$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     agent config     eurysco agent not stopped';
 								}
-								$agentstatusfile = str_replace('\\core', '\\agent\\temp\\agent.status', $_SERVER['DOCUMENT_ROOT']);
+								$agentstatusfile = $euryscoinstallpath . '\\agent\\temp\\agent.status';
 								if (file_exists($agentstatusfile)) @unlink($agentstatusfile);
 							}
 							if (isset($_POST['deleteconfiguration']) && !isset($_POST['stopservice']) && !isset($_POST['startservice'])) {
@@ -187,15 +187,17 @@
 								exec('taskkill.exe /f /im "php_eurysco_agent.exe" /im "eurysco.agent.status.check.exe" /im "eurysco.agent.exec.timeout.exe" /t', $errorarray, $errorlevel);
 								exec('net.exe stop ' . $agentservicename_last, $errorarray, $errorlevel);
 								if ($errorlevel == 0 || $errorlevel == 2) { exec('sc.exe delete ' . $agentservicename_last, $errorarray, $errorlevel); }
-								if ($errorlevel == 0) { @unlink($_SERVER['DOCUMENT_ROOT'] . '\\' . $config_agentsrv); }
+								if ($errorlevel == 0) { @unlink($config_agentsrv); }
 								session_start();
 								if ($errorlevel == 0) {
 			                    	$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     agent config     eurysco agent configuration deleted';
 								} else {
 									$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     agent config     eurysco agent configuration not deleted';
 								}
-								$agentstatusfile = str_replace('\\core', '\\agent\\temp\\agent.status', $_SERVER['DOCUMENT_ROOT']);
+								$agentstatusfile = $euryscoinstallpath . '\\agent\\temp\\agent.status';
 								if (file_exists($agentstatusfile)) @unlink($agentstatusfile);
+								$agentkey = $euryscoinstallpath . '\\conf\\agent.key';
+								if (file_exists($agentkey)) @unlink($agentkey);
 							}
 							if (isset($_POST['editcreateservice']) && !isset($_POST['deleteconfiguration'])) {
 								if (is_null($agentservicename_last) || $agentservicename_last == '') { $agentservicename_last = 'eurysco_NULL_'; }
@@ -205,23 +207,26 @@
 								fwrite($writexml, base64_encode(base64_encode(base64_encode($xml))));
 								fclose($writexml);
 								session_write_close();
-								exec('set sslprotocol=TLSv1.2 & "' . str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\euryscosrv.bat" "' . $agentservicename_last . '" "' . $agentservicename_xml . '" "' . $agentservicestartuptype_xml . '" "' . $agentservicelogonas_xml . '" "' . $agentservicedisplayname_xml . '" "' . $serverconnectionport_xml . '" "0" "eurysco_agent" "agent"', $errorarray, $errorlevel);
+								exec('set sslprotocol=TLSv1.2 & "' . $euryscoinstallpath . '\\euryscosrv.bat" "' . $agentservicename_last . '" "' . $agentservicename_xml . '" "' . $agentservicestartuptype_xml . '" "' . $agentservicelogonas_xml . '" "' . $agentservicedisplayname_xml . '" "' . $serverconnectionport_xml . '" "0" "eurysco_agent" "agent"', $errorarray, $errorlevel);
 								session_start();
 								if ($errorlevel == 0) {
 			                    	$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     agent config     eurysco agent configuration edited';
 								} else {
 									$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     agent config     eurysco agent configuration not edited';
 								}
-								$agentstatusfile = str_replace('\\core', '\\agent\\temp\\agent.status', $_SERVER['DOCUMENT_ROOT']);
+								$agentstatusfile = $euryscoinstallpath . '\\agent\\temp\\agent.status';
 								if (file_exists($agentstatusfile)) @unlink($agentstatusfile);
+								$agentkey = $euryscoinstallpath . '\\conf\\agent.key';
+								if (file_exists($agentkey)) @unlink($agentkey);
 							}
-							header('location: https://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
+							header('location: ' . $_SERVER['PHP_SELF']);
+							exit;
 						}
 						
 						?>
 
                         <?php $span = '6'; ?>
-						<?php include('/include/agent_status_' . $agentstatus . '.php'); ?>
+						<?php include($euryscoinstallpath . '\\include\\agent_status_' . $agentstatus . '.php'); ?>
                         <p>&nbsp;</p>
                     	<form method="post">
 						<div class="input-control text">
@@ -264,7 +269,7 @@
 							<input type="text" value="change password is allowed only for local connection" maxlength="30" disabled="disabled" />
 							<button class="btn-clear"></button>
 							<?php } else { ?>
-							<input type="password" id="serverconnectionpassword" name="serverconnectionpassword" placeholder="<?php echo $serverconnectionpassword_ph; ?>" value="<?php echo $serverconnectionpassword; ?>" maxlength="30" />
+							<input type="password" autocomplete="off" id="serverconnectionpassword" name="serverconnectionpassword" placeholder="<?php echo $serverconnectionpassword_ph; ?>" value="<?php echo $serverconnectionpassword; ?>" maxlength="30" />
 							<button class="btn-clear"></button>
 							<?php } ?>
 						</div>
@@ -288,14 +293,15 @@
 	                        <input type="submit" id="editcreateservice" name="editcreateservice" value="<?php if ($agentstatus != 'cfg') { echo 'Edit Agent'; } else { echo 'Create Agent'; } ?>" style="background-color:#0072C6;" />
                             <?php if ($agentstatus == 'run' || $agentstatus == 'con') { echo '<input type="submit" id="stopservice" name="stopservice" class="bg-color-red" value="Stop Agent Service"/>'; } ?>
                             <?php if ($agentstatus == 'nrn') { echo '<input type="submit" id="startservice" name="startservice" class="bg-color-green" value="Start Agent Service"/>'; } ?>
-                        </form>
+							<input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" />
+						</form>
 					<script language="javascript" type="text/javascript">
 					update();
 					setInterval(update, 3000);
 					function update() {
 						$.ajax({
 							type: "GET",
-							url: 'agentjq.php',
+							url: 'agentjq.php?<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15) . '=' . substr(md5('$_GET' . $sessiontoken), 15, 25); ?>',
 							data: '',
 							dataType: 'json',
 							cache: false,

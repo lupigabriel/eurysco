@@ -107,7 +107,7 @@
 							
 							$commandblcheck = 0;
 							if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['commandline'] > 0) {
-								if (isset($_POST['cmd']) && (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'])) > 0) {
+								if (isset($_POST['cmd']) && strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']) > 0 && isset($_POST[substr(md5('$_POST' . $_SESSION['tokenl']), 5, 15)])) {
 									if ($_POST['cmd'] != '') {
 										if ($localcommandblacklist != '') {
 											$commandblarray = array();
@@ -165,7 +165,7 @@
 										$cmd = 'dir /o:gn /a';
 									}
 
-									$fp = fopen($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.out', 'w');
+									$fp = fopen($euryscoinstallpath . '\\temp\\core\\' . $random . '.out', 'w');
 									fwrite($fp, '');
 									fclose($fp);
 								}
@@ -220,7 +220,7 @@
 							}
 
 
-							$fp = fopen($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.cmd', 'w');
+							$fp = fopen($euryscoinstallpath . '\\temp\\core\\' . $random . '.cmd', 'w');
 							fwrite($fp, $cmd);
 							fclose($fp);
 							
@@ -228,10 +228,9 @@
 								$cldrive = strtolower($cmd);
 								$clpath = '\\';
 							}
-							
 							session_write_close();
-							pclose(popen('start "eurysco core exec timeout" /b "eurysco.executor.exec.timeout.exe" ' . $_SESSION['cltimeout'] . ' >nul 2>nul', 'r'));
-							$clioutput = shell_exec('cd\\ & ' . $cldrive . ' & cd\\ & cd "' . $clpath . '" & "' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.cmd">>"' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.out"' . $frrt . ' & dir /b /o:n /a:d>"' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.dir" & dir /b /o:n /a:-d>"' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.files" & cd>"' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.path" & echo. & cd');
+							pclose(popen('start "eurysco core exec timeout" /b "' . $euryscoinstallpath . '\\ext\\eurysco.executor.exec.timeout.exe" ' . $_SESSION['cltimeout'] . ' >nul 2>nul', 'r'));
+							$clioutput = shell_exec('cd\\ & ' . $cldrive . ' & cd\\ & cd "' . $clpath . '" & "' . $euryscoinstallpath . '\\temp\\core\\' . $random . '.cmd">>"' . $euryscoinstallpath . '\\temp\\core\\' . $random . '.out"' . $frrt . ' & dir /b /o:n /a:d>"' . $euryscoinstallpath . '\\temp\\core\\' . $random . '.dir" & dir /b /o:n /a:-d>"' . $euryscoinstallpath . '\\temp\\core\\' . $random . '.files" & cd>"' . $euryscoinstallpath . '\\temp\\core\\' . $random . '.path" & echo. & cd');
 							$corecmdto = exec('taskkill.exe /f /im "eurysco.executor.exec.timeout.exe" /t >nul 2>nul', $errorarrayto, $errorlevelto);
 							session_start();
 							
@@ -247,12 +246,12 @@
 							}
 							$clioutput = str_replace(substr($clioutput, 0, 2), strtoupper(substr($clioutput, 0, 2)), $clioutput);
 
-							if (!file_exists($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.cmd') || !file_exists($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.out') || !file_exists($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.dir') || !file_exists($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.files') || !file_exists($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.path')) {
+							if (!file_exists($euryscoinstallpath . '\\temp\\core\\' . $random . '.cmd') || !file_exists($euryscoinstallpath . '\\temp\\core\\' . $random . '.out') || !file_exists($euryscoinstallpath . '\\temp\\core\\' . $random . '.dir') || !file_exists($euryscoinstallpath . '\\temp\\core\\' . $random . '.files') || !file_exists($euryscoinstallpath . '\\temp\\core\\' . $random . '.path')) {
 								header('location: ' . $_SERVER['PHP_SELF'] . '?resetviewconf');
 							}
 							
-							if (file_exists($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.path')) {
-								$fp = fopen($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.path', 'r');
+							if (file_exists($euryscoinstallpath . '\\temp\\core\\' . $random . '.path')) {
+								$fp = fopen($euryscoinstallpath . '\\temp\\core\\' . $random . '.path', 'r');
 								$clpath = preg_replace('/\r\n|\r|\n/','',fgets($fp));
 								fclose($fp);
 							} else {
@@ -268,16 +267,16 @@
 							}
 							$clpath = str_replace(substr($clpath, 0, 2), strtoupper(substr($clpath, 0, 2)), $clpath);
 							
-							$data = array_slice(file($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.out'), -900);
+							$data = array_slice(file($euryscoinstallpath . '\\temp\\core\\' . $random . '.out'), -900);
 							foreach ($data as $line) {
 								$outputh = $outputh . $line;
 							}
-							@unlink($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.out');
-							$fp = fopen($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.out', 'w');
+							@unlink($euryscoinstallpath . '\\temp\\core\\' . $random . '.out');
+							$fp = fopen($euryscoinstallpath . '\\temp\\core\\' . $random . '.out', 'w');
 							fwrite($fp, $outputh);
 							fclose($fp);
 							$outputh = '';
-							$data = array_slice(file($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.out'), -900);
+							$data = array_slice(file($euryscoinstallpath . '\\temp\\core\\' . $random . '.out'), -900);
 							foreach ($data as $line) {
 								$outputh = $outputh . $line;
 							}
@@ -303,6 +302,7 @@
 						
 							<form id="resetview" name="resetview" method="post">
 								<input type="hidden" id="resetviewconf" name="resetviewconf" value="resetviewconf" />
+								<input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" />
 							</form>
                         	<h3>Path:</h3>
 							<table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped">
@@ -312,6 +312,7 @@
 									<select id="permpath" name="permpath" onChange="this.form.submit()" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; margin-top:2px; margin-bottom:2px; font-size:12px;">
 										<?php if ($filebrowserbllist != '') { echo $filebrowserbllist; } else { echo '<option>No Results...</option>'; } ?>
 									</select>
+									<input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" />
 								</form>
 								</td></tr>
 								<?php } ?>
@@ -347,8 +348,8 @@
 											$_SESSION['cmdlistfls'] = array();
 											$_SESSION['cmdlistsrv'] = array();
 											$_SESSION['cmdlistprc'] = array();
-											if (file_exists($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.dir')) {
-												$data = array_slice(file($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.dir'), -10000);
+											if (file_exists($euryscoinstallpath . '\\temp\\core\\' . $random . '.dir')) {
+												$data = array_slice(file($euryscoinstallpath . '\\temp\\core\\' . $random . '.dir'), -10000);
 												foreach ($data as $line) {
 													if (!preg_match('/\'/', $line)) {
 														$quotecmd = '';
@@ -372,8 +373,8 @@
 												header('location: ' . $_SERVER["SCRIPT_NAME"]);
 												exit;
 											}
-											if (file_exists($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.files')) {
-												$data = array_slice(file($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.files'), -10000);
+											if (file_exists($euryscoinstallpath . '\\temp\\core\\' . $random . '.files')) {
+												$data = array_slice(file($euryscoinstallpath . '\\temp\\core\\' . $random . '.files'), -10000);
 												foreach ($data as $line) {
 													if (!preg_match('/\'/', $line)) {
 														$quotecmd = '';
@@ -444,7 +445,7 @@
 							</div>
 							<script type="text/javascript">
 								var options = {
-									script:"clijq.php?json=true&limit=4&",
+									script:"clijq.php?<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15) . '=' . substr(md5('$_GET' . $sessiontoken), 15, 25); ?>&json=true&limit=4&",
 									varname:"input",
 									json:true,
 									shownoresults:false,
@@ -466,6 +467,7 @@
 									$('#output').scrollTop($('#output')[0].scrollHeight);
 								});
 							</script>
+							<input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" />
 						</form>
                         <h3>Help:</h3>
                         <blockquote>
@@ -483,11 +485,11 @@
 </div>
 
 <?php
-@unlink($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.cmd');
-@unlink($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.dir');
-@unlink($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.files');
-@unlink($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.out');
-@unlink($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.path');
+@unlink($euryscoinstallpath . '\\temp\\core\\' . $random . '.cmd');
+@unlink($euryscoinstallpath . '\\temp\\core\\' . $random . '.dir');
+@unlink($euryscoinstallpath . '\\temp\\core\\' . $random . '.files');
+@unlink($euryscoinstallpath . '\\temp\\core\\' . $random . '.out');
+@unlink($euryscoinstallpath . '\\temp\\core\\' . $random . '.path');
 ?>
 
 <?php } ?>

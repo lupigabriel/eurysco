@@ -24,29 +24,33 @@ if (isset($_GET['filter'])) {
 }
 
 if (isset($_GET['page'])) {
-	$pgkey = $_GET['page'] - 1;
+	if (is_numeric($_GET['page'])) {
+		$pgkey = $_GET['page'] - 1;
+	} else {
+		$pgkey = 0;
+	}
 } else {
 	$pgkey = 0;
 }
-					
-$path = $_SERVER['DOCUMENT_ROOT'] . '\\audit\\';
+
+$path = $euryscoinstallpath . '\\audit\\';
 
 if (isset($_GET["file"])) {
-	$filetoread = $path . $_GET["file"];
-	$download = $_GET["file"];
+	$filetoread = $path . $_GET['file'];
+	$download = $_GET['file'];
 } else {
 	$filetoread = '';
 	$download = '';
 }
 
-$allfiles = scandir($_SERVER['DOCUMENT_ROOT'] . '\\audit\\');
+$allfiles = scandir($euryscoinstallpath . '\\audit\\');
 $auditarray = array();
 $auditcounter = 0;
 foreach ($allfiles as $name) {
-	if (is_file($_SERVER['DOCUMENT_ROOT'] . '\\audit\\' . $name) && preg_match('/audit-.*.log/', $name)) {
+	if (is_file($euryscoinstallpath . '\\audit\\' . $name) && preg_match('/audit-.*.log/', $name)) {
 		$auditarray[$auditcounter][0] = $name;
 		if (!isset($_GET["file"])) {
-			$filetoread = $_SERVER['DOCUMENT_ROOT'] . '\\audit\\' . $name;
+			$filetoread = $euryscoinstallpath . '\\audit\\' . $name;
 			$download = $name;
 		}
 		$auditcounter = $auditcounter + 1;
@@ -64,7 +68,7 @@ foreach ($auditarray as $auditrow) {
 	}
 }
 
-if (isset($_GET["pause"]) && (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'])) > 0) {
+if (isset($_GET["pause"]) && strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']) > 0) {
 	$tailcommand = '';
 	$tailbuttval = 'Resume';
 	$tailbuttcol = '0072C6';
@@ -106,9 +110,10 @@ if (isset($_GET["pause"]) && (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HO
 										<select id="file" name="file" onchange="this.form.submit()" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa;">
 											<?php echo $fileselect; ?>
 										</select>
+										<input type="hidden" id="<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_GET' . $sessiontoken), 15, 25); ?>" />
 									</form>
 								</td>
-								<td width="99%" style="font-size:12px;">&nbsp;&nbsp;<?php echo strtolower($filetoread); ?><?php if ($download != '' && $path != '' ) { ?>&nbsp;&nbsp;<a href="download.php?download=<?php echo urlencode($download); ?>&path=<?php echo urlencode($path); ?>" title="Download"><div class="icon-download-2"></div></a><?php } ?></td>
+								<td width="99%" style="font-size:12px;">&nbsp;&nbsp;<?php echo strtolower(str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$filetoread, ENT_QUOTES, 'UTF-8'))))); ?><?php if ($download != '' && $path != '' ) { ?>&nbsp;&nbsp;<a href="download.php<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15) . '=' . substr(md5('$_GET' . $sessiontoken), 15, 25); ?>&?download=<?php echo urlencode($download); ?>&path=<?php echo urlencode($path); ?>" title="Download"><div class="icon-download-2"></div></a><?php } ?></td>
 							</tr>
 						</table>
 					<?php } ?>
@@ -117,10 +122,11 @@ if (isset($_GET["pause"]) && (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HO
 						<div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">
 						<blockquote style="font-size:12px; height:33px;" title="<?php echo 'Use Normal String for SIMPLE SEARCH' . "\n" . 'Use Regular Expression for COMPLEX SEARCH' . "\n" . 'Use Minus  -  for NOT CONTAIN' . "\n" . 'Use Pipe  |  for OR OPERATOR' . "\n" . 'Use Raw Data View for REFERENCES'; ?>">
 							<form id="filterform" name="filterform" method="get">
-								Filter:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" id="filter" name="filter" placeholder="Regular Expression..." value="<?php echo $filter; ?>" title="<?php echo $filter; ?>" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; font-size:12px; border:solid; border-width:1px; border-color:#e5e5e5; width:170px; height:23px; padding-top:0px; padding-left:4px; padding-right:4px;" />&nbsp;&nbsp;<a href="javascript:;" onClick="document.getElementById('filterform').submit();" title="Filter by String or Regular Expression"><div class="icon-search"<?php if ($filter != '') { echo ' style="color:#8063C8;"'; } ?>></div></a><?php if ($filter != '') { ?>&nbsp;<a href="?orderby=<?php echo $orderby; ?>" title="Clear Filter"><div class="icon-cancel"></div></a><?php } ?>
+								Filter:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" id="filter" name="filter" placeholder="Regular Expression..." value="<?php echo str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$filter, ENT_QUOTES, 'UTF-8')))); ?>" title="<?php echo str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$filter, ENT_QUOTES, 'UTF-8')))); ?>" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; font-size:12px; border:solid; border-width:1px; border-color:#e5e5e5; width:170px; height:23px; padding-top:0px; padding-left:4px; padding-right:4px;" />&nbsp;&nbsp;<a href="javascript:;" onClick="document.getElementById('filterform').submit();" title="Filter by String or Regular Expression"><div class="icon-search"<?php if ($filter != '') { echo ' style="color:#8063C8;"'; } ?>></div></a><?php if ($filter != '') { ?>&nbsp;<a href="?orderby=<?php echo $orderby; ?>" title="Clear Filter"><div class="icon-cancel"></div></a><?php } ?>
 								<input type="hidden" id="orderby" name="orderby" value="<?php echo $orderby; ?>" />
 								<?php if (isset($_GET["pause"])) { ?>
 								<input type="hidden" id="pause" name="pause" value="" />
+								<input type="hidden" id="<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_GET' . $sessiontoken), 15, 25); ?>" />
 								<?php } ?>
 							</form>
 						</blockquote>
@@ -139,7 +145,7 @@ if (isset($_GET["pause"]) && (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HO
 					function update() {
 						$.ajax({
 							type: "GET",
-							url: 'auditjq.php?orderby=<?php echo $orderby; ?>&filter=<?php echo urlencode($filter); ?>&page=<?php echo $pgkey; ?>&file=<?php echo urlencode($filetoread); ?><?php if ($serverstatus == 'run') { echo '&srvrun=' . str_replace('-', ' ', str_replace('.log', ' ', preg_replace('/.*_/', '', $download))); } ?><?php if (isset($_GET["pause"])) { echo '&pause'; } ?>',
+							url: 'auditjq.php?<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15) . '=' . substr(md5('$_GET' . $sessiontoken), 15, 25); ?>&orderby=<?php echo $orderby; ?>&filter=<?php echo urlencode($filter); ?>&page=<?php echo $pgkey; ?>&file=<?php echo urlencode($filetoread); ?><?php if ($serverstatus == 'run') { echo '&srvrun=' . str_replace('-', ' ', str_replace('.log', ' ', preg_replace('/.*_/', '', str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$download, ENT_QUOTES, 'UTF-8'))))))); } ?><?php if (isset($_GET["pause"])) { echo '&pause'; } ?>',
 							data: '',
 							dataType: 'json',
 							cache: false,

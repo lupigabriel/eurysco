@@ -1,6 +1,6 @@
 <?php
 
-$badaut = scandir($_SERVER['DOCUMENT_ROOT'] . '\\badaut\\');
+$badaut = scandir($euryscoinstallpath . '\\badaut\\core\\');
 if (count($badaut) > 22 && $_SERVER['HTTP_X_FORWARDED_FOR'] != '127.0.0.1' && $_SERVER['HTTP_X_FORWARDED_FOR'] != '::1') {
 	echo '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/html" lang="en"><head><meta charset="utf-8"><meta name="viewport" content="target-densitydpi=device-dpi, width=device-width, initial-scale=1.0, maximum-scale=1"><meta name="description" content="eurysco"><meta name="author" content="eurysco"><meta name="keywords" content="eurysco"><link href="css/modern.css" rel="stylesheet"><link href="css/modern-responsive.css" rel="stylesheet"><title>eurysco Logout Completed</title></head><body class="metrouicss"><br /><br /><table width="100%" border="0" cellspacing="0" cellpadding="0"><tr><td style="border:none;" align="center"><a href="/" class="eurysco-bg big page-back"></a>';
 	echo '<br />';
@@ -20,7 +20,7 @@ $realm = '';
 $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
 $iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);
 
-session_save_path($_SERVER['DOCUMENT_ROOT'] . '\\temp');
+session_save_path($euryscoinstallpath . '\\temp\\core');
 class EncryptedSessionHandler extends SessionHandler {
 	private $key;
 	public function __construct($key) {
@@ -35,9 +35,11 @@ class EncryptedSessionHandler extends SessionHandler {
 		return parent::write($id, $data);
 	}
 }
-$handler = new EncryptedSessionHandler('mykey');
+$handler = new EncryptedSessionHandler(substr(md5($_SERVER['HTTP_X_FORWARDED_FOR']), 2, 4));
 session_set_save_handler($handler, true);
-session_start();
+@session_start();
+$last_error = error_get_last();
+if (!is_null($last_error['type'])) { exit; }
 
 if (!isset($_SESSION['sessionstatus'])) { $_SESSION['sessionstatus'] = 'active'; }
 
@@ -53,7 +55,7 @@ if ($_SESSION['sessionstatus'] == 'logout') {
 		$params = session_get_cookie_params();
 		setcookie(session_name(), '', time() - 42000, $params["path"], $params["domain"], $params["secure"], $params["httponly"] );
 	}
-	include('/include/unset.php');
+	include(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\unset.php');
 	session_unset();
 	session_destroy();
 	echo '<script type="text/javascript">' . "\n";
@@ -141,7 +143,7 @@ if ($sessionstatus == 'logout' || $logoutstatus == 'logout' || $logoutstatus == 
 		} else {
 			$agentstatus = '';
 		}
-		$config_agentsrv = 'conf\\config_agent.xml';
+		$config_agentsrv = $euryscoinstallpath . '\\conf\\config_agent.xml';
 		$eurysco_serverconaddress = '';
 		$eurysco_serverconport = '';
 		$eurysco_serverconpassword = '';
@@ -175,7 +177,6 @@ if ($sessionstatus == 'logout' || $logoutstatus == 'logout' || $logoutstatus == 
 	$_SESSION['logoutstatus'] = '';
 	$_SESSION['ELC'] = 0;
 	$_SESSION['USRLCK'] = '';
-	//header('location: https://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
 	exit;
 }
 
@@ -188,10 +189,10 @@ if (!isset($_SESSION['UID'])) { $_SESSION['UID'] = uniqid(); }
 if (!isset($_SESSION['session']) || $_SESSION['session'] != hash('sha512', $_SERVER['HTTP_X_FORWARDED_FOR'] . session_id())) {
 	
 	$users = array();
-	$userlist = scandir($_SERVER['DOCUMENT_ROOT'] . '\\users\\');				
+	$userlist = scandir($euryscoinstallpath . '\\users\\');				
 	foreach($userlist as $user)
 	if(pathinfo($user)['extension'] == 'xml') {
-		$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $user, true)))));
+		$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($euryscoinstallpath . '\\users\\' . $user, true)))));
 		$usersusername = $userxml->settings->username;
 		$userspassword = $userxml->settings->password;
 		$users["$usersusername"] = "$userspassword";
@@ -252,8 +253,8 @@ if (!isset($_SESSION['session']) || $_SESSION['session'] != hash('sha512', $_SER
 		failBlk ();
 		exit;
 	}
-
-	if (!file_exists($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $data['username'] . '.xml')) {
+	
+	if (!file_exists($euryscoinstallpath . '\\users\\' . $data['username'] . '.xml')) {
 		echo '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/html" lang="en"><head><meta charset="utf-8"><meta name="viewport" content="target-densitydpi=device-dpi, width=device-width, initial-scale=1.0, maximum-scale=1"><meta name="description" content="eurysco"><meta name="author" content="eurysco"><meta name="keywords" content="eurysco"><link href="css/modern.css" rel="stylesheet"><link href="css/modern-responsive.css" rel="stylesheet"><title>eurysco Authentication Error</title></head><body class="metrouicss"><br /><br /><table width="100%" border="0" cellspacing="0" cellpadding="0"><tr><td style="border:none;" align="center"><a href="/" class="eurysco-bg big page-back"></a>';
 		echo '<br />';
 		echo '<h2>User Disabled</h2>';
@@ -266,7 +267,7 @@ if (!isset($_SESSION['session']) || $_SESSION['session'] != hash('sha512', $_SER
 		echo '</td></tr></table></body></html>';
 		exit;
 	}
-	$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $data['username'] . '.xml', true)))));
+	$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($euryscoinstallpath . '\\users\\' . $data['username'] . '.xml', true)))));
 	$usersusertype = $userxml->settings->usertype;
 	$usersuserauth = $userxml->settings->userauth;
 	$mcrykey = pack('H*', hash('sha256', $usersusertype));
@@ -275,7 +276,7 @@ if (!isset($_SESSION['session']) || $_SESSION['session'] != hash('sha512', $_SER
 	$valid_response = md5($A1 . ':' . $data['nonce'] . ':' . $data['nc'] . ':' . $data['cnonce'] . ':' . $data['qop'] . ':' . $A2);
 	$_SESSION['username'] = $data['username'];
 	$_SESSION['usertype'] = '';
-	$_SESSION['usersett'] = array(); $_SESSION['usersett']['name'] = ''; $_SESSION['usersett']['coreconfig'] = 0; $_SESSION['usersett']['executorconfig'] = 0; $_SESSION['usersett']['serverconfig'] = 0; $_SESSION['usersett']['agentconfig'] = 0; $_SESSION['usersett']['nodesstatus'] = 0; $_SESSION['usersett']['nodesnagiosstatus'] = 0; $_SESSION['usersett']['nodessysteminventory'] = 0; $_SESSION['usersett']['nodesinstalledprograms'] = 0; $_SESSION['usersett']['nodesprocesscontrol'] = 0; $_SESSION['usersett']['nodesservicecontrol'] = 0; $_SESSION['usersett']['nodesnetworkstats'] = 0; $_SESSION['usersett']['nodesscheduledtasks'] = 0; $_SESSION['usersett']['nodeseventviewer'] = 0; $_SESSION['usersett']['systeminfo'] = 0; $_SESSION['usersett']['nagiosstatus'] = 0; $_SESSION['usersett']['systeminventory'] = 0; $_SESSION['usersett']['installedprograms'] = 0; $_SESSION['usersett']['wmiexplorer'] = 0; $_SESSION['usersett']['systemshutdown'] = 0; $_SESSION['usersett']['processcontrol'] = 0; $_SESSION['usersett']['servicecontrol'] = 0; $_SESSION['usersett']['networkstats'] = 0; $_SESSION['usersett']['scheduledtasks'] = 0; $_SESSION['usersett']['eventviewer'] = 0; $_SESSION['usersett']['systemregistry'] = 0; $_SESSION['usersett']['commandline'] = 0; $_SESSION['usersett']['filebrowser'] = 0; $_SESSION['usersett']['filetransfer'] = 0; $_SESSION['usersett']['changesettings'] = 0; $_SESSION['usersett']['usermanagement'] = 0; $_SESSION['usersett']['auditlog'] = 0; $_SESSION['usersett']['nodesstatusf'] = ''; $_SESSION['usersett']['nodescommandf'] = ''; $_SESSION['usersett']['nodesnagiosstatusf'] = ''; $_SESSION['usersett']['nodesinstalledprogramsf'] = ''; $_SESSION['usersett']['nodesprocesscontrolf'] = ''; $_SESSION['usersett']['nodesservicecontrolf'] = ''; $_SESSION['usersett']['nodesnetworkstatsf'] = ''; $_SESSION['usersett']['nodesscheduledtasksf'] = ''; $_SESSION['usersett']['nodeseventviewerf'] = ''; $_SESSION['usersett']['nagiosstatusf'] = ''; $_SESSION['usersett']['installedprogramsf'] = ''; $_SESSION['usersett']['processcontrolf'] = ''; $_SESSION['usersett']['servicecontrolf'] = ''; $_SESSION['usersett']['networkstatsf'] = ''; $_SESSION['usersett']['scheduledtasksf'] = ''; $_SESSION['usersett']['eventviewerf'] = ''; $_SESSION['usersett']['commandlinef'] = ''; $_SESSION['usersett']['filebrowserf'] = ''; $_SESSION['usersett']['regeditf'] = ''; $_SESSION['usersett']['auth'] = 'Local'; $_SESSION['usersett']['pwdexp'] = 1; $_SESSION['usersett']['disable'] = 7; $_SESSION['usersett']['sastarttime'] = '00:00:00'; $_SESSION['usersett']['sastoptime'] = '00:00:00'; $_SESSION['usersett']['sasunday'] = 'on'; $_SESSION['usersett']['samonday'] = 'on'; $_SESSION['usersett']['satuesday'] = 'on'; $_SESSION['usersett']['sawednesday'] = 'on'; $_SESSION['usersett']['sathursday'] = 'on'; $_SESSION['usersett']['safriday'] = 'on'; $_SESSION['usersett']['sasaturday'] = 'on'; $_SESSION['usersett']['badaut'] = 0; 
+	$_SESSION['usersett'] = array(); $_SESSION['usersett']['name'] = ''; $_SESSION['usersett']['coreconfig'] = 0; $_SESSION['usersett']['executorconfig'] = 0; $_SESSION['usersett']['serverconfig'] = 0; $_SESSION['usersett']['agentconfig'] = 0; $_SESSION['usersett']['nodesstatus'] = 0; $_SESSION['usersett']['nodesnagiosstatus'] = 0; $_SESSION['usersett']['nodessysteminventory'] = 0; $_SESSION['usersett']['nodesinstalledprograms'] = 0; $_SESSION['usersett']['nodesprocesscontrol'] = 0; $_SESSION['usersett']['nodesservicecontrol'] = 0; $_SESSION['usersett']['nodesnetworkstats'] = 0; $_SESSION['usersett']['nodesscheduledtasks'] = 0; $_SESSION['usersett']['nodeseventviewer'] = 0; $_SESSION['usersett']['systeminfo'] = 0; $_SESSION['usersett']['nagiosstatus'] = 0; $_SESSION['usersett']['systeminventory'] = 0; $_SESSION['usersett']['installedprograms'] = 0; $_SESSION['usersett']['wmiexplorer'] = 0; $_SESSION['usersett']['systemshutdown'] = 0; $_SESSION['usersett']['processcontrol'] = 0; $_SESSION['usersett']['servicecontrol'] = 0; $_SESSION['usersett']['networkstats'] = 0; $_SESSION['usersett']['scheduledtasks'] = 0; $_SESSION['usersett']['eventviewer'] = 0; $_SESSION['usersett']['systemregistry'] = 0; $_SESSION['usersett']['commandline'] = 0; $_SESSION['usersett']['filebrowser'] = 0; $_SESSION['usersett']['filetransfer'] = 0; $_SESSION['usersett']['changesettings'] = 0; $_SESSION['usersett']['usermanagement'] = 5; $_SESSION['usersett']['auditlog'] = 0; $_SESSION['usersett']['nodesstatusf'] = ''; $_SESSION['usersett']['nodescommandf'] = ''; $_SESSION['usersett']['nodesnagiosstatusf'] = ''; $_SESSION['usersett']['nodesinstalledprogramsf'] = ''; $_SESSION['usersett']['nodesprocesscontrolf'] = ''; $_SESSION['usersett']['nodesservicecontrolf'] = ''; $_SESSION['usersett']['nodesnetworkstatsf'] = ''; $_SESSION['usersett']['nodesscheduledtasksf'] = ''; $_SESSION['usersett']['nodeseventviewerf'] = ''; $_SESSION['usersett']['nagiosstatusf'] = ''; $_SESSION['usersett']['installedprogramsf'] = ''; $_SESSION['usersett']['processcontrolf'] = ''; $_SESSION['usersett']['servicecontrolf'] = ''; $_SESSION['usersett']['networkstatsf'] = ''; $_SESSION['usersett']['scheduledtasksf'] = ''; $_SESSION['usersett']['eventviewerf'] = ''; $_SESSION['usersett']['commandlinef'] = ''; $_SESSION['usersett']['filebrowserf'] = ''; $_SESSION['usersett']['regeditf'] = ''; $_SESSION['usersett']['usermanagementf'] = ''; $_SESSION['usersett']['auth'] = 'Local'; $_SESSION['usersett']['pwdexp'] = 1; $_SESSION['usersett']['disable'] = 7; $_SESSION['usersett']['sastarttime'] = '00:00:00'; $_SESSION['usersett']['sastoptime'] = '00:00:00'; $_SESSION['usersett']['sasunday'] = 'on'; $_SESSION['usersett']['samonday'] = 'on'; $_SESSION['usersett']['satuesday'] = 'on'; $_SESSION['usersett']['sawednesday'] = 'on'; $_SESSION['usersett']['sathursday'] = 'on'; $_SESSION['usersett']['safriday'] = 'on'; $_SESSION['usersett']['sasaturday'] = 'on'; $_SESSION['usersett']['loginredirect'] = ''; $_SESSION['usersett']['badaut'] = 0; 
 	if (hash('sha512', $_SESSION['username'] . 'Local') == $usersuserauth) { $_SESSION['userauth'] = 'Local'; }
 	if (hash('sha512', $_SESSION['username'] . 'Distributed') == $usersuserauth) { $_SESSION['userauth'] = 'Distributed'; }
 	if (hash('sha512', $_SESSION['username'] . 'Administrators') == $usersusertype) { $_SESSION['usertype'] = 'Administrators'; }
@@ -283,13 +284,13 @@ if (!isset($_SESSION['session']) || $_SESSION['session'] != hash('sha512', $_SER
 	if (hash('sha512', $_SESSION['username'] . 'Operators') == $usersusertype) { $_SESSION['usertype'] = 'Operators'; }
 	if (hash('sha512', $_SESSION['username'] . 'Users') == $usersusertype) { $_SESSION['usertype'] = 'Users'; }
 	if ($_SESSION['usertype'] == '') {
-		$grouplist = scandir($_SERVER['DOCUMENT_ROOT'] . '\\groups\\');
+		$grouplist = scandir($euryscoinstallpath . '\\groups\\');
 		foreach ($grouplist as $group) {
-			if (pathinfo($group)['extension'] == 'xml' && filesize($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group) > 0) {
+			if (pathinfo($group)['extension'] == 'xml' && filesize($euryscoinstallpath . '\\groups\\' . $group) > 0) {
 				$group = str_replace('.xml', '', $group);
 				if (hash('sha512', $_SESSION['username'] . $group) == $usersusertype) {
 					$mcrykey = pack('H*', hash('sha256', hash('sha512', $group)));
-					$groupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\groups\\' . $group . '.xml', true)))));
+					$groupsxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($euryscoinstallpath . '\\groups\\' . $group . '.xml', true)))));
 					$_SESSION['usersett'] = unserialize(trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($groupsxml->settings->groupsettings), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($groupsxml->settings->groupsettings), 0, $iv_size))));
 					$_SESSION['usertype'] = $group;
 				}
@@ -337,7 +338,7 @@ if (!isset($_SESSION['session']) || $_SESSION['session'] != hash('sha512', $_SER
 				$checkprefilter = 1;
 			}
 		}
-		if ($checkprefilter != 0) { if (strtolower($eurysco_serverconaddress) != 'https://' . strtolower($envcomputername) || $_SESSION['usersett']['nodesstatus'] == 0) { $_SESSION['logoutnal'] = 'logoutnal'; } else { $_SESSION['usersett']['coreconfig'] = 0; $_SESSION['usersett']['executorconfig'] = 0; $_SESSION['usersett']['serverconfig'] = 0; $_SESSION['usersett']['agentconfig'] = 0; $_SESSION['usersett']['systeminfo'] = 0; $_SESSION['usersett']['nagiosstatus'] = 0; $_SESSION['usersett']['systeminventory'] = 0; $_SESSION['usersett']['installedprograms'] = 0; $_SESSION['usersett']['wmiexplorer'] = 0; $_SESSION['usersett']['systemshutdown'] = 0; $_SESSION['usersett']['processcontrol'] = 0; $_SESSION['usersett']['servicecontrol'] = 0; $_SESSION['usersett']['networkstats'] = 0; $_SESSION['usersett']['scheduledtasks'] = 0; $_SESSION['usersett']['eventviewer'] = 0; $_SESSION['usersett']['systemregistry'] = 0; $_SESSION['usersett']['commandline'] = 0; $_SESSION['usersett']['filebrowser'] = 0; $_SESSION['usersett']['changesettings'] = 0; $_SESSION['usersett']['usermanagement'] = 0; $_SESSION['usersett']['auditlog'] = 0; } }
+		if ($checkprefilter != 0) { if (strtolower($eurysco_serverconaddress) != 'https://' . strtolower($envcomputername) || $_SESSION['usersett']['nodesstatus'] == 0) { $_SESSION['logoutnal'] = 'logoutnal'; } else { $_SESSION['usersett']['coreconfig'] = 0; $_SESSION['usersett']['executorconfig'] = 0; $_SESSION['usersett']['serverconfig'] = 0; $_SESSION['usersett']['agentconfig'] = 0; $_SESSION['usersett']['systeminfo'] = 0; $_SESSION['usersett']['nagiosstatus'] = 0; $_SESSION['usersett']['systeminventory'] = 0; $_SESSION['usersett']['installedprograms'] = 0; $_SESSION['usersett']['wmiexplorer'] = 0; $_SESSION['usersett']['systemshutdown'] = 0; $_SESSION['usersett']['processcontrol'] = 0; $_SESSION['usersett']['servicecontrol'] = 0; $_SESSION['usersett']['networkstats'] = 0; $_SESSION['usersett']['scheduledtasks'] = 0; $_SESSION['usersett']['eventviewer'] = 0; $_SESSION['usersett']['systemregistry'] = 0; $_SESSION['usersett']['commandline'] = 0; $_SESSION['usersett']['filebrowser'] = 0; $_SESSION['usersett']['changesettings'] = 0; $_SESSION['usersett']['auditlog'] = 0; } }
 	}
 	
 	if ($data['username'] != '') { $_SESSION['USRLCK'] = $_SESSION['USRLCK'] . $data['username']; }
@@ -360,8 +361,8 @@ if (!isset($_SESSION['session']) || $_SESSION['session'] != hash('sha512', $_SER
 	}
 
 	$agentstatus = '';
-	if (file_exists(str_replace('\\core', '\\agent\\temp\\agent.status', $_SERVER['DOCUMENT_ROOT']))) {
-		$f = fopen(str_replace('\\core', '\\agent\\temp\\agent.status', $_SERVER['DOCUMENT_ROOT']), 'r');
+	if (file_exists($euryscoinstallpath . '\\agent\\temp\\agent.status')) {
+		$f = fopen($euryscoinstallpath . '\\agent\\temp\\agent.status', 'r');
 		$connexitcode = fgets($f);
 		fclose($f);
 		if (strpos($connexitcode, 'Connection Success') > 0) { $agentstatus = 'con'; }
@@ -411,7 +412,7 @@ if (!isset($_SESSION['session']) || $_SESSION['session'] != hash('sha512', $_SER
 		if ($userxml->settings->passwlck == md5($userxml->settings->password . 2)) { $passwlck = md5($userxml->settings->password . 3); }
 		if ($data['username'] != 'Administrator' && $_SESSION['usertype'] != 'eurysco Services') {
 			$xml = '<config>' . "\n" . '	<settings>' . "\n" . '		<username>' . $userxml->settings->username . '</username>' . "\n" . '		<usertype>' . $userxml->settings->usertype . '</usertype>' . "\n" . '		<userauth>' . $userxml->settings->userauth . '</userauth>' . "\n" . '		<password>' . $userxml->settings->password . '</password>' . "\n" . '		<passwchk>' . $userxml->settings->passwchk . '</passwchk>' . "\n" . '		<passwlck>' . $passwlck . '</passwlck>' . "\n" . '		<lckouttm>' . $lockedouttime . '</lckouttm>' . "\n" . '		<lckoutcm>' . $lockedoutcnam . '</lckoutcm>' . "\n" . '		<lckoutip>' . $lockedoutsrip . '</lckoutip>' . "\n" . '		<expiration>' . $userxml->settings->expiration . '</expiration>' . "\n" . '	</settings>' . "\n" . '</config>';
-			$writexml = fopen($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $data['username'] . '.xml', 'w');
+			$writexml = fopen($euryscoinstallpath . '\\users\\' . $data['username'] . '.xml', 'w');
 			fwrite($writexml, base64_encode(base64_encode(base64_encode($xml))));
 			fclose($writexml);
 		}
@@ -436,7 +437,7 @@ if (!isset($_SESSION['session']) || $_SESSION['session'] != hash('sha512', $_SER
 			$userlockoutst = $userlockoutst . '<tr><td width="20%"><div style="font-size:10px; white-space:nowrap; table-layout:fixed; overflow:hidden;">Locked Out From:</div></td><td width="80%"><div id="totaltime" style="font-size:10px;">' . $lockedoutsrip . '</div></td></tr>';
 			if ($passwlck == md5($userxml->settings->password . 3)) {
 				$xml = '<config>' . "\n" . '	<settings>' . "\n" . '		<username>' . $userxml->settings->username . '</username>' . "\n" . '		<usertype>' . $userxml->settings->usertype . '</usertype>' . "\n" . '		<userauth>' . $userxml->settings->userauth . '</userauth>' . "\n" . '		<password>' . $userxml->settings->password . '</password>' . "\n" . '		<passwchk>' . $userxml->settings->passwchk . '</passwchk>' . "\n" . '		<passwlck>' . $passwlck . '</passwlck>' . "\n" . '		<lckouttm>' . $lockedouttime . '</lckouttm>' . "\n" . '		<lckoutcm>' . $lockedoutcnam . '</lckoutcm>' . "\n" . '		<lckoutip>' . $lockedoutsrip . '</lckoutip>' . "\n" . '		<expiration>' . $userxml->settings->expiration . '</expiration>' . "\n" . '	</settings>' . "\n" . '</config>';
-				$writexml = fopen($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $data['username'] . '.xml', 'w');
+				$writexml = fopen($euryscoinstallpath . '\\users\\' . $data['username'] . '.xml', 'w');
 				fwrite($writexml, base64_encode(base64_encode(base64_encode($xml))));
 				fclose($writexml);
 				$audit = $lockedouttime . '     ' . $data['username'] . '     ' . $envcomputername . '     user status     locked out from IP ' . $lockedoutsrip;
@@ -469,7 +470,7 @@ if (!isset($_SESSION['session']) || $_SESSION['session'] != hash('sha512', $_SER
 					}
 				}
 				if ($auditresponse == 'local') {
-					$fp = fopen($_SERVER['DOCUMENT_ROOT'] . '\\audit\\audit-' . date('Ym') . '_' . date('M-Y') . '.log', 'a');
+					$fp = fopen($euryscoinstallpath . '\\audit\\audit-' . date('Ym') . '_' . date('M-Y') . '.log', 'a');
 					fwrite($fp, $audit . "\r\n");
 					fclose($fp);
 					$auditsec = explode('     ', $audit);
@@ -512,7 +513,7 @@ function http_digest_parse($txt) {
 }
 
 function failBlk () {
-	$fp = fopen($_SERVER['DOCUMENT_ROOT'] . '\\badaut\\' . md5($_SERVER['HTTP_X_FORWARDED_FOR']) . '.txt', 'w');
+	$fp = fopen(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\badaut\\core\\' . md5($_SERVER['HTTP_X_FORWARDED_FOR']) . '.txt', 'w');
 	fwrite($fp, 'UTC ' . date('Y-m-d H:i:s', time()) . ' - IP: ' . $_SERVER['HTTP_X_FORWARDED_FOR'] . PHP_EOL);
 	fclose($fp);
 }
@@ -523,34 +524,34 @@ if (!isset($_SESSION['session']) || $_SESSION['session'] != hash('sha512', $_SER
 	$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     user status     logged in';
 	if (!isset($_POST['lcl']) && $userxml->settings->passwlck != md5($userxml->settings->password)) {
 		$xml = '<config>' . "\n" . '	<settings>' . "\n" . '		<username>' . $userxml->settings->username . '</username>' . "\n" . '		<usertype>' . $userxml->settings->usertype . '</usertype>' . "\n" . '		<userauth>' . $userxml->settings->userauth . '</userauth>' . "\n" . '		<password>' . $userxml->settings->password . '</password>' . "\n" . '		<passwchk>' . $userxml->settings->passwchk . '</passwchk>' . "\n" . '		<passwlck>' . md5($userxml->settings->password) . '</passwlck>' . "\n" . '		<lckouttm>' . $userxml->settings->lckouttm . '</lckouttm>' . "\n" . '		<lckoutcm>' . $userxml->settings->lckoutcm . '</lckoutcm>' . "\n" . '		<lckoutip>' . $userxml->settings->lckoutip . '</lckoutip>' . "\n" . '		<expiration>' . $userxml->settings->expiration . '</expiration>' . "\n" . '	</settings>' . "\n" . '</config>';
-		$writexml = fopen($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $_SESSION['username'] . '.xml', 'w');
+		$writexml = fopen($euryscoinstallpath . '\\users\\' . $_SESSION['username'] . '.xml', 'w');
 		fwrite($writexml, base64_encode(base64_encode(base64_encode($xml))));
 		fclose($writexml);
 	}
-	include('/include/unset.php');
+	include(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\unset.php');
 	$loginmessage = '';
 	header('location: ' . $_SERVER["SCRIPT_NAME"]);
 }
 
 $badautipdc = strtotime(date('Y-m-d H:i:s', time()));
-$badaut = scandir($_SERVER['DOCUMENT_ROOT'] . '\\badaut\\');				
+$badaut = scandir($euryscoinstallpath . '\\badaut\\core\\');				
 foreach($badaut as $badautip)
 if($badautip != '.' && $badautip != '..') {
-	if ((($badautipdc - (strtotime(date('Y-m-d H:i:s', filemtime($_SERVER['DOCUMENT_ROOT'] . '\\badaut\\' . $badautip))))) / 60 / 60) > 24) {
-		unlink($_SERVER['DOCUMENT_ROOT'] . '\\badaut\\' . $badautip);
+	if ((($badautipdc - (strtotime(date('Y-m-d H:i:s', filemtime($euryscoinstallpath . '\\badaut\\core\\' . $badautip))))) / 60 / 60) > 24) {
+		unlink($euryscoinstallpath . '\\badaut\\core\\' . $badautip);
 	}
 }
 
-if (file_exists($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $_SESSION['username'] . '.xml')) {
-	if (preg_match('/lckouttm/', file_get_contents($_SERVER['DOCUMENT_ROOT'] . '\\users\\' . $_SESSION['username'] . '.xml'))) {
+if (file_exists($euryscoinstallpath . '\\users\\' . $_SESSION['username'] . '.xml')) {
+	if (preg_match('/lckouttm/', file_get_contents($euryscoinstallpath . '\\users\\' . $_SESSION['username'] . '.xml'))) {
 		header('location: /?logout');
 	}
 } else {
 	header('location: /?logout');
 }
 
-if (isset($_SESSION['logoutnal'])) { if ($_SESSION['logoutnal'] == 'logoutnal') { $_SESSION['logoutstatus'] = 'logout'; header('location: https://' . $_SERVER['HTTP_HOST'] . '/' . str_replace('/', '', $_SERVER['PHP_SELF'])); } }
+if (isset($_SESSION['logoutnal'])) { if ($_SESSION['logoutnal'] == 'logoutnal') { $_SESSION['logoutstatus'] = 'logout'; header('location: /' . str_replace('/', '', $_SERVER['PHP_SELF'])); } }
 
-if ($_SESSION['usersett']['sa' . strtolower(date('l'))] == 'on' && ($_SESSION['usersett']['sastarttime'] == $_SESSION['usersett']['sastoptime'] || (date('His', strtotime($_SESSION['usersett']['sastarttime'])) < date('His', strtotime($_SESSION['usersett']['sastoptime'])) && date('His', strtotime($_SESSION['usersett']['sastarttime'])) <= date('His') && date('His') < date('His', strtotime($_SESSION['usersett']['sastoptime']))) || (date('His', strtotime($_SESSION['usersett']['sastarttime'])) > date('His', strtotime($_SESSION['usersett']['sastoptime'])) && (date('His', strtotime($_SESSION['usersett']['sastarttime'])) <= date('His') || date('His') < date('His', strtotime($_SESSION['usersett']['sastoptime'])))))) {  } else { $_SESSION['logoutatl'] = 'logoutatl'; $_SESSION['logoutstatus'] = 'logout'; header('location: https://' . $_SERVER['HTTP_HOST'] . '/' . str_replace('/', '', $_SERVER['PHP_SELF'])); }
+if ($_SESSION['usersett']['sa' . strtolower(date('l'))] == 'on' && ($_SESSION['usersett']['sastarttime'] == $_SESSION['usersett']['sastoptime'] || (date('His', strtotime($_SESSION['usersett']['sastarttime'])) < date('His', strtotime($_SESSION['usersett']['sastoptime'])) && date('His', strtotime($_SESSION['usersett']['sastarttime'])) <= date('His') && date('His') < date('His', strtotime($_SESSION['usersett']['sastoptime']))) || (date('His', strtotime($_SESSION['usersett']['sastarttime'])) > date('His', strtotime($_SESSION['usersett']['sastoptime'])) && (date('His', strtotime($_SESSION['usersett']['sastarttime'])) <= date('His') || date('His') < date('His', strtotime($_SESSION['usersett']['sastoptime'])))))) {  } else { $_SESSION['logoutatl'] = 'logoutatl'; $_SESSION['logoutstatus'] = 'logout'; header('location: /' . str_replace('/', '', $_SERVER['PHP_SELF'])); }
 
 ?>

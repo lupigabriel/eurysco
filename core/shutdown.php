@@ -58,7 +58,7 @@
                     
                     <?php
 					
-					$shutdown_xml = 'temp\\shutdown.xml';
+					$shutdown_xml = $euryscoinstallpath . '\\temp\\shutdown.xml';
 					
 					if (file_exists($shutdown_xml)) {
 						$xmlcreate = date("Y-m-d H:i:s", filemtime($shutdown_xml));
@@ -87,7 +87,7 @@
 						$shutdowncommand = '';
 					}
 
-					if (!file_exists($shutdown_xml) && isset($_POST['shutdowntype']) && isset($_POST['shutdowndate']) && isset($_POST['shutdowntime']) && $shutdowncommand == 'Launch' && (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'])) > 0) {
+					if (!file_exists($shutdown_xml) && isset($_POST['shutdowntype']) && isset($_POST['shutdowndate']) && isset($_POST['shutdowntime']) && $shutdowncommand == 'Launch' && strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']) > 0 && isset($_POST[substr(md5('$_POST' . $_SESSION['tokenl']), 5, 15)])) {
 						$shutdowndatetime = date('Y-m-d', strtotime($_POST['shutdowndate'])) . ' ' . $_POST['shutdowntime'];
 						$currentdatetime = date('Y-m-d H:i:s');
 						$shutdowntimediff = strtotime($shutdowndatetime) - strtotime($currentdatetime);
@@ -179,6 +179,7 @@
 					</div>
                     <input type="hidden" id="shutdowncommand" name="shutdowncommand" value="<?php echo $popupdescr; ?>" />
                     <br />
+					<input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" />
                     </form>
                    	<a href="javascript:toolscommand('shutdown','<?php echo $popupdescr; ?> System Shutdown','<?php echo $popupdescr; ?> the following Shutdown:<br /><br /><table width=\'100%\' border=\'0\' cellspacing=\'0\' cellpadding=\'0\' class=\'striped\'><tr><td style=\'font-size:12px;\'>Type: </td><td style=\'font-size:12px;\'>' + shutdown.shutdowntype.value + '</td></tr><tr><td style=\'font-size:12px;\'>Date: </td><td style=\'font-size:12px;\'>' + shutdown.shutdowndate.value + '</td></tr><tr><td style=\'font-size:12px;\'>Time: </td><td style=\'font-size:12px;\'>' + shutdown.shutdowntime.value + '</td></tr></table>');"><button class="<?php echo $buttoncolor; ?>" style="color:#FFFFFF;" /><?php echo $buttontext; ?></button></a>
 
@@ -188,7 +189,7 @@
 					function update() {
 						$.ajax({
 							type: "GET",
-							url: 'shutdownjq.php',
+							url: 'shutdownjq.php?<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15) . '=' . substr(md5('$_GET' . $sessiontoken), 15, 25); ?>',
 							data: '',
 							dataType: 'json',
 							cache: false,
@@ -209,6 +210,7 @@
 
 <form id="toolsformcommand" name="toolsformcommand" method="post">
 	<input type="hidden" id="toolssendcommand" name="toolssendcommand">
+	<input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" />
 </form>
 
 <?php } ?>

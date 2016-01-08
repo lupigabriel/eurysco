@@ -3,8 +3,9 @@
 if (!isset($_SERVER['HTTP_REFERER'])) { exit; }
 if (!strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . '/services.php')) { exit; }
 
-include('/include/init.php');
+include(str_replace('\\core', '', $_SERVER['DOCUMENT_ROOT']) . '\\include\\init_core.php');
 if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usertype'] == 'Operators' || $_SESSION['usertype'] == 'Users' || $_SESSION['usersett']['servicecontrol'] > 0) {  } else { exit; }
+if (!isset($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)])) { exit; } else { if ($_GET[substr(md5('$_GET' . $sessiontoken), 5, 15)] != substr(md5('$_GET' . $sessiontoken), 15, 25)) { exit; } }
 session_write_close();
 
 if (isset($_GET['idprocess'])) {
@@ -18,12 +19,14 @@ if (isset($_GET['idprocess'])) {
 }
 
 if (isset($_GET['cpucount'])) {
-	$cpucount = $_GET['cpucount'];
+	if (is_numeric($_GET['cpucount'])) {
+		$cpucount = $_GET['cpucount'];
+	} else {
+		$cpucount = 1;
+	}
 } else {
 	$cpucount = 1;
 }
-
-
 
 $Name = '';
 $NamePath = '';

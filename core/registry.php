@@ -2,7 +2,7 @@
 
 <?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['systemregistry'] > 0) {  } else { header('location: /'); exit; } ?>
 
-<?php $_SESSION['registry'] = $_SERVER['REQUEST_URI']; ?>
+<?php $_SESSION['registry'] = htmlspecialchars((string)$_SERVER['REQUEST_URI'], ENT_QUOTES, 'UTF-8'); ?>
 
 <?php include("navigation.php"); ?>
 
@@ -11,7 +11,7 @@
 
 <?php if ($passwordexpired == 0) { ?>
 
-<?php require('/include/class.WindowsRegistry.php'); ?>
+<?php require($euryscoinstallpath . '\\include\\class.WindowsRegistry.php'); ?>
 
 <script type="text/javascript">
 	function reginfo(valueName,keyType,keyValue,titleName,keyPath,keyDef,isKey){
@@ -45,7 +45,7 @@
 		if (keyDef == '1') { ReadOnlykeyDef = ' readonly="readonly"'; }
 		$.Dialog({
 			'title'       : '<span style="font-size:16px;">&nbsp;<div class="icon-grid" style="position:inherit;"></div>&nbsp; ' + TypeName + ': <strong>' + titleName + '</strong></span>',
-			'content'     : '<form id="keyUpdate" name="keyUpdate" method="post"><table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped"><tr class="rowselect"><td width="50%" style="font-size:12px;">' + TypeName + ' Name:&nbsp;</td><td width="50%" style="font-size:10px;"><input type="text" id="keyNameReg" name="keyNameReg" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px; padding-left:4px; padding-right:4px; font-size:12px;" value="' + valueName + '" ' + ReadOnlykeyDef + '></td></tr><tr class="rowselect"><td width="50%" style="font-size:12px;">Type:&nbsp;</td><td width="50%" style="font-size:10px;"><select id="keyTypeReg" name="keyTypeReg" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px;"' + SelectDisable + '>' + SelectedKEY + '<option value="REG_SZ"' + SelectedSZ + '>&nbsp;REG_SZ&nbsp;&nbsp;</option><option value="REG_NONE"' + SelectedNONE + '>&nbsp;REG_NONE&nbsp;&nbsp;</option><option value="REG_EXPAND_SZ"' + SelectedEXPAND_SZ + '>&nbsp;REG_EXPAND_SZ&nbsp;&nbsp;</option><option value="REG_BINARY"' + SelectedBINARY + '>&nbsp;REG_BINARY&nbsp;&nbsp;</option><option value="REG_DWORD"' + SelectedDWORD + '>&nbsp;REG_DWORD&nbsp;&nbsp;</option><option value="REG_LINK"' + SelectedLINK + ' disabled="disabled">&nbsp;REG_LINK&nbsp;&nbsp;</option><option value="REG_MULTI_SZ"' + SelectedMULTI_SZ + '>&nbsp;REG_MULTI_SZ&nbsp;&nbsp;</option><option value="REG_RESOURCE_LIST"' + SelectedRESOURCE_LIST + ' disabled="disabled">&nbsp;REG_RES_LIST&nbsp;&nbsp;</option><option value="REG_FULL_RESOURCE_DESCRIPTOR"' + SelectedFULL_RESOURCE_DESCRIPTOR + ' disabled="disabled">&nbsp;REG_FULL_RES&nbsp;&nbsp;</option><option value="REG_RESOURCE_REQUIREMENTS_LIST"' + SelectedRESOURCE_REQUIREMENTS_LIST + ' disabled="disabled">&nbsp;REG_RES_REQ&nbsp;&nbsp;</option><option value="REG_QWORD"' + SelectedQWORD + ' disabled="disabled">&nbsp;REG_QWORD&nbsp;&nbsp;</option></select></td></tr><tr class="rowselect"><td style="font-size:12px;">Confirm&nbsp;Deletion:&nbsp;</td><td style="font-size:10px;"><select id="confirmdelete" name="confirmdelete" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px;"><option value="donotdelete">&nbsp;DO&nbsp;NOT&nbsp;DELETE&nbsp;&nbsp;</option><option value="delete">&nbsp;DELETE&nbsp;&nbsp;</option></select></td></tr></table><input type="hidden" id="keyPathReg" name="keyPathReg"><input type="hidden" id="keyOldNameReg" name="keyOldNameReg"><input type="hidden" id="keyDefReg" name="keyDefReg"><input type="hidden" id="isKey" name="isKey"><textarea  id="keyValueReg" name="keyValueReg" style="width:250px; font-family:\'Lucida Console\', Monaco, monospace; font-size:11px; height:75px; font-weight:normal;"' + SelectDisable + '>' + keyValue + '</textarea></form>',
+			'content'     : '<form id="keyUpdate" name="keyUpdate" method="post"><table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped"><tr class="rowselect"><td width="50%" style="font-size:12px;">' + TypeName + ' Name:&nbsp;</td><td width="50%" style="font-size:10px;"><input type="text" id="keyNameReg" name="keyNameReg" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px; padding-left:4px; padding-right:4px; font-size:12px;" value="' + valueName + '" ' + ReadOnlykeyDef + '></td></tr><tr class="rowselect"><td width="50%" style="font-size:12px;">Type:&nbsp;</td><td width="50%" style="font-size:10px;"><select id="keyTypeReg" name="keyTypeReg" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px;"' + SelectDisable + '>' + SelectedKEY + '<option value="REG_SZ"' + SelectedSZ + '>&nbsp;REG_SZ&nbsp;&nbsp;</option><option value="REG_NONE"' + SelectedNONE + '>&nbsp;REG_NONE&nbsp;&nbsp;</option><option value="REG_EXPAND_SZ"' + SelectedEXPAND_SZ + '>&nbsp;REG_EXPAND_SZ&nbsp;&nbsp;</option><option value="REG_BINARY"' + SelectedBINARY + '>&nbsp;REG_BINARY&nbsp;&nbsp;</option><option value="REG_DWORD"' + SelectedDWORD + '>&nbsp;REG_DWORD&nbsp;&nbsp;</option><option value="REG_LINK"' + SelectedLINK + ' disabled="disabled">&nbsp;REG_LINK&nbsp;&nbsp;</option><option value="REG_MULTI_SZ"' + SelectedMULTI_SZ + '>&nbsp;REG_MULTI_SZ&nbsp;&nbsp;</option><option value="REG_RESOURCE_LIST"' + SelectedRESOURCE_LIST + ' disabled="disabled">&nbsp;REG_RES_LIST&nbsp;&nbsp;</option><option value="REG_FULL_RESOURCE_DESCRIPTOR"' + SelectedFULL_RESOURCE_DESCRIPTOR + ' disabled="disabled">&nbsp;REG_FULL_RES&nbsp;&nbsp;</option><option value="REG_RESOURCE_REQUIREMENTS_LIST"' + SelectedRESOURCE_REQUIREMENTS_LIST + ' disabled="disabled">&nbsp;REG_RES_REQ&nbsp;&nbsp;</option><option value="REG_QWORD"' + SelectedQWORD + ' disabled="disabled">&nbsp;REG_QWORD&nbsp;&nbsp;</option></select></td></tr><tr class="rowselect"><td style="font-size:12px;">Confirm&nbsp;Deletion:&nbsp;</td><td style="font-size:10px;"><select id="confirmdelete" name="confirmdelete" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px;"><option value="donotdelete">&nbsp;DO&nbsp;NOT&nbsp;DELETE&nbsp;&nbsp;</option><option value="delete">&nbsp;DELETE&nbsp;&nbsp;</option></select></td></tr></table><input type="hidden" id="keyPathReg" name="keyPathReg"><input type="hidden" id="keyOldNameReg" name="keyOldNameReg"><input type="hidden" id="keyDefReg" name="keyDefReg"><input type="hidden" id="isKey" name="isKey"><textarea  id="keyValueReg" name="keyValueReg" style="width:250px; font-family:\'Lucida Console\', Monaco, monospace; font-size:11px; height:75px; font-weight:normal;"' + SelectDisable + '>' + keyValue + '</textarea><input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" /></form>',
 			'draggable'   : true,
 			'overlay'     : true,
 			'closeButton' : false,
@@ -77,7 +77,7 @@
 	function regadd(keyPath){
 		$.Dialog({
 			'title'       : '<span style="font-size:16px;">&nbsp;<div class="icon-grid" style="position:inherit;"></div>&nbsp; Add New <strong>Key</strong> or <strong>Value</strong></span>',
-			'content'     : '<form id="keyAdd" name="keyAdd" method="post"><table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped"><tr class="rowselect"><td width="50%" style="font-size:12px;">Name:&nbsp;</td><td width="50%" style="font-size:10px;"><input type="text" id="keyAddName" name="keyAddName" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px; padding-left:4px; padding-right:4px; font-size:12px;" value="New Entry"></td></tr><tr class="rowselect"><td width="50%" style="font-size:12px;">Type:&nbsp;</td><td width="50%" style="font-size:10px;"><select id="keyAddType" name="keyAddType" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px;"><option value="KEY">&nbsp;KEY&nbsp;&nbsp;</option><option value="" disabled="disabled"></option><option value="REG_SZ">&nbsp;REG_SZ&nbsp;&nbsp;</option><option value="REG_NONE">&nbsp;REG_NONE&nbsp;&nbsp;</option><option value="REG_EXPAND_SZ">&nbsp;REG_EXPAND_SZ&nbsp;&nbsp;</option><option value="REG_BINARY">&nbsp;REG_BINARY&nbsp;&nbsp;</option><option value="REG_DWORD">&nbsp;REG_DWORD&nbsp;&nbsp;</option><option value="REG_MULTI_SZ">&nbsp;REG_MULTI_SZ&nbsp;&nbsp;</option></select></td></tr></table><input type="hidden" id="keyPathReg" name="keyPathReg"><textarea id="keyAddValue" name="keyAddValue" style="width:250px; font-family:\'Lucida Console\', Monaco, monospace; font-size:11px; height:75px; font-weight:normal;"></textarea></form>',
+			'content'     : '<form id="keyAdd" name="keyAdd" method="post"><table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped"><tr class="rowselect"><td width="50%" style="font-size:12px;">Name:&nbsp;</td><td width="50%" style="font-size:10px;"><input type="text" id="keyAddName" name="keyAddName" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px; padding-left:4px; padding-right:4px; font-size:12px;" value="New Entry"></td></tr><tr class="rowselect"><td width="50%" style="font-size:12px;">Type:&nbsp;</td><td width="50%" style="font-size:10px;"><select id="keyAddType" name="keyAddType" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:105px;"><option value="KEY">&nbsp;KEY&nbsp;&nbsp;</option><option value="" disabled="disabled"></option><option value="REG_SZ">&nbsp;REG_SZ&nbsp;&nbsp;</option><option value="REG_NONE">&nbsp;REG_NONE&nbsp;&nbsp;</option><option value="REG_EXPAND_SZ">&nbsp;REG_EXPAND_SZ&nbsp;&nbsp;</option><option value="REG_BINARY">&nbsp;REG_BINARY&nbsp;&nbsp;</option><option value="REG_DWORD">&nbsp;REG_DWORD&nbsp;&nbsp;</option><option value="REG_MULTI_SZ">&nbsp;REG_MULTI_SZ&nbsp;&nbsp;</option></select></td></tr></table><input type="hidden" id="keyPathReg" name="keyPathReg"><textarea id="keyAddValue" name="keyAddValue" style="width:250px; font-family:\'Lucida Console\', Monaco, monospace; font-size:11px; height:75px; font-weight:normal;"></textarea><input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" /></form>',
 			'draggable'   : true,
 			'overlay'     : true,
 			'closeButton' : false,
@@ -143,7 +143,11 @@
 					}
 
 					if (isset($_GET['page'])) {
-						$pgkey = $_GET['page'] - 1;
+						if (is_numeric($_GET['page'])) {
+							$pgkey = $_GET['page'] - 1;
+						} else {
+							$pgkey = 0;
+						}
 					} else {
 						$pgkey = 0;
 					}
@@ -201,16 +205,17 @@
 					
 					if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['systemregistry'] > 1) {
 					
-						if (isset($_POST['regexportconf']) && (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'])) > 0) {
+						if (isset($_POST['regexportconf']) && strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']) > 0 && isset($_POST[substr(md5('$_POST' . $_SESSION['tokenl']), 5, 15)])) {
 							$regexportpath = str_replace('\\\\', '\\', $_POST['regexportconf']);
-							if (file_exists($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.reg')) { @unlink($_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.reg'); }
+							if (file_exists($euryscoinstallpath . '\\temp\\core\\' . $random . '.reg')) { @unlink($euryscoinstallpath . '\\temp\\core\\' . $random . '.reg'); }
 							session_write_close();
-							exec('reg.exe export "' . $regexportpath . '" "' . $_SERVER['DOCUMENT_ROOT'] . '\\temp\\' . $random . '.reg' . '"', $errorarray, $errorlevel);
+							exec('reg.exe export "' . $regexportpath . '" "' . $euryscoinstallpath . '\\temp\\core\\' . $random . '.reg' . '"', $errorarray, $errorlevel);
 							session_start();
 							if ($errorlevel == 0) {
 								$message = '<blockquote style="font-size:12px; background-color:#0072C6; color:#FFFFFF; border-left-color:#324886;">export key <strong>' . $regexportpath . '</strong> completed</blockquote><br />';
 								$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     system registry     export key "' . $regexportpath . '" completed';
-								header('location: /download.php?download=' . $random . '.reg&path=' . $_SERVER['DOCUMENT_ROOT'] . '\\temp');
+								header('location: /download.php' . substr(md5('$_GET' . $sessiontoken), 5, 15) . '=' . substr(md5('$_GET' . $sessiontoken), 15, 25) . '&?download=' . $random . '.reg&path=' . $euryscoinstallpath . '\\temp\\core');
+								exit;
 							} else {
 								$message = '<blockquote style="font-size:12px; background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">export key <strong>' . $regexportpath . '</strong> not completed</blockquote><br />';
 								$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     system registry     export key "' . $regexportpath . '" not completed';
@@ -218,7 +223,7 @@
 							unset($_POST['regexportconf']);
 						}
 						
-						if (isset($_POST['keyPathReg']) && isset($_POST['keyAddName']) && isset($_POST['keyAddType']) && isset($_POST['keyAddValue']) && (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'])) > 0) {
+						if (isset($_POST['keyPathReg']) && isset($_POST['keyAddName']) && isset($_POST['keyAddType']) && isset($_POST['keyAddValue']) && strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']) > 0 && isset($_POST[substr(md5('$_POST' . $_SESSION['tokenl']), 5, 15)])) {
 							if ($_POST['keyAddName'] == '' || (!is_numeric($_POST['keyAddValue']) && $_POST['keyAddType'] == 'REG_DWORD') || (!is_numeric($_POST['keyAddValue']) && $_POST['keyAddType'] == 'REG_QWORD') || (!preg_match('/^[0-9\s]*$/', $_POST['keyAddValue']) && $_POST['keyAddType'] == 'REG_BINARY') || !preg_match('/^[a-zA-Z0-9\.;:,#\[\]\*+-@_\?\^\/()~$%&=\s]*$/', $_POST['keyAddName']) || !preg_match('/^[a-zA-Z0-9\.;:,#\[\]\*+-@_\?\^\/()~$%&=\s\r\n\\\]*$/', $_POST['keyAddValue'])) {
 							$message = '<blockquote style="font-size:12px; background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">disallowed characters for <strong>' . $_POST['keyAddType'] . '</strong> in <strong>' . $_POST['keyAddName'] . '</strong></blockquote><br />';
 							$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     system registry     disallowed characters for "' . $_POST['keyAddType'] . '" in "' . $_POST['keyPathReg'] . '\\' . $_POST['keyAddName'] . '"';
@@ -250,7 +255,7 @@
 							}
 						}
 						
-						if (isset($_POST['keyPathReg']) && isset($_POST['keyNameReg']) && isset($_POST['keyOldNameReg']) && isset($_POST['keyTypeReg']) && isset($_POST['confirmdelete']) && isset($_POST['keyValueReg']) && (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'])) > 0) {
+						if (isset($_POST['keyPathReg']) && isset($_POST['keyNameReg']) && isset($_POST['keyOldNameReg']) && isset($_POST['keyTypeReg']) && isset($_POST['confirmdelete']) && isset($_POST['keyValueReg']) && strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']) > 0 && isset($_POST[substr(md5('$_POST' . $_SESSION['tokenl']), 5, 15)])) {
 							if ($_POST['keyNameReg'] == '' || (!is_numeric($_POST['keyValueReg']) && $_POST['keyTypeReg'] == 'REG_DWORD') || (!is_numeric($_POST['keyValueReg']) && $_POST['keyTypeReg'] == 'REG_QWORD') || (!preg_match('/^[0-9\s]*$/', $_POST['keyValueReg']) && $_POST['keyTypeReg'] == 'REG_BINARY') || !preg_match('/^[a-zA-Z0-9\.;:,#\[\]\*+-@_\?\^\/()~$%&=\s]*$/', $_POST['keyNameReg']) || !preg_match('/^[a-zA-Z0-9\.;:,#\[\]\*+-@_\?\^\/()~$%&=\s\r\n\\\]*$/', $_POST['keyValueReg'])) {
 								$message = '<blockquote style="font-size:12px; background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">disallowed characters for <strong>' . $_POST['keyTypeReg'] . '</strong> in <strong>' . $_POST['keyNameReg'] . '</strong></blockquote><br />';
 								$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     system registry     disallowed characters for "' . $_POST['keyTypeReg'] . '" in "' . $_POST['keyPathReg'] . '\\' . $_POST['keyNameReg'] . '"';
@@ -325,6 +330,7 @@
                     <h2>Registry:</h2>
 					<form id="regexport" name="regexport" method="post">
                     	<input type="hidden" id="regexportconf" name="regexportconf" value="" />
+						<input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" />
 					</form>
                     <table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped">
 						<?php if ($_SESSION['usersett']['regeditf'] != '') { ?>
@@ -333,6 +339,7 @@
 							<select id="permkey" name="permkey" onChange="this.form.submit()" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; margin-top:2px; margin-bottom:2px; font-size:12px;">
 								<?php if ($regeditbllist != '') { echo $regeditbllist; } else { echo '<option>No Results...</option>'; } ?>
 							</select>
+							<input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" />
 						</form>
 						</td></tr>
 						<?php } ?>
@@ -347,24 +354,26 @@
 								<option value="HKEY_LOCAL_MACHINE" <?php if (strpos('|' . $keypath, 'HKEY_LOCAL_MACHINE') == 1) { echo 'selected'; } ?>>HKEY_LOCAL_MACHINE</option>
 								<option value="HKEY_USERS" <?php if (strpos('|' . $keypath, 'HKEY_USERS') == 1) { echo 'selected'; } ?>>HKEY_USERS</option>
 								<option value="HKEY_CURRENT_CONFIG" <?php if (strpos('|' . $keypath, 'HKEY_CURRENT_CONFIG') == 1) { echo 'selected'; } ?>>HKEY_CURRENT_CONFIG</option>
-							</select>&nbsp;&nbsp;<?php echo str_replace(' ', '&nbsp;', str_replace($hkey, '', $keypath)); if (strlen(str_replace($hkey, '', $keypath)) > 1) { echo '&nbsp;&nbsp;&nbsp;&nbsp;<a href="?orderby=' . $orderby . '&hkey=' . $hkey . '" title="Return to Root Key"><div class="icon-reply-2" style="margin-top:2px;"></div></a>'; } ?>
+							</select>&nbsp;&nbsp;<?php echo str_replace(' ', '&nbsp;', str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)str_replace($hkey, '', $keypath), ENT_QUOTES, 'UTF-8'))))); if (strlen(str_replace($hkey, '', $keypath)) > 1) { echo '&nbsp;&nbsp;&nbsp;&nbsp;<a href="?orderby=' . $orderby . '&hkey=' . str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$hkey, ENT_QUOTES, 'UTF-8')))) . '" title="Return to Root Key"><div class="icon-reply-2" style="margin-top:2px;"></div></a>'; } ?>
+							<input type="hidden" id="<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_GET' . $sessiontoken), 15, 25); ?>" />
 						</form>
 						<?php } ?>
                         </td></tr>
                     	<tr><td width="20%"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">Total Elements:</div></td><td width="80%"><div id="totalelement" style="font-size:12px;"></div></td></tr>
                     	<tr><td width="20%"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">Page Loading Time:</div></td><td width="80%"><div id="totaltime" style="font-size:12px;"></div></td></tr>
-                    	<tr><td width="20%"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">Reloading Time:</div></td><td width="80%" style="font-size:12px;"><?php if ($registryrrsetting != 'Hold') { echo number_format(($registryrrsetting / 1000), 0, ',', '.') . '&nbsp;sec&nbsp;&nbsp;'; } else { echo $registryrrsetting . '&nbsp;&nbsp;'; } ?><a href="?page=<?php echo $pgkey + 1; ?>&orderby=<?php echo $orderby; ?>&lastpath=<?php echo urlencode($keypath); ?>&keypath=&filter=<?php echo urlencode($filter); ?>&lastfilter=<?php echo $lastfilter; ?>" title="Reload Now"><div class="icon-loop"></div></a></td></tr>
-						<?php if ($filter != '') { ?><tr><td width="20%"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">Filter:</div></td><td width="80%" style="font-size:12px;"><i><?php echo $filter; ?></i></td></tr><?php } ?>
+                    	<tr><td width="20%"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">Reloading Time:</div></td><td width="80%" style="font-size:12px;"><?php if ($registryrrsetting != 'Hold') { echo number_format(($registryrrsetting / 1000), 0, ',', '.') . '&nbsp;sec&nbsp;&nbsp;'; } else { echo $registryrrsetting . '&nbsp;&nbsp;'; } ?><a href="?page=<?php echo $pgkey + 1; ?>&orderby=<?php echo $orderby; ?>&lastpath=<?php echo urlencode($keypath); ?>&keypath=&filter=<?php echo urlencode($filter); ?>&lastfilter=<?php echo strtolower(str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$lastfilter, ENT_QUOTES, 'UTF-8'))))); ?>" title="Reload Now"><div class="icon-loop"></div></a></td></tr>
+						<?php if ($filter != '') { ?><tr><td width="20%"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">Filter:</div></td><td width="80%" style="font-size:12px;"><i><?php echo str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$filter, ENT_QUOTES, 'UTF-8')))); ?></i></td></tr><?php } ?>
                     </table>
                     
 					<div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">
                     <blockquote style="font-size:12px; height:33px;" title="<?php echo 'Use Normal String for SIMPLE SEARCH' . "\n" . 'Use Regular Expression for COMPLEX SEARCH' . "\n" . 'Use Minus  -  for NOT CONTAIN' . "\n" . 'Use Pipe  |  for OR OPERATOR' . "\n" . 'Use Raw Data View for REFERENCES'; ?>">
                     	<form id="filterform" name="filterform" method="get">
-                        	Filter:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" id="filter" name="filter" placeholder="Regular Expression..." value="<?php echo $filter; ?>" title="<?php echo $filter; ?>" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; font-size:12px; border:solid; border-width:1px; border-color:#e5e5e5; width:170px; height:23px; padding-top:0px; padding-left:4px; padding-right:4px;" />&nbsp;&nbsp;<a href="javascript:;" onClick="document.getElementById('filterform').submit();" title="Filter by String or Regular Expression"><div class="icon-search"<?php if ($filter != '') { echo ' style="color:#8063C8;"'; } ?>></div></a><?php if ($filter != '') { ?>&nbsp;<a href="?orderby=<?php echo $orderby; ?>&lastpath=<?php echo urlencode($lastpath); ?>&hkey=<?php echo urlencode($hkey); ?>&keypath=" title="Clear Filter"><div class="icon-cancel"></div></a><?php } ?>
+                        	Filter:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" id="filter" name="filter" placeholder="Regular Expression..." value="<?php echo str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$filter, ENT_QUOTES, 'UTF-8')))); ?>" title="<?php echo str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$filter, ENT_QUOTES, 'UTF-8')))); ?>" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; font-size:12px; border:solid; border-width:1px; border-color:#e5e5e5; width:170px; height:23px; padding-top:0px; padding-left:4px; padding-right:4px;" />&nbsp;&nbsp;<a href="javascript:;" onClick="document.getElementById('filterform').submit();" title="Filter by String or Regular Expression"><div class="icon-search"<?php if ($filter != '') { echo ' style="color:#8063C8;"'; } ?>></div></a><?php if ($filter != '') { ?>&nbsp;<a href="?orderby=<?php echo $orderby; ?>&lastpath=<?php echo urlencode($lastpath); ?>&hkey=<?php echo urlencode($hkey); ?>&keypath=" title="Clear Filter"><div class="icon-cancel"></div></a><?php } ?>
                             <input type="hidden" id="orderby" name="orderby" value="<?php echo $orderby; ?>" />
-                            <input type="hidden" id="lastpath" name="lastpath" value="<?php echo $keypath; ?>" />
-                            <input type="hidden" id="hkey" name="hkey" value="<?php echo $hkey; ?>" />
+                            <input type="hidden" id="lastpath" name="lastpath" value="<?php echo str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$keypath, ENT_QUOTES, 'UTF-8')))); ?>" />
+                            <input type="hidden" id="hkey" name="hkey" value="<?php echo str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$hkey, ENT_QUOTES, 'UTF-8')))); ?>" />
                             <input type="hidden" id="keypath" name="keypath" value="" />
+							<input type="hidden" id="<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_GET' . $sessiontoken), 15, 25); ?>" />
 						</form>
 					</blockquote>
 					</div>
@@ -381,7 +390,7 @@
 					function update() {
 						$.ajax({
 							type: "GET",
-							url: 'registryjq.php?orderby=<?php echo $orderby; ?>&filter=<?php echo urlencode($filter); ?>&lastfilter=<?php echo $lastfilter; ?>&page=<?php echo $pgkey; ?>&keypath=<?php echo urlencode($keypath); ?>&hkey=<?php echo urlencode($hkey); ?>&phptimeout=<?php echo $phptimeout; ?>',
+							url: 'registryjq.php?<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15) . '=' . substr(md5('$_GET' . $sessiontoken), 15, 25); ?>&orderby=<?php echo $orderby; ?>&filter=<?php echo urlencode($filter); ?>&lastfilter=<?php echo strtolower(str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$lastfilter, ENT_QUOTES, 'UTF-8'))))); ?>&page=<?php echo $pgkey; ?>&keypath=<?php echo urlencode($keypath); ?>&hkey=<?php echo urlencode(str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$hkey, ENT_QUOTES, 'UTF-8'))))); ?>&phptimeout=<?php echo $phptimeout; ?>',
 							data: '',
 							dataType: 'json',
 							cache: false,
@@ -389,7 +398,7 @@
 							contentType: "application/json; charset=utf-8",
 							success: function (data) {
 							$('#registrytable').html(data.registrytable);
-							$('#totalelement').html(data.totalelement + '&nbsp;&nbsp;<a href="<?php echo $_SERVER['SCRIPT_NAME']; ?>?lastpath=<?php echo urlencode($lastpath); ?>&hkey=<?php echo urlencode($hkey); ?>&lastfilter=<?php echo $lastfilter; ?>&keypath=" title="Reset View"><div class="icon-undo"></div></a>');
+							$('#totalelement').html(data.totalelement + '&nbsp;&nbsp;<a href="<?php echo $_SERVER['SCRIPT_NAME']; ?>?lastpath=<?php echo urlencode($lastpath); ?>&hkey=<?php echo urlencode($hkey); ?>&lastfilter=<?php echo strtolower(str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$lastfilter, ENT_QUOTES, 'UTF-8'))))); ?>&keypath=" title="Reset View"><div class="icon-undo"></div></a>');
 							$('#totaltime').html(data.totaltime);
 							$('#regexportconf').attr('value', data.regexportconf);
 							}

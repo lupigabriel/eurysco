@@ -39,40 +39,32 @@ netsh.exe advfirewall firewall delete rule name=httpd_eurysco_server dir=in
 reg.exe delete "HKLM\SOFTWARE\eurysco" /f
 
 del .\chromium\euryscoLogin.prt /f /q
+del .\audit\*.* /f /q
 del .\cert\*.* /f /q
-del .\server\conf\*.xml /f /q
-del .\agent\conf\*.xml /f /q
-del .\agent\temp\*.status /f /q
-del .\agent\conf\agent.init.php /f /q
+del .\conf\*.* /f /q
+del .\sqlite\*.* /f /q
+del .\agent\conf\*.* /f /q
 del .\agent\temp\*.* /f /q
 del .\agent\users\*.* /f /q
-del .\core\conf\*.xml /f /q
-del .\core\temp\*.* /f /q
-del .\core\badaut\*.* /f /q
-for /f "delims=" %%i in ('dir .\nodes /b') do rd .\nodes\%%i /s /q
-del .\php_x86\php.ini /f /q
-del .\php_x86_xp2k3\php.ini /f /q
-del .\apache_x86\cert\eurysco.* /f /q
-del .\apache_x86\logs\*.* /f /q
-del .\apache_x86\tmp\*.* /f /q
-type NUL >.\apache_x86\conf\httpd_eurysco_core_port.conf
-type NUL >.\apache_x86\conf\httpd_eurysco_core_virtual.conf
-type NUL >.\apache_x86\conf\httpd_eurysco_executor_port.conf
-type NUL >.\apache_x86\conf\httpd_eurysco_executor_virtual.conf
-type NUL >.\apache_x86\conf\httpd_eurysco_server_port.conf
-type NUL >.\apache_x86\conf\httpd_eurysco_server_virtual.conf
-type NUL >.\apache_x86\conf\httpd_srvroot.conf
-del .\php_x64\php.ini /f /q
-del .\apache_x64\cert\eurysco.* /f /q
-del .\apache_x64\logs\*.* /f /q
-del .\apache_x64\tmp\*.* /f /q
-type NUL >.\apache_x64\conf\httpd_eurysco_core_port.conf
-type NUL >.\apache_x64\conf\httpd_eurysco_core_virtual.conf
-type NUL >.\apache_x64\conf\httpd_eurysco_executor_port.conf
-type NUL >.\apache_x64\conf\httpd_eurysco_executor_virtual.conf
-type NUL >.\apache_x64\conf\httpd_eurysco_server_port.conf
-type NUL >.\apache_x64\conf\httpd_eurysco_server_virtual.conf
-type NUL >.\apache_x64\conf\httpd_srvroot.conf
+del .\agent\groups\*.* /f /q
+del .\temp\core\*.* /f /q
+del .\temp\server\*.* /f /q
+del .\badaut\core\*.* /f /q
+del .\badaut\server\*.* /f /q
+for /f "delims=" %%i in ('dir .\nodes /a:d /b') do rd .\nodes\%%i /s /q
+del .\php\php.ini /f /q
+del .\php\logs\*.* /f /q
+del .\php\temp\*.* /f /q
+del .\apache\logs\*.* /f /q
+del .\apache\tmp\*.* /f /q
+del .\metering\*.* /f /q
+type NUL >.\apache\conf\httpd_eurysco_core_port.conf
+type NUL >.\apache\conf\httpd_eurysco_core_virtual.conf
+type NUL >.\apache\conf\httpd_eurysco_executor_port.conf
+type NUL >.\apache\conf\httpd_eurysco_executor_virtual.conf
+type NUL >.\apache\conf\httpd_eurysco_server_port.conf
+type NUL >.\apache\conf\httpd_eurysco_server_virtual.conf
+type NUL >.\apache\conf\httpd_srvroot.conf
 
 sc.exe delete euryscoAgent
 sc.exe delete euryscoCore

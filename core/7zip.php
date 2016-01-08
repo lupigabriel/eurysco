@@ -2,7 +2,7 @@
 
 <?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filebrowser'] > 0) {  } else { header('location: /'); exit; } ?>
 
-<?php $_SESSION['zipextract'] = $_SERVER['REQUEST_URI']; ?>
+<?php $_SESSION['zipextract'] = htmlspecialchars((string)$_SERVER['REQUEST_URI'], ENT_QUOTES, 'UTF-8'); ?>
 
 <?php include("navigation.php"); ?>
 
@@ -14,9 +14,10 @@
 <?php
 
 if (isset($_GET["file"])) {
-	$filetoread = $_GET["file"];
+	$filetoread = $_GET['file'];
 } else {
-	$filetoread = '';
+	unset($_SESSION['zipextract']);
+	header('location: /'); exit;
 }
 
 if (isset($_GET['path'])) {
@@ -40,7 +41,7 @@ if (isset($_GET['name'])) {
 if (isset($_POST['extractfolder'])) {
 	$extractfolder = $_POST['extractfolder'];
 } else {
-	$extractfolder = '';
+	$extractfolder = $name . '.extract';
 }
 
 if (isset($_POST['extractpass'])) {
@@ -56,6 +57,10 @@ if (isset($_GET["close"])) {
 	exit;
 }
 
+if (!isset($_SESSION['7zip_' . md5($filetoread)])) {
+	$_SESSION['7zip_' . md5($filetoread)] = 0;
+}
+
 ?>
 
 <?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filebrowser'] > 1) { ?>
@@ -63,7 +68,7 @@ if (isset($_GET["close"])) {
 	function extract(){
 		$.Dialog({
 			'title'       : '<span style="font-size:16px;">&nbsp;<div class="icon-file-zip" style="position:inherit;"></div>&nbsp; Extract <strong><?php if (strlen($name) > 15) { echo str_replace('\'', '\\\'', substr($name, 0, 15)) . '&nbsp;[...]'; } else { echo str_replace('\'', '\\\'', $name); }; ?></strong></span>',
-			'content'     : '<form id="extract" name="extract" method="post"><table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped"><tr><td width="35%" style="font-size:12px;">Folder:&nbsp;</td><td width="65%" style="font-size:10px;"><input type="text" id="extractfolder" name="extractfolder" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:135px; padding-left:4px; padding-right:4px; font-size:12px;" value="<?php echo str_replace('\'', '\\\'', $name); ?>.extract"></td></tr><tr><td width="35%" style="font-size:12px;">Password:&nbsp;</td><td width="65%" style="font-size:10px;"><input type="password" id="extractpass" name="extractpass" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:135px; padding-left:4px; padding-right:4px; font-size:12px;" value=""></td></tr></table><input type="hidden" id="zipextractconf" name="zipextractconf" value="zipextractconf" /></form>',
+			'content'     : '<span style="font-size:12px;">Please Confirm Extraction</span>',
 			'draggable'   : true,
 			'overlay'     : true,
 			'closeButton' : false,
@@ -76,7 +81,8 @@ if (isset($_GET["close"])) {
 			'buttons'     : {
 				'Extract'     : {
 				'action': function(){
-						document.getElementById("extract").submit();
+						document.getElementById("extract").value = '1';
+						document.getElementById("listextract").submit();
 					}
 				},
 				'Close'     : {
@@ -110,7 +116,7 @@ if (isset($_GET["close"])) {
 					<h2>Archive:</h2>
 					<?php if ($filetoread != '') { ?>
 						<blockquote style="font-size:12px;">
-							<?php echo strtolower($filetoread); ?><?php if ($download != '' && $path != '' ) { ?><?php if (file_exists($filetoread) && is_readable($filetoread)) { ?><?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filetransfer'] > 1) { ?>&nbsp;&nbsp;<a href="download.php?download=<?php echo urlencode($download); ?>&path=<?php echo urlencode($path); ?>" style="font-size:12px;" title="Download"><div class="icon-download-2"></div></a><?php } ?><?php } ?><?php } ?>
+							<?php echo strtolower(str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$filetoread, ENT_QUOTES, 'UTF-8'))))); ?><?php if ($download != '' && $path != '' ) { ?><?php if (file_exists($filetoread) && is_readable($filetoread)) { ?><?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filetransfer'] > 1) { ?>&nbsp;&nbsp;<a href="download.php?<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15) . '=' . substr(md5('$_GET' . $sessiontoken), 15, 25); ?>&download=<?php echo urlencode($download); ?>&path=<?php echo urlencode($path); ?>" style="font-size:12px;" title="Download"><div class="icon-download-2"></div></a><?php } ?><?php } ?><?php } ?>
 						</blockquote>
 					<?php } ?>
                     <br />
@@ -120,10 +126,11 @@ if (isset($_GET["close"])) {
 					</div>
 					
 					<?php
-					if (isset($_POST['zipextractconf']) && (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'])) > 0) {
-						$extract = 1;
-					} else {
-						$extract = 0;
+					$extract = 0;
+					if (isset($_POST['extract']) && strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']) > 0 && isset($_POST[substr(md5('$_POST' . $_SESSION['tokenl']), 5, 15)])) {
+						if ($_POST['extract'] == 1) {
+							$extract = 1;
+						}
 					}
 					?>
 
@@ -132,14 +139,18 @@ if (isset($_GET["close"])) {
 					function update() {
 						$.ajax({
 							type: "GET",
-							url: '7zipjq.php?file=<?php echo urlencode($filetoread); ?>&extract=<?php echo ($extract); ?>&path=<?php echo urlencode($path); ?>&extractfolder=<?php echo urlencode($extractfolder); ?>&extractpass=<?php echo urlencode($extractpass); ?>',
+							url: '7zipjq.php?<?php echo substr(md5('$_GET' . $sessiontoken), 5, 15) . '=' . substr(md5('$_GET' . $sessiontoken), 15, 25); ?>&file=<?php echo urlencode($filetoread); ?>&extract=<?php echo $extract; ?>&path=<?php echo urlencode($path); ?>&extractfolder=<?php echo urlencode($extractfolder); ?>&extractpass=<?php echo urlencode($extractpass); ?>&lock=<?php echo urlencode(md5($filetoread)); ?>',
 							data: '',
 							dataType: 'json',
 							cache: false,
 							contentType: "application/json; charset=utf-8",
 							success: function (data) {
 							$('#zipoutput').html(data.zipoutput);
-							$('#zipinfotop').html(data.zipinfotop);
+							if (data.ziplockstatus > 2) {
+								$('#zipinfotop').html('<form id="listextract" name="listextract" method="post"><input type="hidden" id="extract" name="extract" /><table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped">' + data.zipinfotop + '<tr><td width="30%" style="font-size:12px;">Extract Folder:</td><td width="70%" style="font-size:12px;"><input type="text" id="extractfolder" name="extractfolder" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:200px; padding-left:4px; padding-right:4px; font-size:12px;" value="<?php echo str_replace('\'', '\\\'', strtolower(str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$extractfolder, ENT_QUOTES, 'UTF-8')))))); ?>" /></td></tr><tr><td width="30%" style="font-size:12px;">Password:</td><td width="70%" style="font-size:12px;"><i>Locked by Current Session</i><input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" /></td></tr></table></form>');
+							} else {
+								$('#zipinfotop').html('<form id="listextract" name="listextract" method="post"><input type="hidden" id="extract" name="extract" /><table width="100%" border="0" cellspacing="0" cellpadding="0" class="striped">' + data.zipinfotop + '<tr><td width="30%" style="font-size:12px;">Extract Folder:</td><td width="70%" style="font-size:12px;"><input type="text" id="extractfolder" name="extractfolder" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:200px; padding-left:4px; padding-right:4px; font-size:12px;" value="<?php echo str_replace('\'', '\\\'', strtolower(str_replace(')', '&rpar;', str_replace('(', '&lpar;', str_replace('=', '&equals;', htmlspecialchars((string)$extractfolder, ENT_QUOTES, 'UTF-8')))))); ?>" /></td></tr><tr><td width="30%" style="font-size:12px;">Password:</td><td width="70%" style="font-size:12px;"><input type="password" autocomplete="off" id="extractpass" name="extractpass" style="font-family:\'Segoe UI Light\',\'Open Sans\',Verdana,Arial,Helvetica,sans-serif; border:solid; border-width:1px; border-color:#e5e5e5; background-color:#fafafa; width:200px; padding-left:4px; padding-right:4px; font-size:12px;" value="<?php echo $extractpass; ?>" /></td></tr></table><input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" /></form>');
+							}
 							$('#zipinfobottom').html(data.zipinfobottom);
 							$('#zipoutput').scrollTop($('#zipoutput')[0].scrollHeight);
 							}
@@ -151,7 +162,7 @@ if (isset($_GET["close"])) {
                     
 					<?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filebrowser'] > 1) { ?>
 					<?php if (file_exists($filetoread)) { ?>
-					<a href="javascript:extract()"><button style="background-color:#603CBA; color:#FFF;">Extract</button></a>
+					<a href="#" onclick="document.listextract.submit();"><button style="background-color:#603CBA; color:#FFF;">List</button></a>&nbsp;<a href="javascript:extract()"><button style="background-color:#888; color:#FFF;">Extract</button></a>
                     <?php } ?>
 					<?php } ?>
 

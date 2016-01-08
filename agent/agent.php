@@ -1,16 +1,20 @@
 <?php
 
+$euryscoinstallpath = str_replace('\\agent', '', $_SESSION['agentpath']);
+
 sleep(5);
 exec('taskkill.exe /f /im "eurysco.agent.status.check.exe" /t >nul 2>nul');
 sleep(5);
-pclose(popen('start "eurysco agent status check" /b "' . $_SESSION['agentpath'] . '\\eurysco.agent.status.check.exe" "' . $_SESSION['agentpath'] . '\\temp\\agent.status" >nul 2>nul', 'r'));
+pclose(popen('start "eurysco agent status check" /b "' . $euryscoinstallpath . '\\ext\\eurysco.agent.status.check.exe" "' . $_SESSION['agentpath'] . '\\temp\\agent.status" >nul 2>nul', 'r'));
 sleep(5);
 
+$agentbind = '';
 $agentstatus = '';
+$agentkey = '';
 
-$agentversion = include(str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\version.phtml');
+$agentversion = include($euryscoinstallpath . '\\core\\version.phtml');
 
-@include($_SESSION['agentpath'] . '\\' . 'agent.init.php');
+@include($_SESSION['agentpath'] . '\\agent.init.php');
 
 $cycle_count = 1;
 $cycle_count_processes = 1;
@@ -25,9 +29,10 @@ $cycle_count_netstat = 1;
 $checkdownload = 0;
 $settings = '0null';
 
-$config_settings = $_SESSION['agentpath'] . '\\conf\\config_settings.xml';
-$config_core = $_SESSION['agentpath'] . '\\conf\\config_core.xml';
-$config_executor = $_SESSION['agentpath'] . '\\conf\\config_executor.xml';
+$config_settings = $euryscoinstallpath . '\\conf\\config_settings.xml';
+$config_core = $euryscoinstallpath . '\\conf\\config_core.xml';
+$config_executor = $euryscoinstallpath . '\\conf\\config_executor.xml';
+$config_key = $_SESSION['agentpath'] . '\\conf\\agent.key';
 
 $templist = scandir($_SESSION['agentpath'] . '\\temp\\');
 foreach($templist as $temp) {
@@ -37,7 +42,7 @@ foreach($templist as $temp) {
 }
 
 $wmi = new COM('winmgmts://');
-require('/include/class.WindowsRegistry.php');
+require($euryscoinstallpath . '\\include\\class.WindowsRegistry.php');
 $winReg = new WindowsRegistry();
 
 $cs_computername = '-';
@@ -69,7 +74,7 @@ foreach($wmios as $os) {
 	$osversion = preg_replace('/\..*/', '', $os->Version);
 }
 
-$config_agentsrv = $_SESSION['agentpath'] . '\\conf\\config_agent.xml';
+$config_agentsrv = $euryscoinstallpath . '\\conf\\config_agent.xml';
 $eurysco_serverconaddress = '';
 $eurysco_serverconport = '';
 $eurysco_serverconpassword = '';
@@ -87,7 +92,7 @@ if (file_exists($config_agentsrv)) {
 $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
 $iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);
 $mcrykey = pack('H*', hash('sha256', hash('sha512', 'vNqgi_R1QX%C;z-724p4lFHm*?7c!e2%vG9tp+-*@#%=?!_;./' . hash('tiger128,4', $eurysco_serverconport) . '-*@#%=?!_;./-f;bTh2XXqW%Zs%88+/-7pVb;X')));
-$mcrykeycmd = pack('H*', hash('sha256', md5(strtolower($cs_computername))));
+if (file_exists($config_key)) { $mcrykeycmd = pack('H*', hash('sha256', fgets(fopen($config_key, 'r')))); } else { $mcrykeycmd = pack('H*', hash('sha256', md5(strtolower($cs_computername)))); }
 
 while(true) {
 
@@ -137,6 +142,14 @@ while(true) {
 			$cycle_count_nagios_limit = 2;
 			$cycle_count_netstat_limit = 8;
 		}
+		
+		if (!file_exists($config_key)) {
+			$agentkey = trim(hash('sha512', md5(rand(1000000,9999999) . $cs_computername . $cs_domain . $cs_manufacturer . $cs_model)));
+			$agentkeyp = base64_encode($iv . mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $mcrykeycmd, $agentkey, MCRYPT_MODE_CBC, $iv));
+		} else {
+			$agentkey = md5(rand(1000000,9999999) . $cs_computername . $cs_domain . $cs_manufacturer . $cs_model);
+			$agentkeyp = $agentkey;
+		}
 
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $eurysco_sslverifypeer);
@@ -146,326 +159,379 @@ while(true) {
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, false);
 		curl_setopt($ch, CURLOPT_USERPWD, trim(hash('sha256', $eurysco_serverconport . 'euryscoServer' . $eurysco_serverconport)) . ':' . trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykey, substr(base64_decode($eurysco_serverconpassword), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($eurysco_serverconpassword), 0, $iv_size))));
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-		curl_exec($ch);
-
-		// ### SYSTEM STATUS ###
-		if ($refreshrate < 120) { @include($_SESSION['agentpath'] . '\\' . 'agent.status.php'); }
-
-		if (strpos($agentstatus, 'Connection Success') > 0 && $refreshrate < 120) {
-		
-			// ### SYSTEM PROCESSES ###
-			if ($cycle_count_processes_limit != 'Hold' || $cycle_count == 1 || $cycle_count_processes == 1000) {
-				if ($cycle_count_processes >= $cycle_count_processes_limit || $cycle_count == 1) {
-					$processes_total = 0;
-					@include($_SESSION['agentpath'] . '\\' . 'agent.processes.php');
-					if (@filesize($_SESSION['agentpath'] . '\\temp\\processes.xml.gz') == 0) {
-						@unlink($_SESSION['agentpath'] . '\\temp\\processes.xml.gz');
-					} else {
-						if ($processes != hash_file('md2', $_SESSION['agentpath'] . '\\temp\\processes.xml.gz')) {
-							curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport . '/upload.php');
-							curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-							curl_setopt($ch, CURLOPT_POST, true);
-							$data = array(
-								'type' => 'nodes',
-								'node' => $cs_computername,
-								'file' => '@' . $_SESSION['agentpath'] . '\\temp\\processes.xml.gz',
-								'comp' => 'comp',
-							);
-							curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-							curl_exec($ch);
-						}
-					}
-					$cycle_count_processes = 1;
-				}
-			}
-
-			// ### SYSTEM SERVICES ###
-			if ($cycle_count_services_limit != 'Hold' || $cycle_count == 1 || $cycle_count_services == 1000) {
-				if ($cycle_count_services >= $cycle_count_services_limit || $cycle_count == 1) {
-					$services_total = 0;
-					$services_running = 0;
-					$services_error = 0;
-					@include($_SESSION['agentpath'] . '\\' . 'agent.services.php');
-					if (@filesize($_SESSION['agentpath'] . '\\temp\\services.xml.gz') == 0) {
-						@unlink($_SESSION['agentpath'] . '\\temp\\services.xml.gz');
-					} else {
-						if ($services != hash_file('md2', $_SESSION['agentpath'] . '\\temp\\services.xml.gz')) {
-							curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport . '/upload.php');
-							curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-							curl_setopt($ch, CURLOPT_POST, true);
-							$data = array(
-								'type' => 'nodes',
-								'node' => $cs_computername,
-								'file' => '@' . $_SESSION['agentpath'] . '\\temp\\services.xml.gz',
-								'comp' => 'comp',
-							);
-							curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-							curl_exec($ch);
-						}
-					}
-					$cycle_count_services = 1;
-				}
-			}
-
-			// ### SYSTEM SCHEDULER ###
-			if ($cycle_count_scheduler_limit != 'Hold' || $cycle_count == 1 || $cycle_count_scheduler == 1000) {
-				if ($cycle_count_scheduler >= $cycle_count_scheduler_limit || $cycle_count == 1) {
-					$scheduler_total = 0;
-					$scheduler_error = 0;
-					@include($_SESSION['agentpath'] . '\\' . 'agent.scheduler.php');
-					if (@filesize($_SESSION['agentpath'] . '\\temp\\scheduler.xml.gz') == 0) {
-						@unlink($_SESSION['agentpath'] . '\\temp\\scheduler.xml.gz');
-					} else {
-						if ($scheduler != hash_file('md2', $_SESSION['agentpath'] . '\\temp\\scheduler.xml.gz')) {
-							curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport . '/upload.php');
-							curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-							curl_setopt($ch, CURLOPT_POST, true);
-							$data = array(
-								'type' => 'nodes',
-								'node' => $cs_computername,
-								'file' => '@' . $_SESSION['agentpath'] . '\\temp\\scheduler.xml.gz',
-								'comp' => 'comp',
-							);
-							curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-							curl_exec($ch);
-						}
-					}
-					$cycle_count_scheduler = 1;
-				}
-			}
-
-			// ### SYSTEM EVENTS ###
-			if ($cycle_count_events_limit != 'Hold' || $cycle_count == 1) {
-				if ($cycle_count_events >= $cycle_count_events_limit || $cycle_count == 1) {
-					$events_warning = 0;
-					$events_error = 0;
-					@include($_SESSION['agentpath'] . '\\' . 'agent.events.php');
-					if (@filesize($_SESSION['agentpath'] . '\\temp\\events.xml.gz') == 0) {
-						@unlink($_SESSION['agentpath'] . '\\temp\\events.xml.gz');
-					} else {
-						if ($events != hash_file('md2', $_SESSION['agentpath'] . '\\temp\\events.xml.gz')) {
-							curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport . '/upload.php');
-							curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-							curl_setopt($ch, CURLOPT_POST, true);
-							$data = array(
-								'type' => 'nodes',
-								'node' => $cs_computername,
-								'file' => '@' . $_SESSION['agentpath'] . '\\temp\\events.xml.gz',
-								'comp' => 'comp',
-							);
-							curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-							curl_exec($ch);
-						}
-					}
-					$cycle_count_events = 1;
-				}
-			}
-
-			// ### SYSTEM PROGRAMS ###
-			if ($cycle_count_programs_limit != 'Hold' || $cycle_count == 1) {
-				if ($cycle_count_programs >= $cycle_count_programs_limit || $cycle_count == 1) {
-					@include($_SESSION['agentpath'] . '\\' . 'agent.programs.php');
-					if (@filesize($_SESSION['agentpath'] . '\\temp\\programs.xml.gz') == 0) {
-						@unlink($_SESSION['agentpath'] . '\\temp\\programs.xml.gz');
-					} else {
-						if ($programs != hash_file('md2', $_SESSION['agentpath'] . '\\temp\\programs.xml.gz')) {
-							curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport . '/upload.php');
-							curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-							curl_setopt($ch, CURLOPT_POST, true);
-							$data = array(
-								'type' => 'nodes',
-								'node' => $cs_computername,
-								'file' => '@' . $_SESSION['agentpath'] . '\\temp\\programs.xml.gz',
-								'comp' => 'comp',
-							);
-							curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-							curl_exec($ch);
-						}
-					}
-					$cycle_count_programs = 1;
-				}
-			}
-
-			// ### SYSTEM INVENTORY ###
-			if ($cycle_count_inventory_limit != 'Hold' || $cycle_count == 1) {
-				if ($cycle_count_inventory >= $cycle_count_inventory_limit || $cycle_count == 1) {
-					@include($_SESSION['agentpath'] . '\\' . 'agent.inventory.php');
-					if (@filesize($_SESSION['agentpath'] . '\\temp\\inventory.xml.gz') == 0) {
-						@unlink($_SESSION['agentpath'] . '\\temp\\inventory.xml.gz');
-					} else {
-						if ($inventory != hash_file('md2', $_SESSION['agentpath'] . '\\temp\\inventory.xml.gz')) {
-							curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport . '/upload.php');
-							curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-							curl_setopt($ch, CURLOPT_POST, true);
-							$data = array(
-								'type' => 'nodes',
-								'node' => $cs_computername,
-								'file' => '@' . $_SESSION['agentpath'] . '\\temp\\inventory.xml.gz',
-								'comp' => 'comp',
-							);
-							curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-							curl_exec($ch);
-						}
-					}
-					$cycle_count_inventory = 1;
-				}
-			}
-
-			// ### NAGIOS STATUS ###
-			if ($cycle_count_nagios_limit != 'Hold' || $cycle_count == 1) {
-				if ($cycle_count_nagios >= $cycle_count_nagios_limit || $cycle_count == 1) {
-					@include($_SESSION['agentpath'] . '\\' . 'agent.nagios.php');
-					if (@filesize($_SESSION['agentpath'] . '\\temp\\nagios.xml.gz') == 0) {
-						@unlink($_SESSION['agentpath'] . '\\temp\\nagios.xml.gz');
-					} else {
-						if ($nagios != hash_file('md2', $_SESSION['agentpath'] . '\\temp\\nagios.xml.gz')) {
-							curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport . '/upload.php');
-							curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-							curl_setopt($ch, CURLOPT_POST, true);
-							$data = array(
-								'type' => 'nodes',
-								'node' => $cs_computername,
-								'file' => '@' . $_SESSION['agentpath'] . '\\temp\\nagios.xml.gz',
-								'comp' => 'comp',
-							);
-							curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-							curl_exec($ch);
-						}
-					}
-					$cycle_count_nagios = 1;
-				}
-			}
-
-			// ### NETSTAT STATUS ###
-			if ($cycle_count_netstat_limit != 'Hold' || $cycle_count == 1) {
-				if ($cycle_count_netstat >= $cycle_count_netstat_limit || $cycle_count == 1) {
-					@include($_SESSION['agentpath'] . '\\' . 'agent.netstat.php');
-					if (@filesize($_SESSION['agentpath'] . '\\temp\\netstat.xml.gz') == 0) {
-						@unlink($_SESSION['agentpath'] . '\\temp\\netstat.xml.gz');
-					} else {
-						if ($netstat != hash_file('md2', $_SESSION['agentpath'] . '\\temp\\netstat.xml.gz')) {
-							curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport . '/upload.php');
-							curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-							curl_setopt($ch, CURLOPT_POST, true);
-							$data = array(
-								'type' => 'nodes',
-								'node' => $cs_computername,
-								'file' => '@' . $_SESSION['agentpath'] . '\\temp\\netstat.xml.gz',
-								'comp' => 'comp',
-							);
-							curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-							curl_exec($ch);
-						}
-					}
-					$cycle_count_netstat = 1;
-				}
-			}
-
-			$cycle_count = $cycle_count + 1;
-			$cycle_count_processes = $cycle_count_processes + 1;
-			$cycle_count_services = $cycle_count_services + 1;
-			$cycle_count_scheduler = $cycle_count_scheduler + 1;
-			$cycle_count_events = $cycle_count_events + 1;
-			$cycle_count_programs = $cycle_count_programs + 1;
-			$cycle_count_inventory = $cycle_count_inventory + 1;
-			$cycle_count_nagios = $cycle_count_nagios + 1;
-			$cycle_count_netstat = $cycle_count_netstat + 1;
-
-		}
-		
-		// ### CHECK CONNECTION AND UPDATE STATUS ###
-		$xmlresponse = 'Error Connection';
-		$agentstatus = 'Disconnected';
-		if (!isset($refreshrate)) { $refreshrate = 15; }
-		curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_POST, true);
 		$data = array(
-			'configstatus' => $config_settings_status,
-			'agentversion' => $agentversion,
-			'refreshrate' => $refreshrate,
+			'agentkey' => $agentkeyp,
 			'computername' => $cs_computername,
-			'coreport' => $core_port,
-			'executorport' => $executor_port,
-			'cpuusage' => $cpuload,
-			'cpumanufacturer' => preg_replace('/[^a-zA-Z0-9 \.;\\\\:,#\[\]\*+-@_\?\^\/()~$%&=\r\n]*/', '', $cpumanu),
-			'cpumodel' => str_replace('  ', ' ', str_replace('   ', ' ', preg_replace('/[^a-zA-Z0-9 \.;\\\\:,#\[\]\*+-@_\?\^\/()~$%&=\r\n]*/', '', $cpuname))),
-			'cpucurrentclock' => number_format($cpucclo, 0, ',', '.'),
-			'cpumaxclock' => number_format($cpumclo, 0, ',', '.'),
-			'cpuarchitecture' => $cpuaddr,
-			'cpucores' => $cpucore,
-			'cputhreads' => $cpulogp,
-			'cpusockettype' => $cpusock,
-			'osname' => preg_replace('/[^a-zA-Z0-9 \.;\\\\:,#\[\]\*+-@_\?\^\/()~$%&=\r\n]*/', '', $oscname),
-			'osversion' => $osversi,
-			'osservicepack' => preg_replace('/[^a-zA-Z0-9 \.;\\\\:,#\[\]\*+-@_\?\^\/()~$%&=\r\n]*/', '', $osservp),
-			'osserialnumber' => $ossernm,
-			'manufacturer' => $cs_manufacturer,
-			'model' => $cs_model,
-			'domain' => $cs_domain,
-			'totalprocesses' => $processes_total,
-			'localdatetime' => $oscurtm,
-			'lastbootuptime' => $oslastb,
-			'uptime' => $osuptim,
-			'memoryusage' => $ramuspc,
-			'totalmemory' => number_format($totaram, 0, ',', '.'),
-			'usedmemory' => number_format($ramused, 0, ',', '.'),
-			'freememory' => number_format($freeram, 0, ',', '.'),
-			'sysdiskuspc' => $dskuspc,
-			'sysdiskfree' => $freedsk,
-			'sysdisksize' => $totadsk,
-			'sysdiskused' => $dskused,
-			'sysdisktype' => $dskfisy,
-			'services_total' => $services_total,
-			'services_running' => $services_running,
-			'services_error' => $services_error,
-			'scheduler_total' => $scheduler_total,
-			'scheduler_error' => $scheduler_error,
-			'events_warning' => $events_warning,
-			'events_error' => $events_error,
-			'nagios_status' => $nagios_status,
-			'nagiostotalcount' => $nagiostotalcount,
-			'nagiosnormacount' => $nagiosnormacount,
-			'nagioswarnicount' => $nagioswarnicount,
-			'nagioscriticount' => $nagioscriticount,
-			'nagiosunknocount' => $nagiosunknocount,
-			'netstatestcount' => $netstatestcount,
-			'netstatliscount' => $netstatliscount,
-			'netstattimcount' => $netstattimcount,
-			'netstatclocount' => $netstatclocount,
-			'netstat_status' => $netstat_status,
-			'inventory_status' => $inventory_status,
-			'programs_status' => $programs_status,
 		);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-		$xmlresponse = curl_exec($ch);
-		if ($xmlresponse === false) {
-			$xmlresponse = 'Error Connection';
-			$agentstatus = curl_error($ch);
-			$refreshrate = 15;
+		$conresponse = curl_exec($ch);
+		if ($conresponse === false) {
+			$conresponse = 'Error Connection';
+			$agentbind = curl_error($ch);
+			$refreshrate = 60;
 		} else {
 			try {
-				$xmlsrv = new SimpleXMLElement($xmlresponse);
-				$agentstatus = $xmlsrv->connectionstatus;
-				if ($xmlsrv->refreshrate != 'Hold') { $refreshrate = $xmlsrv->refreshrate / 1000; } else { $refreshrate = 120; }
-				if ($cycle_count_status_limit != 1) { $refreshrate = 120; }
-				$processes = $xmlsrv->processes;
-				$services = $xmlsrv->services;
-				$scheduler = $xmlsrv->scheduler;
-				$events = $xmlsrv->events;
-				$nagios = $xmlsrv->nagios;
-				$programs = $xmlsrv->programs;
-				$inventory = $xmlsrv->inventory;
-				$execcount = $xmlsrv->execcount;
-				$settings = $xmlsrv->settings;
+				$xmlsrv = new SimpleXMLElement($conresponse);
+				$agentbind = $xmlsrv->connectionstatus;
+				if (strpos($agentbind, 'Connection Success') > 0) {
+					$agentbind = 'Binding Error';
+					$refreshrate = 60;
+					$agentkeyresp = $xmlsrv->agentkeyresp;
+					if (strlen($agentkey) == 128 && trim($agentkeyresp) == trim(hash('sha512', $agentkey))) { 
+						$fp = fopen($config_key, 'w');
+						fwrite($fp, $agentkey);
+						fclose($fp);
+						$mcrykeycmd = pack('H*', hash('sha256', fgets(fopen($config_key, 'r'))));
+						$agentbind = 'Binding Success';
+						$refreshrate = 15;
+					}
+					if (strlen($agentkey) == 32 && trim($agentkeyresp) == trim(md5($agentkey . fgets(fopen($config_key, 'r'))))) {
+						$agentbind = 'Binding Success';
+						$refreshrate = 15;
+					}
+				}
 			} catch(Exception $e) {
-				$xmlresponse = 'Error Connection';
-				$agentstatus = 'Disconnected';
-				$refreshrate = 15;
+				$conresponse = 'Error Connection';
+				$agentbind = 'Binding Error';
+				$refreshrate = 60;
 			}
 		}
 		
-		$fp = fopen($_SESSION['agentpath'] . '\\temp\\' . 'agent.status', 'w');
+		if ($agentbind != 'Binding Success') { $agentstatus = $agentbind; }
+		
+		if ($agentbind == 'Binding Success') {
+
+			// ### SYSTEM STATUS ###
+			if ($refreshrate < 120) { @include($_SESSION['agentpath'] . '\\agent.status.php'); }
+
+			if (strpos($agentstatus, 'Connection Success') > 0 && $refreshrate < 120) {
+			
+				// ### SYSTEM PROCESSES ###
+				if ($cycle_count_processes_limit != 'Hold' || $cycle_count == 1 || $cycle_count_processes == 1000) {
+					if ($cycle_count_processes >= $cycle_count_processes_limit || $cycle_count == 1) {
+						$processes_total = 0;
+						@include($_SESSION['agentpath'] . '\\agent.processes.php');
+						if (@filesize($_SESSION['agentpath'] . '\\temp\\processes.xml.gz') == 0) {
+							@unlink($_SESSION['agentpath'] . '\\temp\\processes.xml.gz');
+						} else {
+							if ($processes != hash_file('md5', $_SESSION['agentpath'] . '\\temp\\processes.xml.gz')) {
+								curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport . '/upload.php');
+								curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+								curl_setopt($ch, CURLOPT_POST, true);
+								if ($osversion > 5) { $curlupld = new CurlFile($_SESSION['agentpath'] . '\\temp\\processes.xml.gz'); } else { $curlupld = '@' . $_SESSION['agentpath'] . '\\temp\\processes.xml.gz'; }
+								$data = array(
+									'type' => 'nodes',
+									'node' => $cs_computername,
+									'file' => $curlupld,
+									'comp' => 'comp',
+								);
+								curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+								curl_exec($ch);
+							}
+						}
+						$cycle_count_processes = 1;
+					}
+				}
+
+				// ### SYSTEM SERVICES ###
+				if ($cycle_count_services_limit != 'Hold' || $cycle_count == 1 || $cycle_count_services == 1000) {
+					if ($cycle_count_services >= $cycle_count_services_limit || $cycle_count == 1) {
+						$services_total = 0;
+						$services_running = 0;
+						$services_error = 0;
+						@include($_SESSION['agentpath'] . '\\agent.services.php');
+						if (@filesize($_SESSION['agentpath'] . '\\temp\\services.xml.gz') == 0) {
+							@unlink($_SESSION['agentpath'] . '\\temp\\services.xml.gz');
+						} else {
+							if ($services != hash_file('md5', $_SESSION['agentpath'] . '\\temp\\services.xml.gz')) {
+								curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport . '/upload.php');
+								curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+								curl_setopt($ch, CURLOPT_POST, true);
+								if ($osversion > 5) { $curlupld = new CurlFile($_SESSION['agentpath'] . '\\temp\\services.xml.gz'); } else { $curlupld = '@' . $_SESSION['agentpath'] . '\\temp\\services.xml.gz'; }
+								$data = array(
+									'type' => 'nodes',
+									'node' => $cs_computername,
+									'file' => $curlupld,
+									'comp' => 'comp',
+								);
+								curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+								curl_exec($ch);
+							}
+						}
+						$cycle_count_services = 1;
+					}
+				}
+
+				// ### SYSTEM SCHEDULER ###
+				if ($cycle_count_scheduler_limit != 'Hold' || $cycle_count == 1 || $cycle_count_scheduler == 1000) {
+					if ($cycle_count_scheduler >= $cycle_count_scheduler_limit || $cycle_count == 1) {
+						$scheduler_total = 0;
+						$scheduler_error = 0;
+						@include($_SESSION['agentpath'] . '\\agent.scheduler.php');
+						if (@filesize($_SESSION['agentpath'] . '\\temp\\scheduler.xml.gz') == 0) {
+							@unlink($_SESSION['agentpath'] . '\\temp\\scheduler.xml.gz');
+						} else {
+							if ($scheduler != hash_file('md5', $_SESSION['agentpath'] . '\\temp\\scheduler.xml.gz')) {
+								curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport . '/upload.php');
+								curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+								curl_setopt($ch, CURLOPT_POST, true);
+								if ($osversion > 5) { $curlupld = new CurlFile($_SESSION['agentpath'] . '\\temp\\scheduler.xml.gz'); } else { $curlupld = '@' . $_SESSION['agentpath'] . '\\temp\\scheduler.xml.gz'; }
+								$data = array(
+									'type' => 'nodes',
+									'node' => $cs_computername,
+									'file' => $curlupld,
+									'comp' => 'comp',
+								);
+								curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+								curl_exec($ch);
+							}
+						}
+						$cycle_count_scheduler = 1;
+					}
+				}
+
+				// ### SYSTEM EVENTS ###
+				if ($cycle_count_events_limit != 'Hold' || $cycle_count == 1) {
+					if ($cycle_count_events >= $cycle_count_events_limit || $cycle_count == 1) {
+						$events_warning = 0;
+						$events_error = 0;
+						@include($_SESSION['agentpath'] . '\\agent.events.php');
+						if (@filesize($_SESSION['agentpath'] . '\\temp\\events.xml.gz') == 0) {
+							@unlink($_SESSION['agentpath'] . '\\temp\\events.xml.gz');
+						} else {
+							if ($events != hash_file('md5', $_SESSION['agentpath'] . '\\temp\\events.xml.gz')) {
+								curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport . '/upload.php');
+								curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+								curl_setopt($ch, CURLOPT_POST, true);
+								if ($osversion > 5) { $curlupld = new CurlFile($_SESSION['agentpath'] . '\\temp\\events.xml.gz'); } else { $curlupld = '@' . $_SESSION['agentpath'] . '\\temp\\events.xml.gz'; }
+								$data = array(
+									'type' => 'nodes',
+									'node' => $cs_computername,
+									'file' => $curlupld,
+									'comp' => 'comp',
+								);
+								curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+								curl_exec($ch);
+							}
+						}
+						$cycle_count_events = 1;
+					}
+				}
+
+				// ### SYSTEM PROGRAMS ###
+				if ($cycle_count_programs_limit != 'Hold' || $cycle_count == 1) {
+					if ($cycle_count_programs >= $cycle_count_programs_limit || $cycle_count == 1) {
+						@include($_SESSION['agentpath'] . '\\agent.programs.php');
+						if (@filesize($_SESSION['agentpath'] . '\\temp\\programs.xml.gz') == 0) {
+							@unlink($_SESSION['agentpath'] . '\\temp\\programs.xml.gz');
+						} else {
+							if ($programs != hash_file('md5', $_SESSION['agentpath'] . '\\temp\\programs.xml.gz')) {
+								curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport . '/upload.php');
+								curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+								curl_setopt($ch, CURLOPT_POST, true);
+								if ($osversion > 5) { $curlupld = new CurlFile($_SESSION['agentpath'] . '\\temp\\programs.xml.gz'); } else { $curlupld = '@' . $_SESSION['agentpath'] . '\\temp\\programs.xml.gz'; }
+								$data = array(
+									'type' => 'nodes',
+									'node' => $cs_computername,
+									'file' => $curlupld,
+									'comp' => 'comp',
+								);
+								curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+								curl_exec($ch);
+							}
+						}
+						$cycle_count_programs = 1;
+					}
+				}
+
+				// ### SYSTEM INVENTORY ###
+				if ($cycle_count_inventory_limit != 'Hold' || $cycle_count == 1) {
+					if ($cycle_count_inventory >= $cycle_count_inventory_limit || $cycle_count == 1) {
+						@include($_SESSION['agentpath'] . '\\agent.inventory.php');
+						if (@filesize($_SESSION['agentpath'] . '\\temp\\inventory.xml.gz') == 0) {
+							@unlink($_SESSION['agentpath'] . '\\temp\\inventory.xml.gz');
+						} else {
+							if ($inventory != hash_file('md5', $_SESSION['agentpath'] . '\\temp\\inventory.xml.gz')) {
+								curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport . '/upload.php');
+								curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+								curl_setopt($ch, CURLOPT_POST, true);
+								if ($osversion > 5) { $curlupld = new CurlFile($_SESSION['agentpath'] . '\\temp\\inventory.xml.gz'); } else { $curlupld = '@' . $_SESSION['agentpath'] . '\\temp\\inventory.xml.gz'; }
+								$data = array(
+									'type' => 'nodes',
+									'node' => $cs_computername,
+									'file' => $curlupld,
+									'comp' => 'comp',
+								);
+								curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+								curl_exec($ch);
+							}
+						}
+						$cycle_count_inventory = 1;
+					}
+				}
+
+				// ### NAGIOS STATUS ###
+				if ($cycle_count_nagios_limit != 'Hold' || $cycle_count == 1) {
+					if ($cycle_count_nagios >= $cycle_count_nagios_limit || $cycle_count == 1) {
+						@include($_SESSION['agentpath'] . '\\agent.nagios.php');
+						if (@filesize($_SESSION['agentpath'] . '\\temp\\nagios.xml.gz') == 0) {
+							@unlink($_SESSION['agentpath'] . '\\temp\\nagios.xml.gz');
+						} else {
+							if ($nagios != hash_file('md5', $_SESSION['agentpath'] . '\\temp\\nagios.xml.gz')) {
+								curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport . '/upload.php');
+								curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+								curl_setopt($ch, CURLOPT_POST, true);
+								if ($osversion > 5) { $curlupld = new CurlFile($_SESSION['agentpath'] . '\\temp\\nagios.xml.gz'); } else { $curlupld = '@' . $_SESSION['agentpath'] . '\\temp\\nagios.xml.gz'; }
+								$data = array(
+									'type' => 'nodes',
+									'node' => $cs_computername,
+									'file' => $curlupld,
+									'comp' => 'comp',
+								);
+								curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+								curl_exec($ch);
+							}
+						}
+						$cycle_count_nagios = 1;
+					}
+				}
+
+				// ### NETSTAT STATUS ###
+				if ($cycle_count_netstat_limit != 'Hold' || $cycle_count == 1) {
+					if ($cycle_count_netstat >= $cycle_count_netstat_limit || $cycle_count == 1) {
+						@include($_SESSION['agentpath'] . '\\agent.netstat.php');
+						if (@filesize($_SESSION['agentpath'] . '\\temp\\netstat.xml.gz') == 0) {
+							@unlink($_SESSION['agentpath'] . '\\temp\\netstat.xml.gz');
+						} else {
+							if ($netstat != hash_file('md5', $_SESSION['agentpath'] . '\\temp\\netstat.xml.gz')) {
+								curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport . '/upload.php');
+								curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+								curl_setopt($ch, CURLOPT_POST, true);
+								if ($osversion > 5) { $curlupld = new CurlFile($_SESSION['agentpath'] . '\\temp\\netstat.xml.gz'); } else { $curlupld = '@' . $_SESSION['agentpath'] . '\\temp\\netstat.xml.gz'; }
+								$data = array(
+									'type' => 'nodes',
+									'node' => $cs_computername,
+									'file' => $curlupld,
+									'comp' => 'comp',
+								);
+								curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+								curl_exec($ch);
+							}
+						}
+						$cycle_count_netstat = 1;
+					}
+				}
+
+				$cycle_count = $cycle_count + 1;
+				$cycle_count_processes = $cycle_count_processes + 1;
+				$cycle_count_services = $cycle_count_services + 1;
+				$cycle_count_scheduler = $cycle_count_scheduler + 1;
+				$cycle_count_events = $cycle_count_events + 1;
+				$cycle_count_programs = $cycle_count_programs + 1;
+				$cycle_count_inventory = $cycle_count_inventory + 1;
+				$cycle_count_nagios = $cycle_count_nagios + 1;
+				$cycle_count_netstat = $cycle_count_netstat + 1;
+
+			}
+			
+			// ### CHECK CONNECTION AND UPDATE STATUS ###
+			$xmlresponse = 'Error Connection';
+			$agentstatus = 'Disconnected';
+			if (!isset($refreshrate)) { $refreshrate = 15; }
+			curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_POST, true);
+			$data = array(
+				'agentkey' => $agentkey,
+				'configstatus' => $config_settings_status,
+				'agentversion' => '"'.$agentversion,
+				'refreshrate' => $refreshrate,
+				'computername' => $cs_computername,
+				'coreport' => $core_port,
+				'executorport' => $executor_port,
+				'cpuusage' => $cpuload,
+				'cpumanufacturer' => preg_replace('/[^a-zA-Z0-9 \.;\\\\:,#\[\]\*+-@_\?\^\/()~$%&=\r\n]*/', '', $cpumanu),
+				'cpumodel' => str_replace('  ', ' ', str_replace('   ', ' ', preg_replace('/[^a-zA-Z0-9 \.;\\\\:,#\[\]\*+-@_\?\^\/()~$%&=\r\n]*/', '', $cpuname))),
+				'cpucurrentclock' => number_format($cpucclo, 0, ',', '.'),
+				'cpumaxclock' => number_format($cpumclo, 0, ',', '.'),
+				'cpuarchitecture' => $cpuaddr,
+				'cpucores' => $cpucore,
+				'cputhreads' => $cpulogp,
+				'cpusockettype' => $cpusock,
+				'osname' => preg_replace('/[^a-zA-Z0-9 \.;\\\\:,#\[\]\*+-@_\?\^\/()~$%&=\r\n]*/', '', $oscname),
+				'osversion' => $osversi,
+				'osservicepack' => preg_replace('/[^a-zA-Z0-9 \.;\\\\:,#\[\]\*+-@_\?\^\/()~$%&=\r\n]*/', '', $osservp),
+				'osserialnumber' => $ossernm,
+				'manufacturer' => $cs_manufacturer,
+				'model' => $cs_model,
+				'domain' => $cs_domain,
+				'totalprocesses' => $processes_total,
+				'localdatetime' => $oscurtm,
+				'lastbootuptime' => $oslastb,
+				'uptime' => $osuptim,
+				'memoryusage' => $ramuspc,
+				'totalmemory' => number_format($totaram, 0, ',', '.'),
+				'usedmemory' => number_format($ramused, 0, ',', '.'),
+				'freememory' => number_format($freeram, 0, ',', '.'),
+				'sysdiskuspc' => $dskuspc,
+				'sysdiskfree' => $freedsk,
+				'sysdisksize' => $totadsk,
+				'sysdiskused' => $dskused,
+				'sysdisktype' => $dskfisy,
+				'services_total' => $services_total,
+				'services_running' => $services_running,
+				'services_error' => $services_error,
+				'scheduler_total' => $scheduler_total,
+				'scheduler_error' => $scheduler_error,
+				'events_warning' => $events_warning,
+				'events_error' => $events_error,
+				'nagios_status' => $nagios_status,
+				'nagiostotalcount' => $nagiostotalcount,
+				'nagiosnormacount' => $nagiosnormacount,
+				'nagioswarnicount' => $nagioswarnicount,
+				'nagioscriticount' => $nagioscriticount,
+				'nagiosunknocount' => $nagiosunknocount,
+				'netstatestcount' => $netstatestcount,
+				'netstatliscount' => $netstatliscount,
+				'netstattimcount' => $netstattimcount,
+				'netstatclocount' => $netstatclocount,
+				'netstat_status' => $netstat_status,
+				'inventory_status' => $inventory_status,
+				'programs_status' => $programs_status,
+			);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+			$xmlresponse = curl_exec($ch);
+			if ($xmlresponse === false) {
+				$xmlresponse = 'Error Connection';
+				$agentstatus = curl_error($ch);
+				$refreshrate = 15;
+			} else {
+				try {
+					$xmlsrv = new SimpleXMLElement($xmlresponse);
+					$agentstatus = $xmlsrv->connectionstatus;
+					if ($xmlsrv->refreshrate != 'Hold') { $refreshrate = $xmlsrv->refreshrate / 1000; } else { $refreshrate = 120; }
+					if ($cycle_count_status_limit != 1) { $refreshrate = 120; }
+					$processes = $xmlsrv->processes;
+					$services = $xmlsrv->services;
+					$scheduler = $xmlsrv->scheduler;
+					$events = $xmlsrv->events;
+					$nagios = $xmlsrv->nagios;
+					$programs = $xmlsrv->programs;
+					$inventory = $xmlsrv->inventory;
+					$execcount = $xmlsrv->execcount;
+					$settings = $xmlsrv->settings;
+				} catch(Exception $e) {
+					$xmlresponse = 'Error Connection';
+					$agentstatus = 'Disconnected';
+					$refreshrate = 15;
+				}
+			}
+		
+		}
+
+		$fp = fopen($_SESSION['agentpath'] . '\\temp\\agent.status', 'w');
 		fwrite($fp, $agentstatus);
 		fclose($fp);
 		
@@ -491,7 +557,7 @@ while(true) {
 					$cid = $xmlexec->$prop->cid;
 					$command = 	trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $mcrykeycmd, substr(base64_decode($xmlexec->$prop->command), $iv_size), MCRYPT_MODE_CBC, substr(base64_decode($xmlexec->$prop->command), 0, $iv_size)));
 					$exectimeout = $xmlexec->$prop->timeout;
-					pclose(popen('start "eurysco agent exec timeout" /b "' . $_SESSION['agentpath'] . '\\eurysco.agent.exec.timeout.exe" ' . $exectimeout . ' >nul 2>nul', 'r'));
+					pclose(popen('start "eurysco agent exec timeout" /b "' . $euryscoinstallpath . '\\ext\\eurysco.agent.exec.timeout.exe" ' . $exectimeout . ' >nul 2>nul', 'r'));
 					$execcmd = exec('"cmd.exe" /c "' . $command . '"', $errorarray, $errorlevel);
 					sleep(1);
 					$execcmdto = exec('taskkill.exe /f /im "eurysco.agent.exec.timeout.exe" /t >nul 2>nul', $errorarrayto, $errorlevelto);
@@ -511,17 +577,18 @@ while(true) {
 					if (strpos($auditok . $auditko . $auditnl, 'scheduled tasks') > 0) { $execdataref = 'scheduler'; $cycle_count_scheduler = 1; }
 					if (strpos($auditok . $auditko . $auditnl, 'installed programs') > 0) { $execdataref = 'programs'; $cycle_count_programs = 1; }
 					if ($execdataref != '') {
-						@include($_SESSION['agentpath'] . '\\' . 'agent.' . $execdataref . '.php');
+						@include($_SESSION['agentpath'] . '\\agent.' . $execdataref . '.php');
 						if (@filesize($_SESSION['agentpath'] . '\\temp\\' . $execdataref . '.xml.gz') == 0) {
 							@unlink($_SESSION['agentpath'] . '\\temp\\' . $execdataref . '.xml.gz');
 						} else {
 							curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport . '/upload.php');
 							curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
 							curl_setopt($ch, CURLOPT_POST, true);
+							if ($osversion > 5) { $curlupld = new CurlFile($_SESSION['agentpath'] . '\\temp\\' . $execdataref . '.xml.gz'); } else { $curlupld = '@' . $_SESSION['agentpath'] . '\\temp\\' . $execdataref . '.xml.gz'; }
 							$data = array(
 								'type' => 'nodes',
 								'node' => $cs_computername,
-								'file' => '@' . $_SESSION['agentpath'] . '\\temp\\' . $execdataref . '.xml.gz',
+								'file' => $curlupld,
 								'comp' => 'comp',
 							);
 							curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
@@ -539,7 +606,7 @@ while(true) {
 						);
 						curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 						if (curl_exec($ch) === false) {
-							$fp = fopen(str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\audit\\audit-' . date('Ym') . '_' . date('M-Y') . '.log', 'a');
+							$fp = fopen($euryscoinstallpath . '\\audit\\audit-' . date('Ym') . '_' . date('M-Y') . '.log', 'a');
 							fwrite($fp, $audit . "\r\n");
 							fclose($fp);
 							$auditsec = explode('     ', $audit);
@@ -561,12 +628,12 @@ while(true) {
 						}
 					}
 				}
-				$grouplist = scandir(str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\groups\\');
+				$grouplist = scandir($euryscoinstallpath . '\\groups\\');
 				foreach($grouplist as $group) {
 					if(pathinfo($group)['extension'] == 'xml') {
-						$groupxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents(str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\groups\\' . $group, true)))));
+						$groupxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($euryscoinstallpath . '\\groups\\' . $group, true)))));
 						if (hash('sha512', $groupxml->settings->groupname . 'Distributed') == $groupxml->settings->groupauth && !strpos(strtolower($activegroupcheck), strtolower($group))) {
-							@unlink(str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\groups\\' . $group);
+							@unlink($euryscoinstallpath . '\\groups\\' . $group);
 						}
 					}
 				}
@@ -577,20 +644,20 @@ while(true) {
 					if ($prop == 'groups') {
 						foreach ($xmlsrv->groups->children() as $group=>$node) {
 							$checkdownload = 0;
-							if (!file_exists(str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\groups\\' . $xmlsrv->groups->$group->file)) {
+							if (!file_exists($euryscoinstallpath . '\\groups\\' . $xmlsrv->groups->$group->file)) {
 								$checkdownload = 1;
 							} else {
-								if (@filesize(str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\groups\\' . $xmlsrv->groups->$group->file) == 0) {
-									@unlink(str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\groups\\' . $xmlsrv->groups->$group->file);
+								if (@filesize($euryscoinstallpath . '\\groups\\' . $xmlsrv->groups->$group->file) == 0) {
+									@unlink($euryscoinstallpath . '\\groups\\' . $xmlsrv->groups->$group->file);
 									$checkdownload = 1;
 								} else {
-									if (hash_file('md2', str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\groups\\' . $xmlsrv->groups->$group->file) != $xmlsrv->groups->$group->hash) {
+									if (hash_file('md5', $euryscoinstallpath . '\\groups\\' . $xmlsrv->groups->$group->file) != $xmlsrv->groups->$group->hash) {
 										$checkdownload = 1;
 									}
 								}
 							}
 							if ($checkdownload == 1) {
-								$fp = fopen(str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\groups\\' . $xmlsrv->groups->$group->file, 'w');
+								$fp = fopen($euryscoinstallpath . '\\groups\\' . $xmlsrv->groups->$group->file, 'w');
 								curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport . '/download.php');
 								curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 								curl_setopt($ch, CURLOPT_POST, true);
@@ -616,12 +683,12 @@ while(true) {
 						}
 					}
 				}
-				$userlist = scandir(str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\users\\');
+				$userlist = scandir($euryscoinstallpath . '\\users\\');
 				foreach($userlist as $user) {
 					if(pathinfo($user)['extension'] == 'xml') {
-						$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents(str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\users\\' . $user, true)))));
+						$userxml = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($euryscoinstallpath . '\\users\\' . $user, true)))));
 						if (hash('sha512', $userxml->settings->username . 'Distributed') == $userxml->settings->userauth && !strpos(strtolower($activeusercheck), strtolower($user))) {
-							@unlink(str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\users\\' . $user);
+							@unlink($euryscoinstallpath . '\\users\\' . $user);
 						}
 					}
 				}
@@ -632,20 +699,20 @@ while(true) {
 					if ($prop == 'users') {
 						foreach ($xmlsrv->users->children() as $user=>$node) {
 							$checkdownload = 0;
-							if (!file_exists(str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\users\\' . $xmlsrv->users->$user->file)) {
+							if (!file_exists($euryscoinstallpath . '\\users\\' . $xmlsrv->users->$user->file)) {
 								$checkdownload = 1;
 							} else {
-								if (@filesize(str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\users\\' . $xmlsrv->users->$user->file) == 0) {
-									@unlink(str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\users\\' . $xmlsrv->users->$user->file);
+								if (@filesize($euryscoinstallpath . '\\users\\' . $xmlsrv->users->$user->file) == 0) {
+									@unlink($euryscoinstallpath . '\\users\\' . $xmlsrv->users->$user->file);
 									$checkdownload = 1;
 								} else {
-									if (hash_file('md2', str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\users\\' . $xmlsrv->users->$user->file) != $xmlsrv->users->$user->hash) {
+									if (hash_file('md5', $euryscoinstallpath . '\\users\\' . $xmlsrv->users->$user->file) != $xmlsrv->users->$user->hash) {
 										$checkdownload = 1;
 									}
 								}
 							}
 							if ($checkdownload == 1) {
-								$fp = fopen(str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\users\\' . $xmlsrv->users->$user->file, 'w');
+								$fp = fopen($euryscoinstallpath . '\\users\\' . $xmlsrv->users->$user->file, 'w');
 								curl_setopt($ch, CURLOPT_URL, $eurysco_serverconaddress . ':' . $eurysco_serverconport . '/download.php');
 								curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 								curl_setopt($ch, CURLOPT_POST, true);
@@ -665,9 +732,9 @@ while(true) {
 		}
 		
 		if ($checkdownload == 1) {
-			if (file_exists(str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\users\\Administrator.xml')) {
-				if (hash_file('md2', str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\users\\Administrator.xml') == '30a4ab68eb05a1e7f3e5c20df64a4260') {
-					@unlink(str_replace('\\agent', '\\core', $_SESSION['agentpath']) . '\\users\\Administrator.xml');
+			if (file_exists($euryscoinstallpath . '\\users\\Administrator.xml')) {
+				if (hash_file('md5', $euryscoinstallpath . '\\users\\Administrator.xml') == '30a4ab68eb05a1e7f3e5c20df64a4260') {
+					@unlink($euryscoinstallpath . '\\users\\Administrator.xml');
 				}
 			}
 		}
@@ -688,10 +755,8 @@ while(true) {
 				curl_setopt($ch, CURLOPT_FILE, $fp);
 				curl_exec($ch);
 				fclose($fp);
-				if ($settings == hash_file('md2', $_SESSION['agentpath'] . '\\temp\\config_settings.xml')) {
-					@copy($_SESSION['agentpath'] . '\\temp\\config_settings.xml', str_replace('\\agent', '\\core\\conf\\config_settings.xml', $_SESSION['agentpath']));
-					@copy($_SESSION['agentpath'] . '\\temp\\config_settings.xml', str_replace('\\agent', '\\server\\conf\\config_settings.xml', $_SESSION['agentpath']));
-					@copy($_SESSION['agentpath'] . '\\temp\\config_settings.xml', $_SESSION['agentpath'] . '\\conf\\config_settings.xml');
+				if ($settings == hash_file('md5', $_SESSION['agentpath'] . '\\temp\\config_settings.xml')) {
+					@copy($_SESSION['agentpath'] . '\\temp\\config_settings.xml', $euryscoinstallpath . '\\conf\\config_settings.xml');
 				}
 				@unlink($_SESSION['agentpath'] . '\\temp\\config_settings.xml');
 			}
@@ -702,7 +767,7 @@ while(true) {
 	}
 	
 	foreach (get_defined_vars() as $key=>$val) {
-		if ($key != 'pool' && $key != '_GET' && $key != '_POST' && $key != '_COOKIE' && $key != '_FILES' && $key != '_SERVER' && $key != '_SESSION' && $key != '_ENV' && $key != 'eurysco_serverconaddress' && $key != 'eurysco_serverconport' && $key != 'eurysco_serverconpassword' && $key != 'eurysco_sslverifyhost' && $key != 'eurysco_sslverifypeer' && $key != 'osversion' && $key != 'cpucount' && $key != 'cs_computername' && $key != 'cs_domain' && $key != 'cs_manufacturer' && $key != 'cs_model' && $key != 'wmi' && $key != 'winReg' && $key != 'agentversion' && $key != 'refreshrate' && $key != 'settings' && $key != 'config_settings' && $key != 'config_core' && $key != 'config_executor' && $key != 'iv_size' && $key != 'iv' && $key != 'mcrykey' && $key != 'mcrykeycmd' && $key != 'agentversion' && $key != 'refreshrate' && $key != 'cs_computername' && $key != 'core_port' && $key != 'executor_port' && $key != 'cpuload' && $key != 'cpumanu' && $key != 'cpuname' && $key != 'cpucclo' && $key != 'cpumclo' && $key != 'cpuaddr' && $key != 'cpucore' && $key != 'cpulogp' && $key != 'cpusock' && $key != 'oscname' && $key != 'osversi' && $key != 'osservp' && $key != 'ossernm' && $key != 'cs_manufacturer' && $key != 'cs_model' && $key != 'cs_domain' && $key != 'processes_total' && $key != 'oscurtm' && $key != 'oslastb' && $key != 'osuptim' && $key != 'ramuspc' && $key != 'totaram' && $key != 'ramused' && $key != 'freeram' && $key != 'dskuspc' && $key != 'freedsk' && $key != 'totadsk' && $key != 'dskused' && $key != 'dskfisy' && $key != 'services_total' && $key != 'services_running' && $key != 'services_error' && $key != 'scheduler_total' && $key != 'scheduler_error' && $key != 'events_warning' && $key != 'events_error' && $key != 'nagios_status' && $key != 'nagiostotalcount' && $key != 'nagiosnormacount' && $key != 'nagioswarnicount' && $key != 'nagioscriticount' && $key != 'nagiosunknocount' && $key != 'netstatestcount' && $key != 'netstatliscount' && $key != 'netstattimcount' && $key != 'netstatclocount' && $key != 'cycle_count' && $key != 'cycle_count_processes' && $key != 'cycle_count_services' && $key != 'cycle_count_scheduler' && $key != 'cycle_count_events' && $key != 'cycle_count_programs' && $key != 'cycle_count_inventory' && $key != 'cycle_count_nagios' && $key != 'cycle_count_netstat' && $key != 'agentstatus' && $key != 'processes' && $key != 'services' && $key != 'scheduler' && $key != 'nagios' && $key != 'events' && $key != 'inventory' && $key != 'netstat_status' && $key != 'inventory_status' && $key != 'programs_status' && $key != 'checkdownload') {
+		if ($key != 'pool' && $key != '_GET' && $key != '_POST' && $key != '_COOKIE' && $key != '_FILES' && $key != '_SERVER' && $key != '_SESSION' && $key != '_ENV' && $key != 'eurysco_serverconaddress' && $key != 'eurysco_serverconport' && $key != 'eurysco_serverconpassword' && $key != 'eurysco_sslverifyhost' && $key != 'eurysco_sslverifypeer' && $key != 'osversion' && $key != 'cpucount' && $key != 'cs_computername' && $key != 'cs_domain' && $key != 'cs_manufacturer' && $key != 'cs_model' && $key != 'wmi' && $key != 'winReg' && $key != 'agentversion' && $key != 'refreshrate' && $key != 'settings' && $key != 'config_settings' && $key != 'config_core' && $key != 'config_executor' && $key != 'iv_size' && $key != 'iv' && $key != 'mcrykey' && $key != 'mcrykeycmd' && $key != 'agentversion' && $key != 'refreshrate' && $key != 'cs_computername' && $key != 'core_port' && $key != 'executor_port' && $key != 'cpuload' && $key != 'cpumanu' && $key != 'cpuname' && $key != 'cpucclo' && $key != 'cpumclo' && $key != 'cpuaddr' && $key != 'cpucore' && $key != 'cpulogp' && $key != 'cpusock' && $key != 'oscname' && $key != 'osversi' && $key != 'osservp' && $key != 'ossernm' && $key != 'cs_manufacturer' && $key != 'cs_model' && $key != 'cs_domain' && $key != 'processes_total' && $key != 'oscurtm' && $key != 'oslastb' && $key != 'osuptim' && $key != 'ramuspc' && $key != 'totaram' && $key != 'ramused' && $key != 'freeram' && $key != 'dskuspc' && $key != 'freedsk' && $key != 'totadsk' && $key != 'dskused' && $key != 'dskfisy' && $key != 'services_total' && $key != 'services_running' && $key != 'services_error' && $key != 'scheduler_total' && $key != 'scheduler_error' && $key != 'events_warning' && $key != 'events_error' && $key != 'nagios_status' && $key != 'nagiostotalcount' && $key != 'nagiosnormacount' && $key != 'nagioswarnicount' && $key != 'nagioscriticount' && $key != 'nagiosunknocount' && $key != 'netstatestcount' && $key != 'netstatliscount' && $key != 'netstattimcount' && $key != 'netstatclocount' && $key != 'cycle_count' && $key != 'cycle_count_processes' && $key != 'cycle_count_services' && $key != 'cycle_count_scheduler' && $key != 'cycle_count_events' && $key != 'cycle_count_programs' && $key != 'cycle_count_inventory' && $key != 'cycle_count_nagios' && $key != 'cycle_count_netstat' && $key != 'agentstatus' && $key != 'processes' && $key != 'services' && $key != 'scheduler' && $key != 'nagios' && $key != 'events' && $key != 'inventory' && $key != 'netstat_status' && $key != 'inventory_status' && $key != 'programs_status' && $key != 'checkdownload' && $key != 'config_key' && $key != 'agentkey' && $key != 'agentbind' && $key != 'euryscoinstallpath') {
 			$$key = null;
 			unset($$key);
 		}
