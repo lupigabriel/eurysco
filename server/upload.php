@@ -24,7 +24,7 @@ if (isset($_POST['type']) && isset($_FILES['file'])) {
 					$db = new SQLite3($euryscoinstallpath . '\\sqlite\\euryscoServer');
 					$db->busyTimeout(30000);
 					$db->query('PRAGMA page_size = 2048; PRAGMA cache_size = 4000; PRAGMA temp_store = 2; PRAGMA journal_mode = OFF; PRAGMA synchronous = 0;');
-					$hashingfile = hash_file('md2', $nodespath . '\\' . $_POST['node'] . '\\' . $_FILES['file']['name']);
+					$hashingfile = hash_file('md5', $nodespath . '\\' . $_POST['node'] . '\\' . $_FILES['file']['name']);
 					$filename = str_replace('.xml.gz', '', $_FILES['file']['name']);
 					if (is_null($db->querySingle('SELECT node FROM nodesHash WHERE node = "' . strtolower($_POST['node']) . '"'))) {
 						$db->query('INSERT INTO nodesHash (node, ' . strtolower($filename) . ') VALUES ("' . strtolower($_POST['node']) . '", "' . $hashingfile . '")');

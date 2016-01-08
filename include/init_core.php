@@ -15,7 +15,7 @@ if (isset($_ENV['COMPUTERNAME'])) {
 	$envcomputername = strtolower($_ENV['COMPUTERNAME']);
 }
 
-if (!strpos('|' . $_SERVER['HTTP_X_FORWARDED_HOST'], $envcomputername) && !strpos('|' . $_SERVER['HTTP_X_FORWARDED_HOST'], 'localhost') && !strpos('|' . $_SERVER['HTTP_HOST'], $envcomputername) && !strpos('|' . $_SERVER['HTTP_HOST'], 'localhost')) {
+if (!strpos('|' . $_SERVER['HTTP_X_FORWARDED_HOST'], $envcomputername) && !strpos('|' . $_SERVER['HTTP_X_FORWARDED_HOST'], 'localhost') && !strpos('|' . $_SERVER['HTTP_HOST'], $envcomputername) && !strpos('|' . $_SERVER['HTTP_HOST'], 'localhost') && !strpos('|' . $_SERVER['HTTP_HOST'], '127.0.0.1')) {
 	header('HTTP/1.1 505 HTTP Version Not Supported'); exit;
 }
 

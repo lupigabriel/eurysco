@@ -19,7 +19,7 @@ if (isset($_ENV['pmmaxextrapassindex'])) {
 	}
 }
 
-$config_settings = $_ENV['euryscopath'] . '\\agent\\conf\\config_settings.xml';
+$config_settings = $_ENV['euryscopath'] . '\\conf\\config_settings.xml';
 if (file_exists($config_settings)) {
 	$xmlsettings = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($config_settings, true)))));
 	date_default_timezone_set($xmlsettings->settings->timezonesetting);
@@ -32,7 +32,7 @@ $eurysco_serverconport = '';
 $eurysco_serverconpassword = '';
 $eurysco_sslverifyhost = 'true';
 $eurysco_sslverifypeer = 'true';
-$config_agentsrv = $_ENV['euryscopath'] . '\\agent\\conf\\config_agent.xml';
+$config_agentsrv = $_ENV['euryscopath'] . '\\conf\\config_agent.xml';
 if (file_exists($config_agentsrv)) {
 	$xmlagent = simplexml_load_string(base64_decode(base64_decode(base64_decode(file_get_contents($config_agentsrv, true)))));
 	$eurysco_serverconaddress = $xmlagent->settings->serverconnectionaddress;

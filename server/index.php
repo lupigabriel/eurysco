@@ -28,7 +28,7 @@ if (isset($_POST['configstatus']) && isset($_POST['agentversion']) && isset($_PO
 	echo $hashnodesxml;
 
 	echo '<settings>';
-	if (!file_exists($nodespath . '\\' . $_POST['computername'] . '\\config_settings.xml')) { echo '0null'; } else { echo hash_file('md2', $nodespath . '\\' . $_POST['computername'] . '\\config_settings.xml'); }
+	if (!file_exists($nodespath . '\\' . $_POST['computername'] . '\\config_settings.xml')) { echo '0null'; } else { echo hash_file('md5', $nodespath . '\\' . $_POST['computername'] . '\\config_settings.xml'); }
 	echo '</settings>' . "\n";
 
 	if (!file_exists($nodespath . '\\' . strtolower($_POST['computername']) . '\\')) { mkdir($nodespath . '\\' . strtolower($_POST['computername']) . '\\', 0777); @copy($euryscoinstallpath . '\\conf\\config_settings.xml', $nodespath . '\\' . strtolower($_POST['computername']) . '\\config_settings.xml'); }
@@ -83,7 +83,7 @@ if (isset($_POST['configstatus']) && isset($_POST['agentversion']) && isset($_PO
 					if ($checkprefilter == 0) {
 						echo '<' . str_replace('.xml', '', str_replace(' ', '', $group)) . '>';
 						echo '<file>' . $group . '</file>';
-						echo '<hash>' . hash_file('md2', $euryscoinstallpath . '\\groups\\' . $group) . '</hash>';
+						echo '<hash>' . hash_file('md5', $euryscoinstallpath . '\\groups\\' . $group) . '</hash>';
 						echo '</' . str_replace('.xml', '', str_replace(' ', '', $group)) . '>' . "\n";
 						$grouplistcheck = $grouplistcheck . str_replace('.xml', '', $group) . ';';
 					}
@@ -108,7 +108,7 @@ if (isset($_POST['configstatus']) && isset($_POST['agentversion']) && isset($_PO
 						if (hash('sha512', $userxml->settings->username . $group) == $userxml->settings->usertype) {
 							echo '<' . str_replace('.xml', '', $user) . '>';
 							echo '<file>' . $user . '</file>';
-							echo '<hash>' . hash_file('md2', $euryscoinstallpath . '\\users\\' . $user) . '</hash>';
+							echo '<hash>' . hash_file('md5', $euryscoinstallpath . '\\users\\' . $user) . '</hash>';
 							echo '</' . str_replace('.xml', '', $user) . '>' . "\n";
 						}
 					}

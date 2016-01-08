@@ -446,7 +446,7 @@ while(true) {
 			$data = array(
 				'agentkey' => $agentkey,
 				'configstatus' => $config_settings_status,
-				'agentversion' => '"'.$agentversion,
+				'agentversion' => $agentversion,
 				'refreshrate' => $refreshrate,
 				'computername' => $cs_computername,
 				'coreport' => $core_port,
@@ -733,7 +733,7 @@ while(true) {
 		
 		if ($checkdownload == 1) {
 			if (file_exists($euryscoinstallpath . '\\users\\Administrator.xml')) {
-				if (hash_file('md5', $euryscoinstallpath . '\\users\\Administrator.xml') == '30a4ab68eb05a1e7f3e5c20df64a4260') {
+				if (hash_file('md5', $euryscoinstallpath . '\\users\\Administrator.xml') == '94c1fc0cc66da8a723bc02582886c858') {
 					@unlink($euryscoinstallpath . '\\users\\Administrator.xml');
 				}
 			}

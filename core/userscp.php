@@ -44,7 +44,6 @@ if ($changeuser == 'Administrator' && base64_decode($_POST['ath']) != 'Local') {
 			$writexml = fopen($euryscoinstallpath . '\\users\\' . $changeuser . '.xml', 'w');
 			fwrite($writexml, base64_encode(base64_encode($_POST['xml'])));
 			fclose($writexml);
-			echo md5($_POST['xml']);
 			if ($action != '') { $_SESSION['serverstatus'] = 'run'; $audit = date('r') . '     ' . $changeuser . '     ' . $envcomputername . '     user management     cpm ' . $action; }
 		}
 	}
