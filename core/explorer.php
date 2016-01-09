@@ -54,10 +54,10 @@ if ($_SESSION['usersett']['filebrowserf'] != '') {
 	$filebrowserblarray = array();
 	$filebrowserblarray = (explode(',', preg_replace('/\r\n|\r|\n/', ',', $_SESSION['usersett']['filebrowserf'])));
 	foreach ($filebrowserblarray as $filebrowserbl) {
-		$filebrowserbl = rtrim($filebrowserbl, '\\') . '\\';
+		$filebrowserbl = rtrim(str_replace(substr($filebrowserbl, 0, 2), strtoupper(substr($filebrowserbl, 0, 2)), $filebrowserbl), '\\') . '\\';
 		if (is_dir($filebrowserbl) && !is_file($filebrowserbl)) {
 			if (!isset($_SESSION['permpath']) && $filebrowserblcount == 0) { $_SESSION['permpath'] = $filebrowserbl; $path = $_SESSION['permpath']; }
-			if (strpos('|' . $path, $filebrowserbl) > 0) { $filebrowserblsel = 'selected'; } else { $filebrowserblsel = ''; }
+			if (strpos('|' . trim(strtolower($path)), trim(strtolower($filebrowserbl))) > 0) { $filebrowserblsel = 'selected'; } else { $filebrowserblsel = ''; }
 			$filebrowserbllist = $filebrowserbllist . '<option value="' . $filebrowserbl . '" ' . $filebrowserblsel . '>' . rtrim($filebrowserbl, '\\') . '&nbsp;&nbsp;&nbsp;</option>';
 			$filebrowserblcount = $filebrowserblcount + 1;
 		}

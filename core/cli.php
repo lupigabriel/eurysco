@@ -87,11 +87,11 @@
 								$filebrowserblarray = array();
 								$filebrowserblarray = (explode(',', preg_replace('/\r\n|\r|\n/', ',', $_SESSION['usersett']['filebrowserf'])));
 								foreach ($filebrowserblarray as $filebrowserbl) {
-									$filebrowserbl = rtrim($filebrowserbl, '\\') . '\\';
+									$filebrowserbl = rtrim(str_replace(substr($filebrowserbl, 0, 2), strtoupper(substr($filebrowserbl, 0, 2)), $filebrowserbl), '\\') . '\\';
 									if (is_dir($filebrowserbl) && !is_file($filebrowserbl)) {
-										if (!isset($_SESSION['permpathcli']) && $filebrowserblcount == 0) { $filebrowserblfd = strtoupper(substr($filebrowserbl, 0, 2)); $_SESSION['permpathcli'] = str_replace(substr($filebrowserbl, 0, 2), strtoupper(substr($filebrowserbl, 0, 2)), $filebrowserbl); $_SESSION['clpath'] = $_SESSION['permpathcli']; }
+										if (!isset($_SESSION['permpathcli']) && $filebrowserblcount == 0) { $filebrowserblfd = strtoupper(substr($filebrowserbl, 0, 2)); $_SESSION['permpathcli'] = $filebrowserbl; $_SESSION['clpath'] = $_SESSION['permpathcli']; }
 										if (strpos('|' . trim(strtolower($_SESSION['clpath']), '\\'), trim(strtolower($filebrowserbl), '\\')) > 0) { $filebrowserblsel = 'selected'; } else { $filebrowserblsel = ''; }
-										$filebrowserbllist = $filebrowserbllist . '<option value="' . str_replace(substr($filebrowserbl, 0, 2), strtoupper(substr($filebrowserbl, 0, 2)), $filebrowserbl) . '" ' . $filebrowserblsel . '>' . rtrim($filebrowserbl, '\\') . '&nbsp;&nbsp;&nbsp;</option>';
+										$filebrowserbllist = $filebrowserbllist . '<option value="' . $filebrowserbl . '" ' . $filebrowserblsel . '>' . rtrim($filebrowserbl, '\\') . '&nbsp;&nbsp;&nbsp;</option>';
 										$filebrowserblcount = $filebrowserblcount + 1;
 									}
 								}
