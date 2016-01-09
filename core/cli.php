@@ -31,6 +31,14 @@
                     	<div class="input-control textarea">
 							<?php
 							
+							if (isset($_POST['openexppath']) && isset($_POST[substr(md5('$_POST' . $_SESSION['tokenl']), 5, 15)])) {
+								if (isset($_SESSION['permpathcli'])) {
+									$_SESSION['permpath'] = $_SESSION['permpathcli'];
+								}
+								header('location: /explorer.php?path=' . $_POST['openexppath']);
+								exit;
+							}
+
 							if (!isset($_SESSION['mapsharesetting'])) {
 								if ($mapsharesetting != '') {
 									$_SESSION['mapsharesetting'] = exec('net.exe use ' . preg_replace('/[\n\r]/', ' & net.exe use ', $mapsharesetting), $errorarray, $errorlevel);
@@ -299,7 +307,7 @@
 								}
 							}
 							?>
-						
+
 							<form id="resetview" name="resetview" method="post">
 								<input type="hidden" id="resetviewconf" name="resetviewconf" value="resetviewconf" />
 								<input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" />
@@ -316,13 +324,17 @@
 								</form>
 								</td></tr>
 								<?php } ?>
-								<tr><td width="20%"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;"><?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filebrowser'] > 0) { ?><a href="/explorer.php?path=<?php echo urlencode(str_replace('\\\\', '\\', $_SESSION['clpath'])); if (strlen(str_replace('\\\\', '\\', $_SESSION['clpath'])) > 3) { echo '%5C'; } ?>" title="Browse Folder"><div class="icon-folder"></div></a>&nbsp;<?php } ?>Current Path:</div></td><td width="80%" style="font-size:12px;"><?php echo str_replace(substr($_SESSION['clpath'], 0, 2), strtoupper(substr($_SESSION['clpath'], 0, 2)), $_SESSION['clpath']); ?>&nbsp;&nbsp;<a href="#" onclick="document.resetview.submit();" title="Reset CLI"><div class="icon-undo"></div></a></td></tr>
+								<tr><td width="20%"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;"><?php if ($_SESSION['usertype'] == 'Administrators' || $_SESSION['usersett']['filebrowser'] > 0) { ?><a href="#" onclick="document.openexp.submit();" title="Browse Folder"><div class="icon-folder"></div></a>&nbsp;<?php } ?>Current Path:</div></td><td width="80%" style="font-size:12px;"><?php echo str_replace(substr($_SESSION['clpath'], 0, 2), strtoupper(substr($_SESSION['clpath'], 0, 2)), $_SESSION['clpath']); ?>&nbsp;&nbsp;<a href="#" onclick="document.resetview.submit();" title="Reset CLI"><div class="icon-undo"></div></a></td></tr>
 								<tr><td width="20%"><div style="font-size:12px; white-space:nowrap; table-layout:fixed; overflow:hidden;">Date Modified:</div></td><td width="80%" style="font-size:12px;"><?php echo date('d/m/Y H:i:s', filemtime($_SESSION['clpath'])); ?></td></tr>
 							</table>
                         	<h3>Ouput:</h3>
                         	<textarea id="output" name="output" style="color:#cbc2cc; background-color:#000000; font-size:16px; height:280px; font-family:CLIfont; font-weight:normal; line-height:75%;"><?php echo $outputh . $clioutput; ?></textarea>
                         </div>
 						
+						<form id="openexp" name="openexp" method="post">
+							<input type="hidden" id="openexppath" name="openexppath" value="<?php echo urlencode(str_replace('\\\\', '\\', $_SESSION['clpath'])); if (strlen(str_replace('\\\\', '\\', $_SESSION['clpath'])) > 3) { echo '%5C'; } ?>" />
+							<input type="hidden" id="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" name="<?php echo substr(md5('$_POST' . $sessiontoken), 5, 15); ?>" value="<?php echo substr(md5('$_POST' . $sessiontoken), 15, 25); ?>" />
+						</form>
 						<form id="clicommand" name="clicommand" method="post">
 							<div class="grid">
 								<div class="row">

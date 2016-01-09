@@ -21,11 +21,15 @@ if (!isset($_SESSION['mapsharesetting'])) {
 	}
 }
 
-if (isset($_POST['openclidrive']) && isset($_POST['openclipath'])) {
-	$_SESSION['cldrive'] = strtolower($_POST['openclidrive']);
-	$_SESSION['cldrive_old'] = strtolower($_POST['openclidrive']);
+if (isset($_POST['openclidrive']) && isset($_POST['openclipath']) && isset($_POST[substr(md5('$_POST' . $_SESSION['tokenl']), 5, 15)])) {
+	$_SESSION['cldrive'] = strtoupper($_POST['openclidrive']);
+	$_SESSION['cldrive_old'] = strtoupper($_POST['openclidrive']);
 	$_SESSION['clpath'] = $_POST['openclipath'];
+	if (isset($_SESSION['permpath'])) {
+		$_SESSION['permpathcli'] = $_SESSION['permpath'];
+	}
 	header('location: /cli.php');
+	exit;
 }
 
 if (isset($_GET['path'])) {
