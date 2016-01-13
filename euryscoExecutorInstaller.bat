@@ -49,8 +49,7 @@ echo 		^<%relname:~1,-1%phpport^>%phpport:~1,-1%^</%relname:~1,-1%phpport^>>>.\c
 echo 	^</settings^>>>.\conf\config_%relname:~1,-1%.xml
 echo ^</config^>>>.\conf\config_%relname:~1,-1%.xml
 
-if not exist "%cd%\cert\%phpexe:~1,-1%.crt" cd "%cd%\apache\bin" & openssl.exe req -x509 -nodes -days 1825 -newkey rsa:2048 -sha512 -keyout "..\..\cert\%phpexe:~1,-1%.key" -out "..\..\cert\%phpexe:~1,-1%.crt" -config "..\conf\openssl.cnf" -subj "/C=EU/ST=eurysco Any State/L=eurysco Any Locality/O=eurysco Any Organization/OU=eurysco/CN=%computername%" & openssl.exe req -new -key "..\..\cert\%phpexe:~1,-1%.key" -out "..\..\cert\%phpexe:~1,-1%.csr" -config "..\conf\openssl.cnf" -subj "/C=EU/ST=eurysco Any State/L=eurysco Any Locality/O=eurysco Any Organization/OU=eurysco/CN=%computername%" & cd ..\..\
-rem certutil.exe -addstore "Root" "%cd%\cert\%phpexe:~1,-1%.crt"
+if not exist "%cd%\cert\%phpexe:~1,-1%.crt" cd "%cd%\apache\bin" & openssl.exe req -x509 -nodes -days 1095 -newkey rsa:4096 -sha512 -keyout "..\..\cert\%phpexe:~1,-1%.key" -out "..\..\cert\%phpexe:~1,-1%.crt" -config "..\conf\openssl.cnf" -subj "/C=EU/ST=eurysco Any State/L=eurysco Any Locality/O=eurysco Any Organization/OU=eurysco/CN=%computername%" & openssl.exe req -out "..\..\cert\%phpexe:~1,-1%.csr" -key "..\..\cert\%phpexe:~1,-1%.key" -new -sha512 -config "..\conf\openssl.cnf" -subj "/C=EU/ST=eurysco Any State/L=eurysco Any Locality/O=eurysco Any Organization/OU=eurysco/CN=%computername%" & cd ..\..\
 
 echo Define SRVROOT "%cd%\apache">"%cd%\apache\conf\httpd_srvroot.conf"
 echo Listen %serviceport:~1,-1%>"%cd%\apache\conf\httpd_%phpexe:~1,-1%_port.conf"

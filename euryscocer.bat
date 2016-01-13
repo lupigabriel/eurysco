@@ -1,0 +1,7 @@
+setlocal enableextensions
+cd /d "%~dp0"
+
+net.exe stop "eurysco%1ssl"
+if %1 neq server if exist "%cd%\cert\eurysco_%1.crt" cd "%cd%\apache\bin" & openssl.exe req -x509 -nodes -days 1825 -newkey rsa:4096 -sha512 -keyout "..\..\cert\eurysco_%1.key" -out "..\..\cert\eurysco_%1.crt" -config "..\conf\openssl.cnf" -subj "/C=EU/ST=eurysco Any State/L=eurysco Any Locality/O=eurysco Any Organization/OU=eurysco/CN=%computername%" & openssl.exe req -out "..\..\cert\eurysco_%1.csr" -key "..\..\cert\eurysco_%1.key" -new -sha512 -config "..\conf\openssl.cnf" -subj "/C=EU/ST=eurysco Any State/L=eurysco Any Locality/O=eurysco Any Organization/OU=eurysco/CN=%computername%" & cd ..\..\
+if %1 equ server if exist "%cd%\cert\eurysco_%1.crt" cd "%cd%\apache\bin" & openssl.exe req -x509 -nodes -days 1825 -newkey rsa:2048 -sha512 -keyout "..\..\cert\eurysco_%1.key" -out "..\..\cert\eurysco_%1.crt" -config "..\conf\openssl.cnf" -subj "/C=EU/ST=eurysco Any State/L=eurysco Any Locality/O=eurysco Any Organization/OU=eurysco/CN=%computername%" & openssl.exe req -out "..\..\cert\eurysco_%1.csr" -key "..\..\cert\eurysco_%1.key" -new -sha512 -config "..\conf\openssl.cnf" -subj "/C=EU/ST=eurysco Any State/L=eurysco Any Locality/O=eurysco Any Organization/OU=eurysco/CN=%computername%" & cd ..\..\
+net.exe start "eurysco%1ssl"

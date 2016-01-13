@@ -8,6 +8,25 @@ sleep(5);
 pclose(popen('start "eurysco agent status check" /b "' . $euryscoinstallpath . '\\ext\\eurysco.agent.status.check.exe" "' . $_SESSION['agentpath'] . '\\temp\\agent.status" >nul 2>nul', 'r'));
 sleep(5);
 
+$timezonesetting = 'UTC';
+date_default_timezone_set($timezonesetting);
+
+if (file_exists($euryscoinstallpath . '\\cert\\eurysco_core.crt') && file_exists($euryscoinstallpath . '\\cert\\eurysco_core.csr') && file_exists($euryscoinstallpath . '\\cert\\eurysco_core.key')) {
+	if ((int)((strtotime(date('Y-m-d H:i:s')) - strtotime(date('Y-m-d H:i:s', filemtime($euryscoinstallpath . '\\cert\\eurysco_core.crt')))) / 60 / 60 / 24) > 1094) {
+		exec('"' . $euryscoinstallpath . '\\euryscocer.bat" core', $errorarray, $errorlevel);
+	}
+}
+if (file_exists($euryscoinstallpath . '\\cert\\eurysco_executor.crt') && file_exists($euryscoinstallpath . '\\cert\\eurysco_executor.csr') && file_exists($euryscoinstallpath . '\\cert\\eurysco_executor.key')) {
+	if ((int)((strtotime(date('Y-m-d H:i:s')) - strtotime(date('Y-m-d H:i:s', filemtime($euryscoinstallpath . '\\cert\\eurysco_executor.crt')))) / 60 / 60 / 24) > 1094) {
+		exec('"' . $euryscoinstallpath . '\\euryscocer.bat" executor', $errorarray, $errorlevel);
+	}
+}
+if (file_exists($euryscoinstallpath . '\\cert\\eurysco_server.crt') && file_exists($euryscoinstallpath . '\\cert\\eurysco_server.csr') && file_exists($euryscoinstallpath . '\\cert\\eurysco_server.key')) {
+	if ((int)((strtotime(date('Y-m-d H:i:s')) - strtotime(date('Y-m-d H:i:s', filemtime($euryscoinstallpath . '\\cert\\eurysco_server.crt')))) / 60 / 60 / 24) > 364) {
+		exec('"' . $euryscoinstallpath . '\\euryscocer.bat" server', $errorarray, $errorlevel);
+	}
+}
+
 $agentbind = '';
 $agentstatus = '';
 $agentkey = '';
@@ -600,7 +619,7 @@ while(true) {
 						curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 						curl_setopt($ch, CURLOPT_POST, true);
 						$data = array(
-							'auditlog' => $audit,
+							'auditlog' => base64_encode($audit),
 							'cid' => $cid,
 							'exitcode' => $errorlevel
 						);
