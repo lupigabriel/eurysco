@@ -196,7 +196,7 @@
 								}
 								$agentstatusfile = $euryscoinstallpath . '\\agent\\temp\\agent.status';
 								if (file_exists($agentstatusfile)) @unlink($agentstatusfile);
-								$agentkey = $euryscoinstallpath . '\\conf\\agent.key';
+								$agentkey = $euryscoinstallpath . '\\agent\\conf\\agent.key';
 								if (file_exists($agentkey)) @unlink($agentkey);
 							}
 							if (isset($_POST['editcreateservice']) && !isset($_POST['deleteconfiguration'])) {
@@ -215,9 +215,9 @@
 									$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     agent config     eurysco agent configuration not edited';
 								}
 								$agentstatusfile = $euryscoinstallpath . '\\agent\\temp\\agent.status';
-								if (file_exists($agentstatusfile)) @unlink($agentstatusfile);
-								$agentkey = $euryscoinstallpath . '\\conf\\agent.key';
-								if (file_exists($agentkey)) @unlink($agentkey);
+								if (file_exists($agentstatusfile)) { @unlink($agentstatusfile); }
+								$agentkey = $euryscoinstallpath . '\\agent\\conf\\agent.key';
+								if (file_exists($agentkey)) { @unlink($agentkey); }
 							}
 							header('location: ' . $_SERVER['PHP_SELF']);
 							exit;
