@@ -214,7 +214,7 @@
 							if ($errorlevel == 0) {
 								$message = '<blockquote style="font-size:12px; background-color:#0072C6; color:#FFFFFF; border-left-color:#324886;">export key <strong>' . $regexportpath . '</strong> completed</blockquote><br />';
 								$audit = date('r') . '     ' . $_SESSION['username'] . '     ' . $envcomputername . '     system registry     export key "' . $regexportpath . '" completed';
-								header('location: /download.php' . substr(md5('$_GET' . $sessiontoken), 5, 15) . '=' . substr(md5('$_GET' . $sessiontoken), 15, 25) . '&?download=' . $random . '.reg&path=' . $euryscoinstallpath . '\\temp\\core');
+								header('location: /download.php?' . substr(md5('$_GET' . $sessiontoken), 5, 15) . '=' . substr(md5('$_GET' . $sessiontoken), 15, 25) . '&download=' . $random . '.reg&path=' . $euryscoinstallpath . '\\temp\\core');
 								exit;
 							} else {
 								$message = '<blockquote style="font-size:12px; background-color:#B91D47; color:#FFFFFF; border-left-color:#863232;">export key <strong>' . $regexportpath . '</strong> not completed</blockquote><br />';
